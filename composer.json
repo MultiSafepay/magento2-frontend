@@ -1,0 +1,25 @@
+{
+    "name": "multisafepay/magento2-frontend",
+    "description": "MultiSafepay module for Magento 2 (regular frontend)",
+    "version": "1.0.0",
+    "require": {
+        "multisafepay/magento2-core": "^1.0",
+        "multisafepay/magento2-adminhtml": "^1.0",
+        "magento/framework": "^101.0.1|^101.1|^102.0|^103.0",
+        "magento/module-sales": "^102.0|^103.0",
+        "magento/module-checkout": "^100.0",
+        "magento/module-store": "^100.0|^101.0"
+    },
+    "type": "magento2-module",
+    "license": [
+        "OSL-3.0"
+    ],
+    "autoload": {
+        "files": [
+            "registration.php"
+        ],
+        "psr-4": {
+            "MultiSafepay\\ConnectFrontend\\": ""
+        }
+    }
+}

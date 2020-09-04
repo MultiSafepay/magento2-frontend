@@ -1,0 +1,159 @@
+<!--
+/**
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Open Software License (OSL 3.0)
+ * that is provided with Magento in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/osl-3.0.php
+ *
+ * Copyright © 2020 MultiSafepay, Inc. All rights reserved.
+ * See DISCLAIMER.md for disclaimer details.
+ *
+ */
+ -->
+
+<div class="payment-method" data-bind="css: {'_active': (getCode() == isChecked())}">
+    <div class="payment-method-title field choice">
+        <input type="radio"
+               name="payment[method]"
+               class="radio"
+               data-bind="attr: {'id': getCode()}, value: getCode(), checked: isChecked, click: selectPaymentMethod, visible: isRadioButtonVisible()"/>
+        <label class="label" data-bind="attr: {'for': getCode()}">
+            <img data-bind="attr: {src: getImage()}" class="payment-icon" />
+            <span data-bind="text: getTitle()"></span>
+        </label>
+    </div>
+
+    <div class="payment-method-content">
+        <!-- ko foreach: getRegion('messages') -->
+        <!-- ko template: getTemplate() --><!-- /ko -->
+        <!--/ko-->
+
+        <div class="payment-method-directbanktransfer" style="margin: 0 0 20px;">
+            <fieldset class="fieldset">
+                <div class="field required">
+                    <label class="label" for="directbanktransfer-account-id">
+                        <span>
+                            <!-- ko i18n: 'Account ID'-->
+                            <!-- /ko -->
+                        </span>
+                    </label>
+                    <div class="control">
+                        <input name="directbanktransfer-account-id"
+                               id="directbanktransfer-account-id"
+                               title="Account ID"
+                               data-bind="value: accountId"
+                               class="input-text"
+                               type="text"
+                               required="true"/>
+                    </div>
+                </div>
+
+                <div class="field required">
+                    <label class="label" for="directbanktransfer-account-name">
+                        <span>
+                            <!-- ko i18n: 'Account holder name'-->
+                            <!-- /ko -->
+                        </span>
+                    </label>
+                    <div class="control">
+                        <input name="directbanktransfer-account-name"
+                               id="directbanktransfer-account-name"
+                               title="Account holder name"
+                               data-bind="value: accountHolderName"
+                               class="input-text"
+                               type="text"
+                               required="true"/>
+                    </div>
+                </div>
+
+                <div class="field required">
+                    <label class="label" for="directbanktransfer-account-city">
+                        <span>
+                            <!-- ko i18n: 'Account holder city'-->
+                            <!-- /ko -->
+                        </span>
+                    </label>
+                    <div class="control">
+                        <input name="directbanktransfer-account-city"
+                               id="directbanktransfer-account-city"
+                               title="Account holder city"
+                               data-bind="value: accountHolderCity"
+                               class="input-text"
+                               type="text"
+                               required="true"/>
+                    </div>
+                </div>
+
+                <div class="field required">
+                    <label class="label" for="directbanktransfer-account-country">
+                        <span>
+                            <!-- ko i18n: 'Account holder country'-->
+                            <!-- /ko -->
+                        </span>
+                    </label>
+                    <div class="control">
+                        <input name="directbanktransfer-account-country"
+                               id="directbanktransfer-account-country"
+                               title="Account holder country"
+                               data-bind="value: accountHolderCountry"
+                               class="input-text"
+                               type="text"
+                               required="true"/>
+                    </div>
+                </div>
+
+                <div class="field required">
+                    <label class="label" for="directbanktransfer-account-number">
+                        <span>
+                            <!-- ko i18n: 'Bank account number'-->
+                            <!-- /ko -->
+                        </span>
+                    </label>
+                    <div class="control">
+                        <input name="directbanktransfer-account-number"
+                               placeholder="Bank account number e.g NL02ABNA0123456789"
+                               id="directbanktransfer-account-number"
+                               title="Bank account number"
+                               data-bind="value: accountHolderIban"
+                               class="input-text"
+                               type="text"
+                               required="true"/>
+                    </div>
+                </div>
+
+                <div class="field required">
+                    <label class="label" for="directbanktransfer-account-bic">
+                        <span>
+                            <!-- ko i18n: 'Account holder BIC'-->
+                            <!-- /ko -->
+                        </span>
+                    </label>
+                    <div class="control">
+                        <input name="directbanktransfer-account-bic"
+                               id="directbanktransfer-account-bic"
+                               title="Account holder BIC"
+                               data-bind="value: accountHolderBic"
+                               class="input-text"
+                               type="text"
+                               required="true"/>
+                    </div>
+                </div>
+            </fieldset>
+        </div>
+        <div class="actions-toolbar">
+            <div class="primary">
+                <button class="action primary checkout"
+                        type="submit"
+                        data-bind="
+                        click: placeOrder,
+                        attr: {title: $t('Place Order')}
+                        ">
+                    <span data-bind="i18n: 'Place Order'"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
