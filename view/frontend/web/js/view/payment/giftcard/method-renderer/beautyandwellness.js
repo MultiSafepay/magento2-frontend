@@ -43,13 +43,22 @@ define(
 
         return Component.extend({
             defaults: {
-                template: 'MultiSafepay_ConnectFrontend/payment/generic-no-image',
+                template: 'MultiSafepay_ConnectFrontend/payment/generic',
                 transactionResult: ''
             },
 
             initialize: function () {
                 this._super();
                 self = this;
+            },
+
+            /**
+             * Get the gateway image
+             *
+             * @returns {string}
+             */
+            getImage: function () {
+                return config.image;
             },
 
             /**
