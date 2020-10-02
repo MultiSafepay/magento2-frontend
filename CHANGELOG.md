@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added missing gift card logos
 
 ### Fixed
+- Added support for Magento terms and services checkbox agreement
 - Added dependencies in module.xml and composer.json
 - Removed setup_version from module
 
