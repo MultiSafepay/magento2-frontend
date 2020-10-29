@@ -45,6 +45,7 @@
                 <item name="multisafepay_fietsenbon_config_provider" xsi:type="object">MultiSafepay\ConnectCore\Model\Ui\Giftcard\FietsenbonConfigProvider</item>
                 <item name="multisafepay_gezondheidsbon_config_provider" xsi:type="object">MultiSafepay\ConnectCore\Model\Ui\Giftcard\GezondheidsbonConfigProvider</item>
                 <item name="multisafepay_givacard_config_provider" xsi:type="object">MultiSafepay\ConnectCore\Model\Ui\Giftcard\GivacardConfigProvider</item>
+                <item name="multisafepay_good4fun_config_provider" xsi:type="object">MultiSafepay\ConnectCore\Model\Ui\Giftcard\Good4funConfigProvider</item>
                 <item name="multisafepay_goodcard_config_provider" xsi:type="object">MultiSafepay\ConnectCore\Model\Ui\Giftcard\GoodcardConfigProvider</item>
                 <item name="multisafepay_nationaletuinbon_config_provider" xsi:type="object">MultiSafepay\ConnectCore\Model\Ui\Giftcard\NationaleTuinbonConfigProvider</item>
                 <item name="multisafepay_parfumcadeaukaart_config_provider" xsi:type="object">MultiSafepay\ConnectCore\Model\Ui\Giftcard\ParfumcadeaukaartConfigProvider</item>
