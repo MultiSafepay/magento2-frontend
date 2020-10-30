@@ -329,6 +329,14 @@
                                                                         </item>
                                                                     </item>
                                                                 </item>
+                                                                <item name="multisafepay_good4fun" xsi:type="array">
+                                                                    <item name="component" xsi:type="string">MultiSafepay_ConnectFrontend/js/view/payment/giftcard/good4fun</item>
+                                                                    <item name="methods" xsi:type="array">
+                                                                        <item name="multisafepay_good4fun" xsi:type="array">
+                                                                            <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
+                                                                        </item>
+                                                                    </item>
+                                                                </item>
                                                                 <item name="multisafepay_goodcard" xsi:type="array">
                                                                     <item name="component" xsi:type="string">MultiSafepay_ConnectFrontend/js/view/payment/giftcard/goodcard</item>
                                                                     <item name="methods" xsi:type="array">
