@@ -35,8 +35,11 @@ use MultiSafepay\Api\Transactions\Transaction;
 use MultiSafepay\Api\Transactions\UpdateRequest;
 use MultiSafepay\ConnectCore\Factory\SdkFactory;
 use MultiSafepay\ConnectCore\Logger\Logger;
-use MultiSafepay\ConnectCore\Service\EmailSender;
 use MultiSafepay\ConnectCore\Model\SecondChance;
+use MultiSafepay\ConnectCore\Model\Ui\Gateway\AfterpayConfigProvider;
+use MultiSafepay\ConnectCore\Model\Ui\Gateway\KlarnaConfigProvider;
+use MultiSafepay\ConnectCore\Model\Ui\Gateway\PayafterConfigProvider;
+use MultiSafepay\ConnectCore\Service\EmailSender;
 use MultiSafepay\Exception\ApiException;
 use MultiSafepay\Exception\InvalidApiKeyException;
 use Psr\Http\Client\ClientExceptionInterface;
@@ -237,8 +240,16 @@ class Notification extends Action
                     $this->orderRepository->save($order);
                 }
 
+                $gatewaysWithoutSendInvoice = [
+                    PayafterConfigProvider::CODE,
+                    KlarnaConfigProvider::CODE,
+                    AfterpayConfigProvider::CODE
+                ];
+
                 foreach ($this->getInvoicesByOrderId($order->getId()) as $invoice) {
-                    $this->emailSender->sendInvoiceEmail($payment, $invoice);
+                    if (!in_array($payment->getMethod(), $gatewaysWithoutSendInvoice, true)) {
+                        $this->emailSender->sendInvoiceEmail($payment, $invoice);
+                    }
 
                     $updateRequest = $this->updateRequest->addData([
                         "invoice_id" => $invoice->getIncrementId()
