@@ -5,16 +5,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [1.1.0] - 2020-11-11
 ### Added
+- Added Good4Fun gift card to the checkout
 - Added missing gift card logos
 
 ### Fixed
+- Fixed notification url leading to ReflectionException on some server configurations
+- Fixed error message when SecureToken parameters are missing
 - Added support for Magento terms and services checkbox agreement
 - Added dependencies in module.xml and composer.json
 - Removed setup_version from module
+- For some billing suite methods, an automatic invoice will not be sent anymore
 
 ### Changed
-- Rebrand Klarna to their latest standards
+- Rebrand Klarna to the latest standards
 
 ## [1.0.0] - 2020-09-02
 ### Added
