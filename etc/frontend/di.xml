@@ -35,6 +35,7 @@
                 <item name="multisafepay_kbc_config_provider" xsi:type="object">MultiSafepay\ConnectCore\Model\Ui\Gateway\KBCConfigProvider</item>
                 <item name="multisafepay_paypal_config_provider" xsi:type="object">MultiSafepay\ConnectCore\Model\Ui\Gateway\PaypalConfigProvider</item>
                 <item name="multisafepay_trustly_config_provider" xsi:type="object">MultiSafepay\ConnectCore\Model\Ui\Gateway\TrustlyConfigProvider</item>
+                <item name="multisafepay_in3_config_provider" xsi:type="object">MultiSafepay\ConnectCore\Model\Ui\Gateway\In3ConfigProvider</item>
 
                 <!-- Gift cards -->
                 <item name="multisafepay_babygiftcard_config_provider" xsi:type="object">MultiSafepay\ConnectCore\Model\Ui\Giftcard\BabyGiftcardConfigProvider</item>
