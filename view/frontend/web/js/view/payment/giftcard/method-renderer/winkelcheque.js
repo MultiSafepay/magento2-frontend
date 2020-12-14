@@ -49,7 +49,7 @@ define(
 
         return Component.extend({
             defaults: {
-                template: 'MultiSafepay_ConnectFrontend/payment/generic-no-image',
+                template: 'MultiSafepay_ConnectFrontend/payment/generic',
                 transactionResult: ''
             },
 
@@ -71,6 +71,15 @@ define(
              */
             getCode: function () {
                 return 'multisafepay_winkelcheque';
+            },
+
+            /**
+             * Get the gateway image
+             *
+             * @returns {string}
+             */
+            getImage: function () {
+                return config.image;
             },
 
             /**
