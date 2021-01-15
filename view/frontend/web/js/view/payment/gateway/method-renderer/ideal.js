@@ -56,7 +56,7 @@ define(
             },
 
             initialize: function () {
-                this._super().observe('issuerId');
+                this._super()._super().observe('issuerId');
 
                 if (config.is_preselected) {
                     selectPaymentMethodAction(this.getData());
