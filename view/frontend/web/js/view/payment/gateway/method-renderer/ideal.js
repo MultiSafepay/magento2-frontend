@@ -56,7 +56,7 @@ define(
             },
 
             initialize: function () {
-                this._super()._super().observe('issuerId');
+                this._super();
 
                 if (config.is_preselected) {
                     selectPaymentMethodAction(this.getData());
@@ -64,6 +64,12 @@ define(
                 }
 
                 self = this;
+            },
+
+            initObservable: function () {
+                this._super()
+                    .observe('issuerId')
+                return this;
             },
 
             /**
