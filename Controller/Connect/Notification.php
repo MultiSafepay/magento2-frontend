@@ -240,16 +240,8 @@ class Notification extends Action
                     $this->orderRepository->save($order);
                 }
 
-                $gatewaysWithoutSendInvoice = [
-                    PayafterConfigProvider::CODE,
-                    KlarnaConfigProvider::CODE,
-                    AfterpayConfigProvider::CODE
-                ];
-
                 foreach ($this->getInvoicesByOrderId($order->getId()) as $invoice) {
-                    if (!in_array($payment->getMethod(), $gatewaysWithoutSendInvoice, true)) {
-                        $this->emailSender->sendInvoiceEmail($payment, $invoice);
-                    }
+                    $this->emailSender->sendInvoiceEmail($payment, $invoice);
 
                     $updateRequest = $this->updateRequest->addData([
                         "invoice_id" => $invoice->getIncrementId()
