@@ -19,7 +19,8 @@ define(
         'jquery',
         'Magento_Checkout/js/view/payment/default',
         'Magento_Checkout/js/action/redirect-on-success',
-        'mage/url'
+        'mage/url',
+        'mage/translate'
     ],
 
     /**
@@ -28,13 +29,15 @@ define(
      * @param Component
      * @param redirectOnSuccessAction
      * @param url
+     * @param $t
      * @returns {*}
      */
     function (
         $,
         Component,
         redirectOnSuccessAction,
-        url
+        url,
+        $t
     ) {
         const config = window.checkoutConfig.payment.multisafepay_in3;
         'use strict';
@@ -83,11 +86,11 @@ define(
                 return [
                     {
                         "code": "mr",
-                        "label": 'Mr.'
+                        "label": $t('Mr.')
                     },
                     {
                         "code": "mrs",
-                        "label": 'Mrs.'
+                        "label": $t('Mrs.')
                     }
                 ];
             },
