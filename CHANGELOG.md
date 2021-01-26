@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - Fixed bug "Uncaught TypeError: Cannot read property 'observe' of undefined"
+- Fixed duplicate id's for birthday checkout field for in3 and Afterpay
 
 ### Changed
 - Changed the way checkout fields are observed and default method is selected.
