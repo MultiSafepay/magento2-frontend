@@ -18,7 +18,6 @@ define(
     [
         'jquery',
         'Magento_Checkout/js/view/payment/default',
-        'Magento_Checkout/js/action/select-payment-method',
         'Magento_Checkout/js/checkout-data',
         'Magento_Checkout/js/action/redirect-on-success',
         'mage/url'
@@ -28,7 +27,6 @@ define(
      *
      * @param $
      * @param Component
-     * @param selectPaymentMethodAction
      * @param checkoutData
      * @param redirectOnSuccessAction
      * @param url
@@ -37,15 +35,12 @@ define(
     function (
         $,
         Component,
-        selectPaymentMethodAction,
         checkoutData,
         redirectOnSuccessAction,
         url
     ) {
         const config = window.checkoutConfig.payment.multisafepay_einvoicing;
         'use strict';
-
-        let self;
 
         return Component.extend({
             defaults: {
@@ -55,17 +50,16 @@ define(
                 transactionResult: ''
             },
 
-            initialize: function () {
+            initObservable: function () {
                 this._super()
                     .observe('dateOfBirth')
                     .observe('accountNumber');
 
-                if (config.is_preselected) {
-                    selectPaymentMethodAction(this.getData());
-                    checkoutData.setSelectedPaymentMethod(this.item.method);
+                if (!checkoutData.getSelectedPaymentMethod() && config.is_preselected) {
+                    this.selectPaymentMethod();
                 }
 
-                self = this;
+                return this;
             },
 
             /**

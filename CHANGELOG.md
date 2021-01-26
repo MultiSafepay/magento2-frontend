@@ -8,6 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Added icons for Winkel Cheque, Wellness gift card and Givacard
 
+### Fixed
+- Fixed bug "Uncaught TypeError: Cannot read property 'observe' of undefined"
+
+### Changed
+- Changed the way checkout fields are observed and default method is selected.
+
 ## [1.2.0] - 2020-12-10
 ### Changed
 - Added new iDEAL icon

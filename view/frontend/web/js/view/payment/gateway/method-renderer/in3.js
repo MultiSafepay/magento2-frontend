@@ -39,8 +39,6 @@ define(
         const config = window.checkoutConfig.payment.multisafepay_in3;
         'use strict';
 
-        let self;
-
         return Component.extend({
             defaults: {
                 template: 'MultiSafepay_ConnectFrontend/payment/gateway/in3',
@@ -49,11 +47,16 @@ define(
                 transactionResult: ''
             },
 
-            initialize: function () {
+            initObservable: function () {
                 this._super()
                     .observe('dateOfBirth')
                     .observe('genderId');
-                self = this;
+
+                if (!checkoutData.getSelectedPaymentMethod() && config.is_preselected) {
+                    this.selectPaymentMethod();
+                }
+
+                return this;
             },
 
             /**
