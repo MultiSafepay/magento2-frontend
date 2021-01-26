@@ -61,4 +61,10 @@
             </argument>
         </arguments>
     </type>
+
+    <type name="MultiSafepay\ConnectFrontend\Observer\RestoreQuoteObserver">
+        <arguments>
+            <argument name="checkoutSession" xsi:type="object">Magento\Checkout\Model\Session\Proxy</argument>
+        </arguments>
+    </type>
 </config>

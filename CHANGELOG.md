@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- Added function to restore quote when using back button on the hosted payment page
 - Added icons for Winkel Cheque, Wellness gift card and Givacard
 
 ### Fixed
