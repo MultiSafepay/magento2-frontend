@@ -31,14 +31,12 @@ use Magento\Sales\Api\TransactionRepositoryInterface;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Payment;
 use Magento\Sales\Model\Order\Payment\Transaction as PaymentTransaction;
+use Magento\Sales\Model\Order\StatusResolver;
 use MultiSafepay\Api\Transactions\Transaction;
 use MultiSafepay\Api\Transactions\UpdateRequest;
 use MultiSafepay\ConnectCore\Factory\SdkFactory;
 use MultiSafepay\ConnectCore\Logger\Logger;
 use MultiSafepay\ConnectCore\Model\SecondChance;
-use MultiSafepay\ConnectCore\Model\Ui\Gateway\AfterpayConfigProvider;
-use MultiSafepay\ConnectCore\Model\Ui\Gateway\KlarnaConfigProvider;
-use MultiSafepay\ConnectCore\Model\Ui\Gateway\PayafterConfigProvider;
 use MultiSafepay\ConnectCore\Service\EmailSender;
 use MultiSafepay\Exception\ApiException;
 use MultiSafepay\Exception\InvalidApiKeyException;
@@ -108,6 +106,11 @@ class Notification extends Action
     private $emailSender;
 
     /**
+     * @var StatusResolver
+     */
+    private $statusResolver;
+
+    /**
      * Notification constructor.
      *
      * @param SdkFactory $sdkFactory
@@ -123,6 +126,7 @@ class Notification extends Action
      * @param InvoiceRepositoryInterface $invoiceRepository
      * @param ScopeConfigInterface $scopeConfig
      * @param SearchCriteriaBuilder $searchCriteriaBuilder
+     * @param StatusResolver $statusResolver
      */
     public function __construct(
         SdkFactory $sdkFactory,
@@ -137,7 +141,8 @@ class Notification extends Action
         UpdateRequest $updateRequest,
         InvoiceRepositoryInterface $invoiceRepository,
         ScopeConfigInterface $scopeConfig,
-        SearchCriteriaBuilder $searchCriteriaBuilder
+        SearchCriteriaBuilder $searchCriteriaBuilder,
+        StatusResolver $statusResolver
     ) {
         parent::__construct($context);
         $this->emailSender = $emailSender;
@@ -152,6 +157,7 @@ class Notification extends Action
         $this->invoiceRepository = $invoiceRepository;
         $this->searchCriteriaBuilder = $searchCriteriaBuilder;
         $this->scopeConfig = $scopeConfig;
+        $this->statusResolver = $statusResolver;
     }
 
     /**
@@ -227,6 +233,7 @@ class Notification extends Action
                     $payment->setIsTransactionClosed(0);
                     $payment->registerCaptureNotification($order->getBaseTotalDue(), true);
                     $this->logger->info('(Order ID: ' . $orderId . ') Invoice created');
+                    $payment->setIsTransactionApproved(true);
                     $this->orderPaymentRepository->save($payment);
 
                     $paymentTransaction = $payment->addTransaction(PaymentTransaction::TYPE_CAPTURE, null, true);
@@ -237,6 +244,13 @@ class Notification extends Action
                     $paymentTransaction->setIsClosed(1);
 
                     $this->transactionRepository->save($paymentTransaction);
+
+                    // Set order processing
+                    $state = Order::STATE_PROCESSING;
+                    $status = $this->statusResolver->getOrderStatusByState($order, $state);
+                    $order->setState($state);
+                    $order->setStatus($status);
+
                     $this->orderRepository->save($order);
                 }
 
