@@ -254,9 +254,8 @@ class Notification extends Action
                     $this->transactionRepository->save($paymentTransaction);
 
                     // Set order processing
-                    $state = Order::STATE_PROCESSING;
-                    $status = $this->statusResolver->getOrderStatusByState($order, $state);
-                    $order->setState($state);
+                    $status = $this->statusResolver->getOrderStatusByState($order, Order::STATE_PROCESSING);
+                    $order->setState(Order::STATE_PROCESSING);
                     $order->setStatus($status);
 
                     $this->orderRepository->save($order);
