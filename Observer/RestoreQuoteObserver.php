@@ -24,6 +24,7 @@ use Magento\Framework\Exception\LocalizedException;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Payment;
 use MultiSafepay\ConnectCore\Model\Ui\Gateway\BankTransferConfigProvider;
+use MultiSafepay\ConnectCore\Util\PaymentMethodUtil;
 
 class RestoreQuoteObserver implements ObserverInterface
 {
@@ -34,19 +35,26 @@ class RestoreQuoteObserver implements ObserverInterface
     private $checkoutSession;
 
     /**
+     * @var PaymentMethodUtil
+     */
+    private $paymentMethodUtil;
+
+    /**
      * RestoreQuoteObserver constructor.
      *
      * @param Session $checkoutSession
+     * @param PaymentMethodUtil $paymentMethodUtil
      */
     public function __construct(
-        Session $checkoutSession
+        Session $checkoutSession,
+        PaymentMethodUtil $paymentMethodUtil
     ) {
         $this->checkoutSession = $checkoutSession;
+        $this->paymentMethodUtil = $paymentMethodUtil;
     }
 
     /**
      * @param Observer $observer
-     * @throws LocalizedException
      */
     public function execute(Observer $observer): void
     {
@@ -58,9 +66,8 @@ class RestoreQuoteObserver implements ObserverInterface
 
         /** @var Payment $payment */
         $payment = $lastRealOrder->getPayment();
-        $isMultiSafepay = $payment->getMethodInstance()->getConfigData('is_multisafepay');
 
-        if (!$isMultiSafepay) {
+        if (!$this->paymentMethodUtil->isMultisafepayOrder($lastRealOrder)) {
             return;
         }
 

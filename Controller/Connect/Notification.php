@@ -36,10 +36,8 @@ use MultiSafepay\Api\Transactions\UpdateRequest;
 use MultiSafepay\ConnectCore\Factory\SdkFactory;
 use MultiSafepay\ConnectCore\Logger\Logger;
 use MultiSafepay\ConnectCore\Model\SecondChance;
-use MultiSafepay\ConnectCore\Model\Ui\Gateway\AfterpayConfigProvider;
-use MultiSafepay\ConnectCore\Model\Ui\Gateway\KlarnaConfigProvider;
-use MultiSafepay\ConnectCore\Model\Ui\Gateway\PayafterConfigProvider;
 use MultiSafepay\ConnectCore\Service\EmailSender;
+use MultiSafepay\ConnectCore\Util\PaymentMethodUtil;
 use MultiSafepay\Exception\ApiException;
 use MultiSafepay\Exception\InvalidApiKeyException;
 use Psr\Http\Client\ClientExceptionInterface;
@@ -108,6 +106,11 @@ class Notification extends Action
     private $emailSender;
 
     /**
+     * @var PaymentMethodUtil
+     */
+    private $paymentMethodUtil;
+
+    /**
      * Notification constructor.
      *
      * @param SdkFactory $sdkFactory
@@ -123,6 +126,7 @@ class Notification extends Action
      * @param InvoiceRepositoryInterface $invoiceRepository
      * @param ScopeConfigInterface $scopeConfig
      * @param SearchCriteriaBuilder $searchCriteriaBuilder
+     * @param PaymentMethodUtil $paymentMethodUtil
      */
     public function __construct(
         SdkFactory $sdkFactory,
@@ -137,7 +141,8 @@ class Notification extends Action
         UpdateRequest $updateRequest,
         InvoiceRepositoryInterface $invoiceRepository,
         ScopeConfigInterface $scopeConfig,
-        SearchCriteriaBuilder $searchCriteriaBuilder
+        SearchCriteriaBuilder $searchCriteriaBuilder,
+        PaymentMethodUtil $paymentMethodUtil
     ) {
         parent::__construct($context);
         $this->emailSender = $emailSender;
@@ -152,6 +157,7 @@ class Notification extends Action
         $this->invoiceRepository = $invoiceRepository;
         $this->searchCriteriaBuilder = $searchCriteriaBuilder;
         $this->scopeConfig = $scopeConfig;
+        $this->paymentMethodUtil = $paymentMethodUtil;
     }
 
     /**
@@ -192,12 +198,10 @@ class Notification extends Action
 
         /** @var Payment $payment */
         $payment = $order->getPayment();
-
-        $isMultiSafepay = $payment->getMethodInstance()->getConfigData('is_multisafepay');
         $gatewayCode = $payment->getMethodInstance()->getConfigData('gateway_code');
         $transactionType = $transaction->getPaymentDetails()->getType();
 
-        if ($isMultiSafepay && $transactionType !== $gatewayCode) {
+        if ($transactionType !== $gatewayCode && $this->paymentMethodUtil->isMultisafepayOrder($order)) {
             $payment->setMethod($this->setDifferentPaymentMethod($transactionType));
             $order->addCommentToStatusHistory(__('Payment method changed to ') . $transactionType);
         }
