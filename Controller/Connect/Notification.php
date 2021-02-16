@@ -184,25 +184,24 @@ class Notification extends Action
             return $this->getResponse()->setContent('ng');
         }
 
+        $orderId = $params['transactionid'];
+
+        /** @var Order $order */
+        $order = $this->orderFactory->create()->loadByIncrementId($orderId);
+
         try {
-            $multiSafepaySdk = $this->sdkFactory->get();
+            $transactionManager = $this->sdkFactory->create((int)$order->getStoreId())->get()->getTransactionManager();
         } catch (InvalidApiKeyException $invalidApiKeyException) {
             $this->logger->logInvalidApiKeyException($invalidApiKeyException);
             return $this->getResponse()->setContent('ng');
         }
 
-        $orderId = $params['transactionid'];
-
-        $transactionManager = $multiSafepaySdk->getTransactionManager();
         try {
             $transaction = $transactionManager->get($orderId);
         } catch (ApiException $e) {
             $this->logger->logGetRequestApiException($orderId, $e);
             return $this->getResponse()->setContent('ng');
         }
-
-        /** @var Order $order */
-        $order = $this->orderFactory->create()->loadByIncrementId($orderId);
 
         $this->emailSender->sendOrderConfirmationEmailAfterTransaction($order);
 

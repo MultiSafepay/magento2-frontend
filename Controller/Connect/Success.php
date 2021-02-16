@@ -136,8 +136,13 @@ class Success extends Action
             return $this->_redirect('checkout/cart');
         }
 
+        $orderId = $parameters['transactionid'];
+
+        /** @var OrderInterface $order */
+        $order = $this->orderFactory->create()->loadByIncrementId($orderId);
+
         try {
-            $multiSafepaySdk = $this->sdkFactory->get();
+            $multiSafepaySdk = $this->sdkFactory->create((int)$order->getStoreId())->get();
         } catch (InvalidApiKeyException $invalidApiKeyException) {
             $this->logger->logInvalidApiKeyException($invalidApiKeyException);
             return $this->_redirect('checkout/onepage/success?utm_nooverride=1');
@@ -145,17 +150,12 @@ class Success extends Action
 
         $transactionManager = $multiSafepaySdk->getTransactionManager();
 
-        $orderId = $parameters['transactionid'];
-
         try {
             $transaction = $transactionManager->get($orderId);
         } catch (ApiException $e) {
             $this->logger->logGetRequestApiException($orderId, $e);
             return $this->_redirect('checkout/onepage/success?utm_nooverride=1');
         }
-
-        /** @var OrderInterface $order */
-        $order = $this->orderFactory->create()->loadByIncrementId($orderId);
 
         $order->addCommentToStatusHistory('User redirected to the success page.');
 
