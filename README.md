@@ -31,6 +31,9 @@ The new MultiSafepay Magento 2 plugin consists of several modules:
 * [multisafepay-magento2-catalog-inventory](https://github.com/MultiSafepay/magento2-catalog-inventory) (Handles stock when MSI is disabled)
 * [multisafepay-magento2](https://github.com/MultiSafepay/magento2) (Meta package which installs all the above)
 
+For GraphQL support there is a separate module:
+* [multisafepay-magento2-graphql](https://github.com/MultiSafepay/magento2-graphql) (Extends and adds GraphQL queries and mutations)
+
 ## Usage
 This module is part of the MultiSafepay suite for Magento 2. 
 If you want to make use of MultiSafepay in your own shop with a traditional frontend (non-headless, install this package using the installation steps below.

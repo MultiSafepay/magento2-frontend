@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.1] - 2021-02-16
+### Fixed
+- Fixed wrong api key being used for MultiSafepay requests with a multi store setup
+- Fixed order status sometimes not going to processing after it has been invoiced
+
 ## [1.3.0] - 2021-01-26
 ### Added
 - Added function to restore quote when using back button on the MultiSafepay payment page
