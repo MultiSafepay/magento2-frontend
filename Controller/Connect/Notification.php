@@ -17,6 +17,7 @@ declare(strict_types=1);
 
 namespace MultiSafepay\ConnectFrontend\Controller\Connect;
 
+use Exception;
 use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
@@ -149,7 +150,7 @@ class Notification extends Action
         InvoiceRepositoryInterface $invoiceRepository,
         ScopeConfigInterface $scopeConfig,
         SearchCriteriaBuilder $searchCriteriaBuilder,
-        StatusResolver $statusResolver
+        StatusResolver $statusResolver,
         PaymentMethodUtil $paymentMethodUtil
     ) {
         parent::__construct($context);
@@ -173,7 +174,7 @@ class Notification extends Action
      * @inheritDoc
      * @throws LocalizedException
      * @throws ClientExceptionInterface
-     * @throws \Exception
+     * @throws Exception
      */
     public function execute()
     {
