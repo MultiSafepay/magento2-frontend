@@ -17,6 +17,7 @@ declare(strict_types=1);
 
 namespace MultiSafepay\ConnectFrontend\Controller\Connect;
 
+use Exception;
 use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
@@ -31,6 +32,7 @@ use Magento\Sales\Api\TransactionRepositoryInterface;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Payment;
 use Magento\Sales\Model\Order\Payment\Transaction as PaymentTransaction;
+use Magento\Sales\Model\Order\StatusResolver;
 use MultiSafepay\Api\Transactions\Transaction;
 use MultiSafepay\Api\Transactions\UpdateRequest;
 use MultiSafepay\ConnectCore\Factory\SdkFactory;
@@ -106,6 +108,11 @@ class Notification extends Action
     private $emailSender;
 
     /**
+     * @var StatusResolver
+     */
+    private $statusResolver;
+
+    /**
      * @var PaymentMethodUtil
      */
     private $paymentMethodUtil;
@@ -126,6 +133,7 @@ class Notification extends Action
      * @param InvoiceRepositoryInterface $invoiceRepository
      * @param ScopeConfigInterface $scopeConfig
      * @param SearchCriteriaBuilder $searchCriteriaBuilder
+     * @param StatusResolver $statusResolver
      * @param PaymentMethodUtil $paymentMethodUtil
      */
     public function __construct(
@@ -142,6 +150,7 @@ class Notification extends Action
         InvoiceRepositoryInterface $invoiceRepository,
         ScopeConfigInterface $scopeConfig,
         SearchCriteriaBuilder $searchCriteriaBuilder,
+        StatusResolver $statusResolver,
         PaymentMethodUtil $paymentMethodUtil
     ) {
         parent::__construct($context);
@@ -157,6 +166,7 @@ class Notification extends Action
         $this->invoiceRepository = $invoiceRepository;
         $this->searchCriteriaBuilder = $searchCriteriaBuilder;
         $this->scopeConfig = $scopeConfig;
+        $this->statusResolver = $statusResolver;
         $this->paymentMethodUtil = $paymentMethodUtil;
     }
 
@@ -164,7 +174,7 @@ class Notification extends Action
      * @inheritDoc
      * @throws LocalizedException
      * @throws ClientExceptionInterface
-     * @throws \Exception
+     * @throws Exception
      */
     public function execute()
     {
@@ -231,6 +241,7 @@ class Notification extends Action
                     $payment->setIsTransactionClosed(0);
                     $payment->registerCaptureNotification($order->getBaseTotalDue(), true);
                     $this->logger->info('(Order ID: ' . $orderId . ') Invoice created');
+                    $payment->setIsTransactionApproved(true);
                     $this->orderPaymentRepository->save($payment);
 
                     $paymentTransaction = $payment->addTransaction(PaymentTransaction::TYPE_CAPTURE, null, true);
@@ -241,6 +252,12 @@ class Notification extends Action
                     $paymentTransaction->setIsClosed(1);
 
                     $this->transactionRepository->save($paymentTransaction);
+
+                    // Set order processing
+                    $status = $this->statusResolver->getOrderStatusByState($order, Order::STATE_PROCESSING);
+                    $order->setState(Order::STATE_PROCESSING);
+                    $order->setStatus($status);
+
                     $this->orderRepository->save($order);
                 }
 
