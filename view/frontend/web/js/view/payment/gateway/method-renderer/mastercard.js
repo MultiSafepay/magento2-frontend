@@ -20,6 +20,7 @@ define(
         'Magento_Checkout/js/view/payment/default',
         'Magento_Checkout/js/checkout-data',
         'Magento_Checkout/js/action/redirect-on-success',
+        'Magento_Vault/js/view/payment/vault-enabler',
         'mage/url'
     ],
 
@@ -29,6 +30,7 @@ define(
      * @param Component
      * @param checkoutData
      * @param redirectOnSuccessAction
+     * @param VaultEnabler
      * @param url
      * @returns {*}
      */
@@ -37,6 +39,7 @@ define(
         Component,
         checkoutData,
         redirectOnSuccessAction,
+        VaultEnabler,
         url
     ) {
         const config = window.checkoutConfig.payment.multisafepay_mastercard;
@@ -44,8 +47,50 @@ define(
 
         return Component.extend({
             defaults: {
-                template: 'MultiSafepay_ConnectFrontend/payment/generic',
+                template: 'MultiSafepay_ConnectFrontend/payment/gateway/creditcard',
                 transactionResult: ''
+            },
+
+            initialize: function () {
+                self = this;
+
+                this._super();
+
+                this.vaultEnabler = new VaultEnabler();
+                this.vaultEnabler.setPaymentCode(this.getVaultCode());
+
+                return self;
+            },
+
+            /**
+             * @returns {Object}
+             */
+            getData: function () {
+                let data = {
+                    'method': this.getCode(),
+                    'additional_data': {}
+                };
+
+                data['additional_data'] = _.extend(data['additional_data'], this.additionalData);
+                this.vaultEnabler.visitAdditionalData(data);
+
+                return data;
+            },
+
+            /**
+             * @returns {Boolean}
+             */
+            isVaultEnabled: function () {
+                return this.vaultEnabler.isVaultEnabled();
+            },
+
+            /**
+             * Returns vault code.
+             *
+             * @returns {String}
+             */
+            getVaultCode: function () {
+                return window.checkoutConfig.payment[this.getCode()].vaultCode;
             },
 
             initObservable: function () {

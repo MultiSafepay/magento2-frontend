@@ -35,9 +35,11 @@ use Magento\Sales\Model\Order\Payment\Transaction as PaymentTransaction;
 use Magento\Sales\Model\Order\StatusResolver;
 use MultiSafepay\Api\Transactions\Transaction;
 use MultiSafepay\Api\Transactions\UpdateRequest;
+use MultiSafepay\ConnectCore\Api\RecurringDetailsInterface;
 use MultiSafepay\ConnectCore\Factory\SdkFactory;
 use MultiSafepay\ConnectCore\Logger\Logger;
 use MultiSafepay\ConnectCore\Model\SecondChance;
+use MultiSafepay\ConnectCore\Model\Vault;
 use MultiSafepay\ConnectCore\Service\EmailSender;
 use MultiSafepay\ConnectCore\Util\PaymentMethodUtil;
 use MultiSafepay\Exception\ApiException;
@@ -108,6 +110,11 @@ class Notification extends Action
     private $emailSender;
 
     /**
+     * @var Vault
+     */
+    private $vault;
+
+    /**
      * @var StatusResolver
      */
     private $statusResolver;
@@ -133,6 +140,7 @@ class Notification extends Action
      * @param InvoiceRepositoryInterface $invoiceRepository
      * @param ScopeConfigInterface $scopeConfig
      * @param SearchCriteriaBuilder $searchCriteriaBuilder
+     * @param Vault $vault
      * @param StatusResolver $statusResolver
      * @param PaymentMethodUtil $paymentMethodUtil
      */
@@ -150,6 +158,7 @@ class Notification extends Action
         InvoiceRepositoryInterface $invoiceRepository,
         ScopeConfigInterface $scopeConfig,
         SearchCriteriaBuilder $searchCriteriaBuilder,
+        Vault $vault,
         StatusResolver $statusResolver,
         PaymentMethodUtil $paymentMethodUtil
     ) {
@@ -166,6 +175,7 @@ class Notification extends Action
         $this->invoiceRepository = $invoiceRepository;
         $this->searchCriteriaBuilder = $searchCriteriaBuilder;
         $this->scopeConfig = $scopeConfig;
+        $this->vault = $vault;
         $this->statusResolver = $statusResolver;
         $this->paymentMethodUtil = $paymentMethodUtil;
     }
@@ -207,8 +217,19 @@ class Notification extends Action
 
         /** @var Payment $payment */
         $payment = $order->getPayment();
+
+        $paymentDetails = $transaction->getPaymentDetails();
+        $transactionType = $paymentDetails->getType();
+
+        //Check if Vault needs to be initialized
+        $this->vault->initialize($payment, [
+            RecurringDetailsInterface::RECURRING_ID => $paymentDetails->getRecurringId(),
+            RecurringDetailsInterface::TYPE => $transactionType,
+            RecurringDetailsInterface::EXPIRATION_DATE => $paymentDetails->getCardExpiryDate(),
+            RecurringDetailsInterface::CARD_LAST4 => $paymentDetails->getLast4()
+        ]);
+
         $gatewayCode = $payment->getMethodInstance()->getConfigData('gateway_code');
-        $transactionType = $transaction->getPaymentDetails()->getType();
 
         if ($transactionType !== $gatewayCode && $this->paymentMethodUtil->isMultisafepayOrder($order)) {
             $payment->setMethod($this->setDifferentPaymentMethod($transactionType));
@@ -332,7 +353,8 @@ class Notification extends Action
         $methodList = $this->scopeConfig->getValue('payment');
 
         foreach ($methodList as $code => $method) {
-            if (isset($method['gateway_code']) && $method['gateway_code'] === $transactionType) {
+            if (isset($method['gateway_code']) && $method['gateway_code'] === $transactionType
+                && strpos($code, '_recurring') === false) {
                 return (string) $code;
             }
         }
