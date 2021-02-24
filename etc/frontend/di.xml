@@ -5,6 +5,10 @@
         <plugin name="add_multisafepay_config_providers_on_checkout" type="MultiSafepay\ConnectFrontend\Plugin\Checkout\Model\CompositeConfigProvider"/>
     </type>
 
+    <type name="Magento\Checkout\Block\Checkout\LayoutProcessor">
+        <plugin name="add_multisafepay_generic_on_checkout" type="MultiSafepay\ConnectFrontend\Plugin\Checkout\Block\Checkout\LayoutProcessorPlugin"/>
+    </type>
+
     <type name="Magento\Vault\Model\Ui\TokensConfigProvider">
         <arguments>
             <argument name="tokenUiComponentProviders" xsi:type="array">

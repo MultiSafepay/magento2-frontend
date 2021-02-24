@@ -39,32 +39,24 @@ define(
         redirectOnSuccessAction,
         url
     ) {
-        const config = window.checkoutConfig.payment.multisafepay_genericgateway;
         'use strict';
 
         return Component.extend({
             defaults: {
                 template: 'MultiSafepay_ConnectFrontend/payment/gateway/genericgateway',
-                transactionResult: ''
+                transactionResult: '',
+                paymentConfig: ''
             },
 
             initObservable: function () {
                 this._super();
+                this.paymentConfig = window.checkoutConfig.payment[this.getCode()];
 
-                if (!checkoutData.getSelectedPaymentMethod() && config.is_preselected) {
+                if (!checkoutData.getSelectedPaymentMethod() && this.paymentConfig.is_preselected) {
                     this.selectPaymentMethod();
                 }
 
                 return this;
-            },
-
-            /**
-             * Get the gateway code
-             *
-             * @returns {string}
-             */
-            getCode: function () {
-                return 'multisafepay_genericgateway';
             },
 
             /**
@@ -73,7 +65,7 @@ define(
              * @returns {string}
              */
             getImage: function () {
-                return config.image;
+                return this.paymentConfig.image;
             },
 
 
@@ -83,7 +75,7 @@ define(
              * @returns {boolean}
              */
             isImageAvailable: function () {
-                return !!config.image;
+                return !!this.paymentConfig.image;
 
             },
 

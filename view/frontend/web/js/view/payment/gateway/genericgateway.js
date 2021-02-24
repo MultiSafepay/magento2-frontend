@@ -16,6 +16,7 @@
 /*global define*/
 define(
     [
+        'jquery',
         'uiComponent',
         'Magento_Checkout/js/model/payment/renderer-list'
     ],
@@ -27,16 +28,25 @@ define(
      * @returns {*}
      */
     function (
+        $,
         Component,
         rendererList
     ) {
         'use strict';
-        rendererList.push(
-            {
-                type: 'multisafepay_genericgateway',
-                component: 'MultiSafepay_ConnectFrontend/js/view/payment/gateway/method-renderer/genericgateway'
+        var currentPayments = window.checkoutConfig.payment;
+
+        $.each(currentPayments, function(key, value) {
+            if (key.indexOf("multisafepay_genericgateway") !== -1) {
+                rendererList.push(
+                    {
+                        type: key,
+                        component: 'MultiSafepay_ConnectFrontend/js/view/payment/gateway/method-renderer/genericgateway',
+                        config: value
+                    }
+                );
             }
-        );
+        });
+
         /** Add view logic here if needed */
         return Component.extend({});
     }
