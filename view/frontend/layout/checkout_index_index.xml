@@ -18,264 +18,104 @@
                                                             <!-- merge payment method renders here -->
                                                             <item name="children" xsi:type="array">
                                                                 <item name="multisafepay" xsi:type="array">
-                                                                    <item name="component" xsi:type="string">MultiSafepay_ConnectFrontend/js/view/payment/gateway/multisafepay</item>
+                                                                    <item name="component" xsi:type="string">MultiSafepay_ConnectFrontend/js/view/payment/gateway/method-renderer</item>
                                                                     <item name="methods" xsi:type="array">
                                                                         <item name="multisafepay" xsi:type="array">
                                                                             <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
                                                                         </item>
-                                                                    </item>
-                                                                </item>
-                                                                <item name="multisafepay_ideal" xsi:type="array">
-                                                                    <item name="component" xsi:type="string">MultiSafepay_ConnectFrontend/js/view/payment/gateway/ideal</item>
-                                                                    <item name="methods" xsi:type="array">
                                                                         <item name="multisafepay_ideal" xsi:type="array">
                                                                             <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
                                                                         </item>
-                                                                    </item>
-                                                                </item>
-                                                                <item name="multisafepay_payafter" xsi:type="array">
-                                                                    <item name="component" xsi:type="string">MultiSafepay_ConnectFrontend/js/view/payment/gateway/payafter</item>
-                                                                    <item name="methods" xsi:type="array">
                                                                         <item name="multisafepay_payafter" xsi:type="array">
                                                                             <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
                                                                         </item>
-                                                                    </item>
-                                                                </item>
-                                                                <item name="multisafepay_afterpay" xsi:type="array">
-                                                                    <item name="component" xsi:type="string">MultiSafepay_ConnectFrontend/js/view/payment/gateway/afterpay</item>
-                                                                    <item name="methods" xsi:type="array">
                                                                         <item name="multisafepay_afterpay" xsi:type="array">
                                                                             <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
                                                                         </item>
-                                                                    </item>
-                                                                </item>
-                                                                <item name="multisafepay_klarna" xsi:type="array">
-                                                                    <item name="component" xsi:type="string">MultiSafepay_ConnectFrontend/js/view/payment/gateway/klarna</item>
-                                                                    <item name="methods" xsi:type="array">
                                                                         <item name="multisafepay_klarna" xsi:type="array">
                                                                             <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
                                                                         </item>
-                                                                    </item>
-                                                                </item>
-                                                                <item name="multisafepay_bancontact" xsi:type="array">
-                                                                    <item name="component" xsi:type="string">MultiSafepay_ConnectFrontend/js/view/payment/gateway/bancontact</item>
-                                                                    <item name="methods" xsi:type="array">
                                                                         <item name="multisafepay_bancontact" xsi:type="array">
                                                                             <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
                                                                         </item>
-                                                                    </item>
-                                                                </item>
-                                                                <item name="multisafepay_amex" xsi:type="array">
-                                                                    <item name="component" xsi:type="string">MultiSafepay_ConnectFrontend/js/view/payment/gateway/amex</item>
-                                                                    <item name="methods" xsi:type="array">
                                                                         <item name="multisafepay_amex" xsi:type="array">
                                                                             <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
                                                                         </item>
-                                                                    </item>
-                                                                </item>
-                                                                <item name="multisafepay_applepay" xsi:type="array">
-                                                                    <item name="component" xsi:type="string">MultiSafepay_ConnectFrontend/js/view/payment/gateway/applepay</item>
-                                                                    <item name="methods" xsi:type="array">
                                                                         <item name="multisafepay_applepay" xsi:type="array">
                                                                             <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
                                                                         </item>
-                                                                    </item>
-                                                                </item>
-                                                                <item name="multisafepay_belfius" xsi:type="array">
-                                                                    <item name="component" xsi:type="string">MultiSafepay_ConnectFrontend/js/view/payment/gateway/belfius</item>
-                                                                    <item name="methods" xsi:type="array">
                                                                         <item name="multisafepay_belfius" xsi:type="array">
                                                                             <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
                                                                         </item>
-                                                                    </item>
-                                                                </item>
-                                                                <item name="multisafepay_creditcard" xsi:type="array">
-                                                                    <item name="component" xsi:type="string">MultiSafepay_ConnectFrontend/js/view/payment/gateway/creditcard</item>
-                                                                    <item name="methods" xsi:type="array">
                                                                         <item name="multisafepay_creditcard" xsi:type="array">
                                                                             <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
                                                                         </item>
-                                                                    </item>
-                                                                </item>
-                                                                <item name="multisafepay_dotpay" xsi:type="array">
-                                                                    <item name="component" xsi:type="string">MultiSafepay_ConnectFrontend/js/view/payment/gateway/dotpay</item>
-                                                                    <item name="methods" xsi:type="array">
                                                                         <item name="multisafepay_dotpay" xsi:type="array">
                                                                             <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
                                                                         </item>
-                                                                    </item>
-                                                                </item>
-                                                                <item name="multisafepay_eps" xsi:type="array">
-                                                                    <item name="component" xsi:type="string">MultiSafepay_ConnectFrontend/js/view/payment/gateway/eps</item>
-                                                                    <item name="methods" xsi:type="array">
                                                                         <item name="multisafepay_eps" xsi:type="array">
                                                                             <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
                                                                         </item>
-                                                                    </item>
-                                                                </item>
-                                                                <item name="multisafepay_giropay" xsi:type="array">
-                                                                    <item name="component" xsi:type="string">MultiSafepay_ConnectFrontend/js/view/payment/gateway/giropay</item>
-                                                                    <item name="methods" xsi:type="array">
                                                                         <item name="multisafepay_giropay" xsi:type="array">
                                                                             <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
                                                                         </item>
-                                                                    </item>
-                                                                </item>
-                                                                <item name="multisafepay_idealqr" xsi:type="array">
-                                                                    <item name="component" xsi:type="string">MultiSafepay_ConnectFrontend/js/view/payment/gateway/idealqr</item>
-                                                                    <item name="methods" xsi:type="array">
                                                                         <item name="multisafepay_idealqr" xsi:type="array">
                                                                             <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
                                                                         </item>
-                                                                    </item>
-                                                                </item>
-                                                                <item name="multisafepay_maestro" xsi:type="array">
-                                                                    <item name="component" xsi:type="string">MultiSafepay_ConnectFrontend/js/view/payment/gateway/maestro</item>
-                                                                    <item name="methods" xsi:type="array">
                                                                         <item name="multisafepay_maestro" xsi:type="array">
                                                                             <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
                                                                         </item>
-                                                                    </item>
-                                                                </item>
-                                                                <item name="multisafepay_mastercard" xsi:type="array">
-                                                                    <item name="component" xsi:type="string">MultiSafepay_ConnectFrontend/js/view/payment/gateway/mastercard</item>
-                                                                    <item name="methods" xsi:type="array">
                                                                         <item name="multisafepay_mastercard" xsi:type="array">
                                                                             <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
                                                                         </item>
-                                                                    </item>
-                                                                </item>
-                                                                <item name="multisafepay_paysafecard" xsi:type="array">
-                                                                    <item name="component" xsi:type="string">MultiSafepay_ConnectFrontend/js/view/payment/gateway/paysafecard</item>
-                                                                    <item name="methods" xsi:type="array">
                                                                         <item name="multisafepay_paysafecard" xsi:type="array">
                                                                             <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
                                                                         </item>
-                                                                    </item>
-                                                                </item>
-                                                                <item name="multisafepay_sofort" xsi:type="array">
-                                                                    <item name="component" xsi:type="string">MultiSafepay_ConnectFrontend/js/view/payment/gateway/sofort</item>
-                                                                    <item name="methods" xsi:type="array">
                                                                         <item name="multisafepay_sofort" xsi:type="array">
                                                                             <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
                                                                         </item>
-                                                                    </item>
-                                                                </item>
-                                                                <item name="multisafepay_trustpay" xsi:type="array">
-                                                                    <item name="component" xsi:type="string">MultiSafepay_ConnectFrontend/js/view/payment/gateway/trustpay</item>
-                                                                    <item name="methods" xsi:type="array">
                                                                         <item name="multisafepay_trustpay" xsi:type="array">
                                                                             <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
                                                                         </item>
-                                                                    </item>
-                                                                </item>
-                                                                <item name="multisafepay_visa" xsi:type="array">
-                                                                    <item name="component" xsi:type="string">MultiSafepay_ConnectFrontend/js/view/payment/gateway/visa</item>
-                                                                    <item name="methods" xsi:type="array">
                                                                         <item name="multisafepay_visa" xsi:type="array">
                                                                             <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
                                                                         </item>
-                                                                    </item>
-                                                                </item>
-                                                                <item name="multisafepay_alipay" xsi:type="array">
-                                                                    <item name="component" xsi:type="string">MultiSafepay_ConnectFrontend/js/view/payment/gateway/alipay</item>
-                                                                    <item name="methods" xsi:type="array">
                                                                         <item name="multisafepay_alipay" xsi:type="array">
                                                                             <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
                                                                         </item>
-                                                                    </item>
-                                                                </item>
-                                                                <item name="multisafepay_directbanktransfer" xsi:type="array">
-                                                                    <item name="component" xsi:type="string">MultiSafepay_ConnectFrontend/js/view/payment/gateway/directbanktransfer</item>
-                                                                    <item name="methods" xsi:type="array">
                                                                         <item name="multisafepay_directbanktransfer" xsi:type="array">
                                                                             <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
                                                                         </item>
-                                                                    </item>
-                                                                </item>
-                                                                <item name="multisafepay_banktransfer" xsi:type="array">
-                                                                    <item name="component" xsi:type="string">MultiSafepay_ConnectFrontend/js/view/payment/gateway/banktransfer</item>
-                                                                    <item name="methods" xsi:type="array">
                                                                         <item name="multisafepay_banktransfer" xsi:type="array">
                                                                             <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
                                                                         </item>
-                                                                    </item>
-                                                                </item>
-                                                                <item name="multisafepay_santander" xsi:type="array">
-                                                                    <item name="component" xsi:type="string">MultiSafepay_ConnectFrontend/js/view/payment/gateway/santander</item>
-                                                                    <item name="methods" xsi:type="array">
                                                                         <item name="multisafepay_santander" xsi:type="array">
                                                                             <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
                                                                         </item>
-                                                                    </item>
-                                                                </item>
-                                                                <item name="multisafepay_cbc" xsi:type="array">
-                                                                    <item name="component" xsi:type="string">MultiSafepay_ConnectFrontend/js/view/payment/gateway/cbc</item>
-                                                                    <item name="methods" xsi:type="array">
                                                                         <item name="multisafepay_cbc" xsi:type="array">
                                                                             <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
                                                                         </item>
-                                                                    </item>
-                                                                </item>
-                                                                <item name="multisafepay_directdebit" xsi:type="array">
-                                                                    <item name="component" xsi:type="string">MultiSafepay_ConnectFrontend/js/view/payment/gateway/directdebit</item>
-                                                                    <item name="methods" xsi:type="array">
                                                                         <item name="multisafepay_directdebit" xsi:type="array">
                                                                             <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
                                                                         </item>
-                                                                    </item>
-                                                                </item>
-                                                                <item name="multisafepay_einvoicing" xsi:type="array">
-                                                                    <item name="component" xsi:type="string">MultiSafepay_ConnectFrontend/js/view/payment/gateway/einvoicing</item>
-                                                                    <item name="methods" xsi:type="array">
                                                                         <item name="multisafepay_einvoicing" xsi:type="array">
                                                                             <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
                                                                         </item>
-                                                                    </item>
-                                                                </item>
-                                                                <item name="multisafepay_inghomepay" xsi:type="array">
-                                                                    <item name="component" xsi:type="string">MultiSafepay_ConnectFrontend/js/view/payment/gateway/inghomepay</item>
-                                                                    <item name="methods" xsi:type="array">
                                                                         <item name="multisafepay_inghomepay" xsi:type="array">
                                                                             <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
                                                                         </item>
-                                                                    </item>
-                                                                </item>
-                                                                <item name="multisafepay_kbc" xsi:type="array">
-                                                                    <item name="component" xsi:type="string">MultiSafepay_ConnectFrontend/js/view/payment/gateway/kbc</item>
-                                                                    <item name="methods" xsi:type="array">
                                                                         <item name="multisafepay_kbc" xsi:type="array">
                                                                             <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
                                                                         </item>
-                                                                    </item>
-                                                                </item>
-                                                                <item name="multisafepay_paypal" xsi:type="array">
-                                                                    <item name="component" xsi:type="string">MultiSafepay_ConnectFrontend/js/view/payment/gateway/paypal</item>
-                                                                    <item name="methods" xsi:type="array">
                                                                         <item name="multisafepay_paypal" xsi:type="array">
                                                                             <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
                                                                         </item>
-                                                                    </item>
-                                                                </item>
-                                                                <item name="multisafepay_trustly" xsi:type="array">
-                                                                    <item name="component" xsi:type="string">MultiSafepay_ConnectFrontend/js/view/payment/gateway/trustly</item>
-                                                                    <item name="methods" xsi:type="array">
                                                                         <item name="multisafepay_trustly" xsi:type="array">
                                                                             <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
                                                                         </item>
-                                                                    </item>
-                                                                </item>
-                                                                <item name="multisafepay_in3" xsi:type="array">
-                                                                    <item name="component" xsi:type="string">MultiSafepay_ConnectFrontend/js/view/payment/gateway/in3</item>
-                                                                    <item name="methods" xsi:type="array">
                                                                         <item name="multisafepay_in3" xsi:type="array">
                                                                             <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
                                                                         </item>
-                                                                    </item>
-                                                                </item>
-                                                                <item name="multisafepay_genericgateway" xsi:type="array">
-                                                                    <item name="component" xsi:type="string">MultiSafepay_ConnectFrontend/js/view/payment/gateway/genericgateway</item>
-                                                                    <item name="methods" xsi:type="array">
                                                                         <item name="multisafepay_genericgateway" xsi:type="array">
                                                                             <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
                                                                         </item>
