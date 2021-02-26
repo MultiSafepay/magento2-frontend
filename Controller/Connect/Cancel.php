@@ -20,8 +20,8 @@ namespace MultiSafepay\ConnectFrontend\Controller\Connect;
 use Magento\Checkout\Model\Session;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
-use Magento\Framework\App\RequestInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
+use MultiSafepay\ConnectCore\Util\CustomReturnUrlUtil;
 use MultiSafepay\ConnectFrontend\Validator\RequestValidator;
 
 class Cancel extends Action
@@ -42,22 +42,30 @@ class Cancel extends Action
     private $requestValidator;
 
     /**
+     * @var CustomReturnUrlUtil
+     */
+    private $customReturnUrlUtil;
+
+    /**
      * Cancel constructor.
      *
      * @param OrderRepositoryInterface $orderRepository
      * @param RequestValidator $requestValidator
      * @param Session $checkoutSession
      * @param Context $context
+     * @param CustomReturnUrlUtil $customReturnUrlUtil
      */
     public function __construct(
         OrderRepositoryInterface $orderRepository,
         RequestValidator $requestValidator,
         Session $checkoutSession,
-        Context $context
+        Context $context,
+        CustomReturnUrlUtil $customReturnUrlUtil
     ) {
         $this->orderRepository = $orderRepository;
         $this->checkoutSession = $checkoutSession;
         $this->requestValidator = $requestValidator;
+        $this->customReturnUrlUtil = $customReturnUrlUtil;
         parent::__construct($context);
     }
 
@@ -69,7 +77,13 @@ class Cancel extends Action
         $parameters = $this->getRequest()->getParams();
 
         if (!$this->requestValidator->validate($parameters)) {
-            return $this->_redirect('checkout/cart');
+            if ($customReturnUrl = $this->customReturnUrlUtil->getCustomReturnUrlByType(
+                $this->checkoutSession->getLastRealOrder(), $parameters
+            )) {
+                return $this->resultRedirectFactory->create()->setUrl($customReturnUrl);
+            } else {
+                return $this->_redirect('checkout/cart');
+            }
         }
 
         $orderId = $parameters['transactionid'];
@@ -82,8 +96,13 @@ class Cancel extends Action
         $order->addCommentToStatusHistory(__('The order has been canceled'));
         $this->orderRepository->save($order);
 
-        $msg = __('The transaction was canceled or declined and the order was closed, please try again.');
-        $this->messageManager->addErrorMessage($msg);
-        return $this->_redirect('checkout/cart');
+        if ($customReturnUrl = $this->customReturnUrlUtil->getCustomReturnUrlByType($order, $parameters)) {
+            return $this->resultRedirectFactory->create()->setUrl($customReturnUrl);
+        } else {
+            $msg = __('The transaction was canceled or declined and the order was closed, please try again.');
+            $this->messageManager->addErrorMessage($msg);
+
+            return $this->_redirect('checkout/cart');
+        }
     }
 }
