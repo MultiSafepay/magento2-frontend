@@ -33,6 +33,7 @@ define(
         'use strict';
 
         let gatewayPath = 'MultiSafepay_ConnectFrontend/js/view/payment/gateway/method-renderer/';
+        let giftcardPath = 'MultiSafepay_ConnectFrontend/js/view/payment/giftcard/method-renderer/';
 
         rendererList.push(
             {type: 'multisafepay_afterpay', component: gatewayPath + 'afterpay'},
@@ -67,7 +68,27 @@ define(
             {type: 'multisafepay_sofort', component: gatewayPath + 'sofort'},
             {type: 'multisafepay_trustly', component: gatewayPath + 'trustly'},
             {type: 'multisafepay_trustpay', component: gatewayPath + 'trustpay'},
-            {type: 'multisafepay_visa', component: 'visa'},
+            {type: 'multisafepay_visa', component: gatewayPath + 'trustpay'},
+            {type: 'multisafepay_babygiftcard', component: giftcardPath + 'babygiftcard'},
+            {type: 'multisafepay_beautyandwellness', component: giftcardPath + 'beautyandwellness'},
+            {type: 'multisafepay_boekenbon', component: giftcardPath + 'boekenbon'},
+            {type: 'multisafepay_fashioncheque', component: giftcardPath + 'fashioncheque'},
+            {type: 'multisafepay_fashiongiftcard', component: giftcardPath + 'fashiongiftcard'},
+            {type: 'multisafepay_fietsenbon', component: giftcardPath + 'fietsenbon'},
+            {type: 'multisafepay_gezondheidsbon', component: giftcardPath + 'gezondheidsbon'},
+            {type: 'multisafepay_givacard', component: giftcardPath + 'givacard'},
+            {type: 'multisafepay_good4fun', component: giftcardPath + 'good4fun'},
+            {type: 'multisafepay_goodcard', component: giftcardPath + 'goodcard'},
+            {type: 'multisafepay_nationaletuinbon', component: giftcardPath + 'nationaletuinbon'},
+            {type: 'multisafepay_parfumcadeaukaart', component: giftcardPath + 'parfumcadeaukaart'},
+            {type: 'multisafepay_podiumcadeaukaart', component: giftcardPath + 'podiumcadeaukaart'},
+            {type: 'multisafepay_sportenfit', component: giftcardPath + 'sportenfit'},
+            {type: 'multisafepay_vvvcadeaukaart', component: giftcardPath + 'vvvcadeaukaart'},
+            {type: 'multisafepay_webshopgiftcard', component: giftcardPath + 'webshopgiftcard'},
+            {type: 'multisafepay_wellnessgiftcard', component: giftcardPath + 'wellnessgiftcard'},
+            {type: 'multisafepay_wijncadeau', component: giftcardPath + 'wijncadeau'},
+            {type: 'multisafepay_winkelcheque', component: giftcardPath + 'winkelcheque'},
+            {type: 'multisafepay_yourgift', component: giftcardPath + 'yourgift'},
         );
 
         /** Add view logic here if needed */

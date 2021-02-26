@@ -18,7 +18,7 @@
                                                             <!-- merge payment method renders here -->
                                                             <item name="children" xsi:type="array">
                                                                 <item name="multisafepay" xsi:type="array">
-                                                                    <item name="component" xsi:type="string">MultiSafepay_ConnectFrontend/js/view/payment/gateway/method-renderer</item>
+                                                                    <item name="component" xsi:type="string">MultiSafepay_ConnectFrontend/js/view/payment/method-renderer</item>
                                                                     <item name="methods" xsi:type="array">
                                                                         <item name="multisafepay" xsi:type="array">
                                                                             <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
@@ -119,163 +119,63 @@
                                                                         <item name="multisafepay_genericgateway" xsi:type="array">
                                                                             <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
                                                                         </item>
-                                                                    </item>
-                                                                </item>
-                                                                <item name="multisafepay_babygiftcard" xsi:type="array">
-                                                                    <item name="component" xsi:type="string">MultiSafepay_ConnectFrontend/js/view/payment/giftcard/babygiftcard</item>
-                                                                    <item name="methods" xsi:type="array">
                                                                         <item name="multisafepay_babygiftcard" xsi:type="array">
                                                                             <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
                                                                         </item>
-                                                                    </item>
-                                                                </item>
-                                                                <item name="multisafepay_beautyandwellness" xsi:type="array">
-                                                                    <item name="component" xsi:type="string">MultiSafepay_ConnectFrontend/js/view/payment/giftcard/beautyandwellness</item>
-                                                                    <item name="methods" xsi:type="array">
                                                                         <item name="multisafepay_beautyandwellness" xsi:type="array">
                                                                             <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
                                                                         </item>
-                                                                    </item>
-                                                                </item>
-                                                                <item name="multisafepay_boekenbon" xsi:type="array">
-                                                                    <item name="component" xsi:type="string">MultiSafepay_ConnectFrontend/js/view/payment/giftcard/boekenbon</item>
-                                                                    <item name="methods" xsi:type="array">
                                                                         <item name="multisafepay_boekenbon" xsi:type="array">
                                                                             <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
                                                                         </item>
-                                                                    </item>
-                                                                </item>
-                                                                <item name="multisafepay_fashioncheque" xsi:type="array">
-                                                                    <item name="component" xsi:type="string">MultiSafepay_ConnectFrontend/js/view/payment/giftcard/fashioncheque</item>
-                                                                    <item name="methods" xsi:type="array">
                                                                         <item name="multisafepay_fashioncheque" xsi:type="array">
                                                                             <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
                                                                         </item>
-                                                                    </item>
-                                                                </item>
-                                                                <item name="multisafepay_fashiongiftcard" xsi:type="array">
-                                                                    <item name="component" xsi:type="string">MultiSafepay_ConnectFrontend/js/view/payment/giftcard/fashiongiftcard</item>
-                                                                    <item name="methods" xsi:type="array">
                                                                         <item name="multisafepay_fashiongiftcard" xsi:type="array">
                                                                             <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
                                                                         </item>
-                                                                    </item>
-                                                                </item>
-                                                                <item name="multisafepay_fietsenbon" xsi:type="array">
-                                                                    <item name="component" xsi:type="string">MultiSafepay_ConnectFrontend/js/view/payment/giftcard/fietsenbon</item>
-                                                                    <item name="methods" xsi:type="array">
                                                                         <item name="multisafepay_fietsenbon" xsi:type="array">
                                                                             <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
                                                                         </item>
-                                                                    </item>
-                                                                </item>
-                                                                <item name="multisafepay_gezondheidsbon" xsi:type="array">
-                                                                    <item name="component" xsi:type="string">MultiSafepay_ConnectFrontend/js/view/payment/giftcard/gezondheidsbon</item>
-                                                                    <item name="methods" xsi:type="array">
                                                                         <item name="multisafepay_gezondheidsbon" xsi:type="array">
                                                                             <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
                                                                         </item>
-                                                                    </item>
-                                                                </item>
-                                                                <item name="multisafepay_givacard" xsi:type="array">
-                                                                    <item name="component" xsi:type="string">MultiSafepay_ConnectFrontend/js/view/payment/giftcard/givacard</item>
-                                                                    <item name="methods" xsi:type="array">
                                                                         <item name="multisafepay_givacard" xsi:type="array">
                                                                             <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
                                                                         </item>
-                                                                    </item>
-                                                                </item>
-                                                                <item name="multisafepay_good4fun" xsi:type="array">
-                                                                    <item name="component" xsi:type="string">MultiSafepay_ConnectFrontend/js/view/payment/giftcard/good4fun</item>
-                                                                    <item name="methods" xsi:type="array">
                                                                         <item name="multisafepay_good4fun" xsi:type="array">
                                                                             <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
                                                                         </item>
-                                                                    </item>
-                                                                </item>
-                                                                <item name="multisafepay_goodcard" xsi:type="array">
-                                                                    <item name="component" xsi:type="string">MultiSafepay_ConnectFrontend/js/view/payment/giftcard/goodcard</item>
-                                                                    <item name="methods" xsi:type="array">
                                                                         <item name="multisafepay_goodcard" xsi:type="array">
                                                                             <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
                                                                         </item>
-                                                                    </item>
-                                                                </item>
-                                                                <item name="multisafepay_nationaletuinbon" xsi:type="array">
-                                                                    <item name="component" xsi:type="string">MultiSafepay_ConnectFrontend/js/view/payment/giftcard/nationaletuinbon</item>
-                                                                    <item name="methods" xsi:type="array">
                                                                         <item name="multisafepay_nationaletuinbon" xsi:type="array">
                                                                             <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
                                                                         </item>
-                                                                    </item>
-                                                                </item>
-                                                                <item name="multisafepay_parfumcadeaukaart" xsi:type="array">
-                                                                    <item name="component" xsi:type="string">MultiSafepay_ConnectFrontend/js/view/payment/giftcard/parfumcadeaukaart</item>
-                                                                    <item name="methods" xsi:type="array">
                                                                         <item name="multisafepay_parfumcadeaukaart" xsi:type="array">
                                                                             <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
                                                                         </item>
-                                                                    </item>
-                                                                </item>
-                                                                <item name="multisafepay_podiumcadeaukaart" xsi:type="array">
-                                                                    <item name="component" xsi:type="string">MultiSafepay_ConnectFrontend/js/view/payment/giftcard/podiumcadeaukaart</item>
-                                                                    <item name="methods" xsi:type="array">
                                                                         <item name="multisafepay_podiumcadeaukaart" xsi:type="array">
                                                                             <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
                                                                         </item>
-                                                                    </item>
-                                                                </item>
-                                                                <item name="multisafepay_sportenfit" xsi:type="array">
-                                                                    <item name="component" xsi:type="string">MultiSafepay_ConnectFrontend/js/view/payment/giftcard/sportenfit</item>
-                                                                    <item name="methods" xsi:type="array">
                                                                         <item name="multisafepay_sportenfit" xsi:type="array">
                                                                             <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
                                                                         </item>
-                                                                    </item>
-                                                                </item>
-                                                                <item name="multisafepay_vvvcadeaukaart" xsi:type="array">
-                                                                    <item name="component" xsi:type="string">MultiSafepay_ConnectFrontend/js/view/payment/giftcard/vvvcadeaukaart</item>
-                                                                    <item name="methods" xsi:type="array">
                                                                         <item name="multisafepay_vvvcadeaukaart" xsi:type="array">
                                                                             <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
                                                                         </item>
-                                                                    </item>
-                                                                </item>
-                                                                <item name="multisafepay_webshopgiftcard" xsi:type="array">
-                                                                    <item name="component" xsi:type="string">MultiSafepay_ConnectFrontend/js/view/payment/giftcard/webshopgiftcard</item>
-                                                                    <item name="methods" xsi:type="array">
                                                                         <item name="multisafepay_webshopgiftcard" xsi:type="array">
                                                                             <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
                                                                         </item>
-                                                                    </item>
-                                                                </item>
-                                                                <item name="multisafepay_wellnessgiftcard" xsi:type="array">
-                                                                    <item name="component" xsi:type="string">MultiSafepay_ConnectFrontend/js/view/payment/giftcard/wellnessgiftcard</item>
-                                                                    <item name="methods" xsi:type="array">
                                                                         <item name="multisafepay_wellnessgiftcard" xsi:type="array">
                                                                             <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
                                                                         </item>
-                                                                    </item>
-                                                                </item>
-                                                                <item name="multisafepay_wijncadeau" xsi:type="array">
-                                                                    <item name="component" xsi:type="string">MultiSafepay_ConnectFrontend/js/view/payment/giftcard/wijncadeau</item>
-                                                                    <item name="methods" xsi:type="array">
                                                                         <item name="multisafepay_wijncadeau" xsi:type="array">
                                                                             <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
                                                                         </item>
-                                                                    </item>
-                                                                </item>
-                                                                <item name="multisafepay_winkelcheque" xsi:type="array">
-                                                                    <item name="component" xsi:type="string">MultiSafepay_ConnectFrontend/js/view/payment/giftcard/winkelcheque</item>
-                                                                    <item name="methods" xsi:type="array">
                                                                         <item name="multisafepay_winkelcheque" xsi:type="array">
                                                                             <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
                                                                         </item>
-                                                                    </item>
-                                                                </item>
-                                                                <item name="multisafepay_yourgift" xsi:type="array">
-                                                                    <item name="component" xsi:type="string">MultiSafepay_ConnectFrontend/js/view/payment/giftcard/yourgift</item>
-                                                                    <item name="methods" xsi:type="array">
                                                                         <item name="multisafepay_yourgift" xsi:type="array">
                                                                             <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
                                                                         </item>
