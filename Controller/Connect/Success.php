@@ -147,6 +147,7 @@ class Success extends Action
                 $parameters,
                 CustomReturnUrlUtil::SUCCESS_URL_TYPE_NAME
             );
+
             if ($customReturnUrl) {
                 return $this->resultRedirectFactory->create()->setUrl($customReturnUrl);
             } else {

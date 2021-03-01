@@ -77,9 +77,12 @@ class Cancel extends Action
         $parameters = $this->getRequest()->getParams();
 
         if (!$this->requestValidator->validate($parameters)) {
-            if ($customReturnUrl = $this->customReturnUrlUtil->getCustomReturnUrlByType(
-                $this->checkoutSession->getLastRealOrder(), $parameters
-            )) {
+            $customReturnUrl = $this->customReturnUrlUtil->getCustomReturnUrlByType(
+                $this->checkoutSession->getLastRealOrder(),
+                $parameters
+            );
+
+            if ($customReturnUrl) {
                 return $this->resultRedirectFactory->create()->setUrl($customReturnUrl);
             } else {
                 return $this->_redirect('checkout/cart');
