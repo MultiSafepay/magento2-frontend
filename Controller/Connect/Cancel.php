@@ -84,9 +84,9 @@ class Cancel extends Action
 
             if ($customReturnUrl) {
                 return $this->resultRedirectFactory->create()->setUrl($customReturnUrl);
-            } else {
-                return $this->_redirect('checkout/cart');
             }
+
+            return $this->_redirect('checkout/cart');
         }
 
         $orderId = $parameters['transactionid'];
@@ -101,11 +101,11 @@ class Cancel extends Action
 
         if ($customReturnUrl = $this->customReturnUrlUtil->getCustomReturnUrlByType($order, $parameters)) {
             return $this->resultRedirectFactory->create()->setUrl($customReturnUrl);
-        } else {
-            $msg = __('The transaction was canceled or declined and the order was closed, please try again.');
-            $this->messageManager->addErrorMessage($msg);
-
-            return $this->_redirect('checkout/cart');
         }
+
+        $msg = __('The transaction was canceled or declined and the order was closed, please try again.');
+        $this->messageManager->addErrorMessage($msg);
+
+        return $this->_redirect('checkout/cart');
     }
 }

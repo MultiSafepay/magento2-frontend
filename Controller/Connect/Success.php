@@ -150,9 +150,9 @@ class Success extends Action
 
             if ($customReturnUrl) {
                 return $this->resultRedirectFactory->create()->setUrl($customReturnUrl);
-            } else {
-                return $this->_redirect('checkout/cart');
             }
+
+            return $this->_redirect('checkout/cart');
         }
 
         $orderId = $parameters['transactionid'];
@@ -242,11 +242,8 @@ class Success extends Action
 
         if (empty($orderStatus)) {
             $stateDefaultStatus = $order->getConfig()->getStateDefaultStatus(Order::STATE_PROCESSING);
-            if ($stateDefaultStatus === null) {
-                return Order::STATE_PROCESSING;
-            }
 
-            return $stateDefaultStatus;
+            return $stateDefaultStatus ?? Order::STATE_PROCESSING;
         }
 
         return $orderStatus;
