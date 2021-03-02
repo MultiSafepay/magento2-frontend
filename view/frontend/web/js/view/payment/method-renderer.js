@@ -33,13 +33,12 @@ define(
         'use strict';
 
         let gatewayPath = 'MultiSafepay_ConnectFrontend/js/view/payment/gateway/method-renderer/';
-        let giftcardPath = 'MultiSafepay_ConnectFrontend/js/view/payment/giftcard/method-renderer/';
         let baseRenderer = 'MultiSafepay_ConnectFrontend/js/view/payment/method-renderer/base-renderer';
 
         rendererList.push(
             {type: 'multisafepay_afterpay', component: gatewayPath + 'afterpay'},
             {type: 'multisafepay_alipay', component: baseRenderer},
-            {type: 'multisafepay_amex', component: gatewayPath + 'amex'},
+            {type: 'multisafepay_amex', component: gatewayPath + 'creditcard'},
             {type: 'multisafepay_applepay', component: gatewayPath + 'applepay'},
             {type: 'multisafepay_bancontact', component: baseRenderer},
             {type: 'multisafepay_banktransfer', component: baseRenderer},
@@ -72,24 +71,24 @@ define(
             {type: 'multisafepay_visa', component: gatewayPath + 'visa'},
             {type: 'multisafepay_babygiftcard', component: baseRenderer},
             {type: 'multisafepay_beautyandwellness', component: baseRenderer},
-            {type: 'multisafepay_boekenbon', component: giftcardPath + 'boekenbon'},
-            {type: 'multisafepay_fashioncheque', component: giftcardPath + 'fashioncheque'},
-            {type: 'multisafepay_fashiongiftcard', component: giftcardPath + 'fashiongiftcard'},
-            {type: 'multisafepay_fietsenbon', component: giftcardPath + 'fietsenbon'},
-            {type: 'multisafepay_gezondheidsbon', component: giftcardPath + 'gezondheidsbon'},
-            {type: 'multisafepay_givacard', component: giftcardPath + 'givacard'},
-            {type: 'multisafepay_good4fun', component: giftcardPath + 'good4fun'},
-            {type: 'multisafepay_goodcard', component: giftcardPath + 'goodcard'},
-            {type: 'multisafepay_nationaletuinbon', component: giftcardPath + 'nationaletuinbon'},
-            {type: 'multisafepay_parfumcadeaukaart', component: giftcardPath + 'basic'},
-            {type: 'multisafepay_podiumcadeaukaart', component: giftcardPath + 'podiumcadeaukaart'},
-            {type: 'multisafepay_sportenfit', component: giftcardPath + 'sportenfit'},
-            {type: 'multisafepay_vvvcadeaukaart', component: giftcardPath + 'vvvcadeaukaart'},
-            {type: 'multisafepay_webshopgiftcard', component: giftcardPath + 'webshopgiftcard'},
-            {type: 'multisafepay_wellnessgiftcard', component: giftcardPath + 'wellnessgiftcard'},
-            {type: 'multisafepay_wijncadeau', component: giftcardPath + 'wijncadeau'},
-            {type: 'multisafepay_winkelcheque', component: giftcardPath + 'winkelcheque'},
-            {type: 'multisafepay_yourgift', component: giftcardPath + 'yourgift'},
+            {type: 'multisafepay_boekenbon', component: baseRenderer},
+            {type: 'multisafepay_fashioncheque', component: baseRenderer},
+            {type: 'multisafepay_fashiongiftcard', component: baseRenderer},
+            {type: 'multisafepay_fietsenbon', component: baseRenderer},
+            {type: 'multisafepay_gezondheidsbon', component: baseRenderer},
+            {type: 'multisafepay_givacard', component: baseRenderer},
+            {type: 'multisafepay_good4fun', component: baseRenderer},
+            {type: 'multisafepay_goodcard', component: baseRenderer},
+            {type: 'multisafepay_nationaletuinbon', component: baseRenderer},
+            {type: 'multisafepay_parfumcadeaukaart', component: baseRenderer},
+            {type: 'multisafepay_podiumcadeaukaart', component: baseRenderer},
+            {type: 'multisafepay_sportenfit', component: baseRenderer},
+            {type: 'multisafepay_vvvcadeaukaart', component: baseRenderer},
+            {type: 'multisafepay_webshopgiftcard', component: baseRenderer},
+            {type: 'multisafepay_wellnessgiftcard', component: baseRenderer},
+            {type: 'multisafepay_wijncadeau', component: baseRenderer},
+            {type: 'multisafepay_winkelcheque', component: baseRenderer},
+            {type: 'multisafepay_yourgift', component: baseRenderer},
         );
 
         /** Add view logic here if needed */

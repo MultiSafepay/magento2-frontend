@@ -49,7 +49,6 @@ define(
         return Component.extend({
             defaults: {
                 template: 'MultiSafepay_ConnectFrontend/payment/generic',
-                transactionResult: '',
                 paymentConfig: ''
             },
 
