@@ -142,7 +142,7 @@ class Success extends Action
         $order = $this->orderFactory->create()->loadByIncrementId($orderId);
 
         try {
-            $multiSafepaySdk = $this->sdkFactory->create((int)$order->getStoreId())->get();
+            $multiSafepaySdk = $this->sdkFactory->create((int)$order->getStoreId());
         } catch (InvalidApiKeyException $invalidApiKeyException) {
             $this->logger->logInvalidApiKeyException($invalidApiKeyException);
             return $this->_redirect('checkout/onepage/success?utm_nooverride=1');

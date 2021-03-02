@@ -200,7 +200,7 @@ class Notification extends Action
         $order = $this->orderFactory->create()->loadByIncrementId($orderId);
 
         try {
-            $transactionManager = $this->sdkFactory->create((int)$order->getStoreId())->get()->getTransactionManager();
+            $transactionManager = $this->sdkFactory->create((int)$order->getStoreId())->getTransactionManager();
         } catch (InvalidApiKeyException $invalidApiKeyException) {
             $this->logger->logInvalidApiKeyException($invalidApiKeyException);
             return $this->getResponse()->setContent('ng');
