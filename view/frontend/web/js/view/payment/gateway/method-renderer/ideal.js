@@ -17,7 +17,7 @@
 define(
     [
         'jquery',
-        'Magento_Checkout/js/view/payment/default',
+        'MultiSafepay_ConnectFrontend/js/view/payment/method-renderer/base-renderer',
         'Magento_Checkout/js/checkout-data',
         'Magento_Checkout/js/action/redirect-on-success',
         'mage/url'
@@ -39,44 +39,19 @@ define(
         redirectOnSuccessAction,
         url
     ) {
-        const config = window.checkoutConfig.payment.multisafepay_ideal;
         'use strict';
 
         return Component.extend({
             defaults: {
                 template: 'MultiSafepay_ConnectFrontend/payment/gateway/ideal',
                 issuerId: '',
-                is_preselected: false,
-                transactionResult: ''
             },
 
             initObservable: function () {
-                this._super()
-                    .observe('issuerId');
-
-                if (!checkoutData.getSelectedPaymentMethod() && config.is_preselected) {
-                    this.selectPaymentMethod();
-                }
+                this.observe('issuerId')
+                    ._super();
 
                 return this;
-            },
-
-            /**
-             * Get the gateway code
-             *
-             * @returns {string}
-             */
-            getCode: function () {
-                return 'multisafepay_ideal';
-            },
-
-            /**
-             * Get the gateway image
-             *
-             * @returns {string}
-             */
-            getImage: function () {
-                return config.image;
             },
 
             /**
@@ -85,7 +60,7 @@ define(
              * @returns {*}
              */
             getIssuers: function () {
-                return config.issuers;
+                return this.paymentConfig.issuers;
             },
 
             /**
@@ -100,14 +75,6 @@ define(
                         'issuer_id': this.issuerId(),
                     }
                 };
-            },
-
-            /**
-             * Redirect to controller after place order
-             */
-            afterPlaceOrder: function () {
-                redirectOnSuccessAction.redirectUrl = url.build('multisafepay/connect/redirect/');
-                this.redirectAfterPlaceOrder = true;
             },
         });
     }
