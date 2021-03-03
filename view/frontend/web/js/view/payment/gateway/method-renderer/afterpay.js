@@ -49,9 +49,9 @@ define(
             },
 
             initObservable: function () {
-                this._super()
-                    .observe('dateOfBirth')
-                    .observe('genderId');
+                this.observe('dateOfBirth')
+                    .observe('genderId')
+                    ._super();
 
 
                 console.log(this.paymentConfig);

@@ -17,7 +17,7 @@
 define(
     [
         'jquery',
-        'Magento_Checkout/js/view/payment/default',
+        'MultiSafepay_ConnectFrontend/js/view/payment/method-renderer/base-renderer',
         'Magento_Checkout/js/checkout-data',
         'Magento_Checkout/js/action/redirect-on-success',
         'Magento_Vault/js/view/payment/vault-enabler',
@@ -42,7 +42,6 @@ define(
         VaultEnabler,
         url
     ) {
-        const config = window.checkoutConfig.payment.multisafepay_visa;
         'use strict';
 
         return Component.extend({
@@ -91,42 +90,6 @@ define(
              */
             getVaultCode: function () {
                 return window.checkoutConfig.payment[this.getCode()].vaultCode;
-            },
- 
-            initObservable: function () {
-                this._super();
-
-                if (!checkoutData.getSelectedPaymentMethod() && config.is_preselected) {
-                    this.selectPaymentMethod();
-                }
-
-                return this;
-            },
-
-            /**
-             * Get the gateway code
-             *
-             * @returns {string}
-             */
-            getCode: function () {
-                return 'multisafepay_visa';
-            },
-
-            /**
-             * Get the gateway image
-             *
-             * @returns {string}
-             */
-            getImage: function () {
-                return config.image;
-            },
-
-            /**
-             * Redirect to controller after place order
-             */
-            afterPlaceOrder: function () {
-                redirectOnSuccessAction.redirectUrl = url.build('multisafepay/connect/redirect/');
-                this.redirectAfterPlaceOrder = true;
             }
         });
     }
