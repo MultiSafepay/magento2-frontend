@@ -53,9 +53,6 @@ define(
                     .observe('genderId')
                     ._super();
 
-
-                console.log(this.paymentConfig);
-
                 return this;
             },
 
