@@ -17,7 +17,7 @@
 define(
     [
         'jquery',
-        'Magento_Checkout/js/view/payment/default',
+        'MultiSafepay_ConnectFrontend/js/view/payment/method-renderer/base-renderer',
         'Magento_Checkout/js/action/redirect-on-success',
         'mage/url'
     ],
@@ -36,7 +36,6 @@ define(
         redirectOnSuccessAction,
         url
     ) {
-        const config = window.checkoutConfig.payment.multisafepay_in3;
         'use strict';
 
         return Component.extend({
@@ -44,37 +43,14 @@ define(
                 template: 'MultiSafepay_ConnectFrontend/payment/gateway/in3',
                 dateOfBirth: '',
                 genderId: '',
-                transactionResult: ''
             },
 
             initObservable: function () {
-                this._super()
-                    .observe('dateOfBirth')
-                    .observe('genderId');
-
-                if (!checkoutData.getSelectedPaymentMethod() && config.is_preselected) {
-                    this.selectPaymentMethod();
-                }
+                this.observe('dateOfBirth')
+                    .observe('genderId')
+                    ._super();
 
                 return this;
-            },
-
-            /**
-             * Get the gateway code
-             *
-             * @returns {string}
-             */
-            getCode: function () {
-                return 'multisafepay_in3';
-            },
-
-            /**
-             * Get the gateway image
-             *
-             * @returns {string}
-             */
-            getImage: function () {
-                return config.image;
             },
 
             /**
@@ -109,14 +85,6 @@ define(
                     }
                 };
             },
-
-            /**
-             * Redirect to controller after place order
-             */
-            afterPlaceOrder: function () {
-                redirectOnSuccessAction.redirectUrl = url.build('multisafepay/connect/redirect/');
-                this.redirectAfterPlaceOrder = true;
-            }
         });
     }
 );

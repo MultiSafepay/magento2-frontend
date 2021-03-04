@@ -32,6 +32,7 @@ use MultiSafepay\ConnectCore\Config\Config;
 use MultiSafepay\ConnectCore\Factory\SdkFactory;
 use MultiSafepay\ConnectCore\Logger\Logger;
 use MultiSafepay\ConnectCore\Model\SecondChance;
+use MultiSafepay\ConnectCore\Util\CustomReturnUrlUtil;
 use MultiSafepay\ConnectFrontend\Validator\RequestValidator;
 use MultiSafepay\Exception\ApiException;
 use MultiSafepay\Exception\InvalidApiKeyException;
@@ -86,6 +87,11 @@ class Success extends Action
     private $secondChance;
 
     /**
+     * @var CustomReturnUrlUtil
+     */
+    private $customReturnUrlUtil;
+
+    /**
      * Success constructor.
      *
      * @param SdkFactory $sdkFactory
@@ -98,6 +104,7 @@ class Success extends Action
      * @param SecondChance $secondChance
      * @param Logger $logger
      * @param CartRepositoryInterface $cartRepository
+     * @param CustomReturnUrlUtil $customReturnUrlUtil
      */
     public function __construct(
         SdkFactory $sdkFactory,
@@ -109,7 +116,8 @@ class Success extends Action
         Session $checkoutSession,
         SecondChance $secondChance,
         Logger $logger,
-        CartRepositoryInterface $cartRepository
+        CartRepositoryInterface $cartRepository,
+        CustomReturnUrlUtil $customReturnUrlUtil
     ) {
         parent::__construct($context);
         $this->config = $config;
@@ -121,6 +129,7 @@ class Success extends Action
         $this->logger = $logger;
         $this->checkoutSession = $checkoutSession;
         $this->cartRepository = $cartRepository;
+        $this->customReturnUrlUtil = $customReturnUrlUtil;
     }
 
     /**
@@ -133,6 +142,16 @@ class Success extends Action
         $parameters = $this->getRequest()->getParams();
 
         if (!$this->requestValidator->validate($parameters)) {
+            $customReturnUrl = $this->customReturnUrlUtil->getCustomReturnUrlByType(
+                $this->checkoutSession->getLastRealOrder(),
+                $parameters,
+                CustomReturnUrlUtil::SUCCESS_URL_TYPE_NAME
+            );
+
+            if ($customReturnUrl) {
+                return $this->resultRedirectFactory->create()->setUrl($customReturnUrl);
+            }
+
             return $this->_redirect('checkout/cart');
         }
 
@@ -140,12 +159,24 @@ class Success extends Action
 
         /** @var OrderInterface $order */
         $order = $this->orderFactory->create()->loadByIncrementId($orderId);
+        $customReturnUrl = $this->customReturnUrlUtil->getCustomReturnUrlByType(
+            $order,
+            $parameters,
+            CustomReturnUrlUtil::SUCCESS_URL_TYPE_NAME
+        );
+
+        if ($customReturnUrl) {
+            $redirectUrl = $this->resultRedirectFactory->create()->setUrl($customReturnUrl);
+        } else {
+            $redirectUrl = $this->_redirect('checkout/onepage/success?utm_nooverride=1');
+        }
 
         try {
             $multiSafepaySdk = $this->sdkFactory->create((int)$order->getStoreId())->get();
         } catch (InvalidApiKeyException $invalidApiKeyException) {
             $this->logger->logInvalidApiKeyException($invalidApiKeyException);
-            return $this->_redirect('checkout/onepage/success?utm_nooverride=1');
+
+            return $redirectUrl;
         }
 
         $transactionManager = $multiSafepaySdk->getTransactionManager();
@@ -154,7 +185,8 @@ class Success extends Action
             $transaction = $transactionManager->get($orderId);
         } catch (ApiException $e) {
             $this->logger->logGetRequestApiException($orderId, $e);
-            return $this->_redirect('checkout/onepage/success?utm_nooverride=1');
+
+            return $redirectUrl;
         }
 
         $order->addCommentToStatusHistory('User redirected to the success page.');
@@ -163,7 +195,7 @@ class Success extends Action
 
         if ($transaction->getStatus() === Transaction::COMPLETED) {
             if ($order->getState() === Order::STATE_COMPLETE) {
-                return $this->_redirect('checkout/onepage/success?utm_nooverride=1');
+                return $redirectUrl;
             }
 
             if ($order->getState() === Order::STATE_CANCELED) {
@@ -176,7 +208,8 @@ class Success extends Action
         }
 
         $this->logger->logPaymentSuccessInfo($orderId);
-        return $this->_redirect('checkout/onepage/success?utm_nooverride=1');
+
+        return $redirectUrl;
     }
 
     /**
@@ -209,11 +242,10 @@ class Success extends Action
 
         if (empty($orderStatus)) {
             $stateDefaultStatus = $order->getConfig()->getStateDefaultStatus(Order::STATE_PROCESSING);
-            if ($stateDefaultStatus === null) {
-                return Order::STATE_PROCESSING;
-            }
-            return $stateDefaultStatus;
+
+            return $stateDefaultStatus ?? Order::STATE_PROCESSING;
         }
+
         return $orderStatus;
     }
 }

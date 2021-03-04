@@ -17,7 +17,7 @@
 define(
     [
         'jquery',
-        'Magento_Checkout/js/view/payment/default',
+        'MultiSafepay_ConnectFrontend/js/view/payment/method-renderer/base-renderer',
         'Magento_Checkout/js/checkout-data',
         'Magento_Checkout/js/action/redirect-on-success',
         'mage/url'
@@ -44,30 +44,7 @@ define(
         return Component.extend({
             defaults: {
                 template: 'MultiSafepay_ConnectFrontend/payment/gateway/genericgateway',
-                transactionResult: '',
-                paymentConfig: ''
             },
-
-            initObservable: function () {
-                this._super();
-                this.paymentConfig = window.checkoutConfig.payment[this.getCode()];
-
-                if (!checkoutData.getSelectedPaymentMethod() && this.paymentConfig.is_preselected) {
-                    this.selectPaymentMethod();
-                }
-
-                return this;
-            },
-
-            /**
-             * Get the gateway image
-             *
-             * @returns {string}
-             */
-            getImage: function () {
-                return this.paymentConfig.image;
-            },
-
 
             /**
              * Returns if the image is available
@@ -78,14 +55,6 @@ define(
                 return !!this.paymentConfig.image;
 
             },
-
-            /**
-             * Redirect to controller after place order
-             */
-            afterPlaceOrder: function () {
-                redirectOnSuccessAction.redirectUrl = url.build('multisafepay/connect/redirect/');
-                this.redirectAfterPlaceOrder = true;
-            }
         });
     }
 );
