@@ -42,7 +42,6 @@ define(
         redirectOnSuccessAction,
         url
     ) {
-        const config = window.checkoutConfig.payment.multisafepay_goodcard;
         'use strict';
 
         let self;
@@ -50,18 +49,18 @@ define(
         return Component.extend({
             defaults: {
                 template: 'MultiSafepay_ConnectFrontend/payment/generic',
-                transactionResult: ''
+                paymentConfig: ''
             },
 
-            initialize: function () {
+            initObservable: function () {
                 this._super();
+                this.paymentConfig = window.checkoutConfig.payment[this.index];
 
-                if (config.is_preselected) {
-                    selectPaymentMethodAction(this.getData());
-                    checkoutData.setSelectedPaymentMethod(this.item.method);
+                if (!checkoutData.getSelectedPaymentMethod() && this.paymentConfig.is_preselected) {
+                    this.selectPaymentMethod();
                 }
 
-                self = this;
+                return this;
             },
 
             /**
@@ -70,7 +69,7 @@ define(
              * @returns {string}
              */
             getImage: function () {
-                return config.image;
+                return this.paymentConfig.image;
             },
 
             /**
@@ -79,7 +78,7 @@ define(
              * @returns {string}
              */
             getCode: function () {
-                return 'multisafepay_goodcard';
+                return this.index;
             },
 
             /**
