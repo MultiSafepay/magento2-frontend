@@ -16,24 +16,40 @@
 /*global define*/
 define(
     [
+        'jquery',
         'uiComponent',
         'Magento_Checkout/js/model/payment/renderer-list'
     ],
 
     /**
      *
+     * @param $
      * @param Component
      * @param rendererList
      * @returns {*}
      */
     function (
+        $,
         Component,
         rendererList
     ) {
         'use strict';
 
+        let currentPaymentsList = window.checkoutConfig.payment;
         let gatewayPath = 'MultiSafepay_ConnectFrontend/js/view/payment/gateway/method-renderer/';
         let baseRenderer = 'MultiSafepay_ConnectFrontend/js/view/payment/method-renderer/base-renderer';
+
+        $.each(currentPaymentsList, function(key, value) {
+            if (key.indexOf("multisafepay_genericgateway") !== -1) {
+                rendererList.push(
+                    {
+                        type: key,
+                        component: gatewayPath + 'genericgateway',
+                        config: value
+                    }
+                );
+            }
+        });
 
         rendererList.push(
             {type: 'multisafepay_afterpay', component: gatewayPath + 'afterpay'},
@@ -50,7 +66,6 @@ define(
             {type: 'multisafepay_dotpay', component: baseRenderer},
             {type: 'multisafepay_einvoicing', component: gatewayPath + 'einvoicing'},
             {type: 'multisafepay_eps', component: baseRenderer},
-            {type: 'multisafepay_genericgateway', component: gatewayPath + 'genericgateway'},
             {type: 'multisafepay_giropay', component: baseRenderer},
             {type: 'multisafepay_ideal', component: gatewayPath + 'ideal'},
             {type: 'multisafepay_idealqr', component: baseRenderer},
