@@ -17,7 +17,7 @@
 define(
     [
         'jquery',
-        'Magento_Checkout/js/view/payment/default',
+        'MultiSafepay_ConnectFrontend/js/view/payment/method-renderer/base-renderer',
         'Magento_Checkout/js/checkout-data',
         'Magento_Checkout/js/action/redirect-on-success',
         'Magento_Vault/js/view/payment/vault-enabler',
@@ -42,24 +42,21 @@ define(
         VaultEnabler,
         url
     ) {
-        const config = window.checkoutConfig.payment.multisafepay_creditcard;
         'use strict';
 
         return Component.extend({
             defaults: {
                 template: 'MultiSafepay_ConnectFrontend/payment/gateway/creditcard',
-                transactionResult: ''
             },
 
             initialize: function () {
-                self = this;
+                this.vaultEnabler = new VaultEnabler();
 
                 this._super();
 
-                this.vaultEnabler = new VaultEnabler();
                 this.vaultEnabler.setPaymentCode(this.getVaultCode());
 
-                return self;
+                return this;
             },
 
             /**
@@ -70,8 +67,6 @@ define(
                     'method': this.getCode(),
                     'additional_data': {}
                 };
-
-                data['additional_data'] = _.extend(data['additional_data'], this.additionalData);
                 this.vaultEnabler.visitAdditionalData(data);
 
                 return data;
@@ -91,42 +86,6 @@ define(
              */
             getVaultCode: function () {
                 return window.checkoutConfig.payment[this.getCode()].vaultCode;
-            },
-
-            initObservable: function () {
-                this._super();
-
-                if (!checkoutData.getSelectedPaymentMethod() && config.is_preselected) {
-                    this.selectPaymentMethod();
-                }
-
-                return this;
-            },
-
-            /**
-             * Get the gateway code
-             *
-             * @returns {string}
-             */
-            getCode: function () {
-                return 'multisafepay_creditcard';
-            },
-
-            /**
-             * Get the gateway image
-             *
-             * @returns {string}
-             */
-            getImage: function () {
-                return config.image;
-            },
-
-            /**
-             * Redirect to controller after place order
-             */
-            afterPlaceOrder: function () {
-                redirectOnSuccessAction.redirectUrl = url.build('multisafepay/connect/redirect/');
-                this.redirectAfterPlaceOrder = true;
             }
         });
     }
