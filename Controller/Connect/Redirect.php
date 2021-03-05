@@ -23,7 +23,12 @@ use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\ResponseInterface;
 use Magento\Framework\Controller\ResultInterface;
+use Magento\Sales\Api\Data\OrderInterface;
+use Magento\Sales\Api\OrderRepositoryInterface;
+use Magento\Sales\Model\Order;
+use MultiSafepay\ConnectCore\Config\Config;
 use MultiSafepay\ConnectCore\Logger\Logger;
+use MultiSafepay\ConnectCore\Model\Ui\Gateway\BankTransferConfigProvider;
 use MultiSafepay\ConnectCore\Service\PaymentLink;
 use MultiSafepay\Exception\ApiException;
 use MultiSafepay\Exception\InvalidApiKeyException;
@@ -31,6 +36,14 @@ use Psr\Http\Client\ClientExceptionInterface;
 
 class Redirect extends Action
 {
+    /**
+     * @var OrderRepositoryInterface
+     */
+    protected $orderRepository;
+    /**
+     * @var Config
+     */
+    protected $config;
     /**
      * @var Session
      */
@@ -50,20 +63,26 @@ class Redirect extends Action
      * Redirect constructor.
      *
      * @param Context $context
+     * @param Config $config
      * @param PaymentLink $paymentLink
      * @param Session $checkoutSession
+     * @param OrderRepositoryInterface $orderRepository
      * @param Logger $logger
      */
     public function __construct(
         Context $context,
+        Config $config,
         PaymentLink $paymentLink,
         Session $checkoutSession,
+        OrderRepositoryInterface $orderRepository,
         Logger $logger
     ) {
         parent::__construct($context);
         $this->logger = $logger;
         $this->paymentLink = $paymentLink;
         $this->checkoutSession = $checkoutSession;
+        $this->orderRepository = $orderRepository;
+        $this->config = $config;
     }
 
     /**
@@ -94,6 +113,16 @@ class Redirect extends Action
             return $this->redirectToCheckout();
         }
 
+        // For bank transfers we don't want the order to be automatically canceled to give customers time to pay
+        if ($order->getPayment()->getMethod() !== BankTransferConfigProvider::CODE) {
+            $state = Order::STATE_PENDING_PAYMENT;
+
+            $order->setState($state);
+            $order->setStatus($this->getPendingPaymentStatus($order, $state));
+
+            $this->orderRepository->save($order);
+        }
+
         return $this->_redirect($paymentUrl);
     }
 
@@ -108,5 +137,18 @@ class Redirect extends Action
         );
 
         return $this->_redirect('checkout/cart');
+    }
+
+    /**
+     * @param OrderInterface $order
+     * @param string $state
+     * @return string
+     */
+    public function getPendingPaymentStatus(OrderInterface $order, string $state): string
+    {
+        if ($status = $this->config->getPendingPaymentStatus($order->getStoreId())) {
+            return $status;
+        }
+        return $order->getConfig()->getStateDefaultStatus($state) ?? ORDER::STATE_PENDING_PAYMENT;
     }
 }
