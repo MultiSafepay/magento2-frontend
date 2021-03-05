@@ -23,13 +23,12 @@ use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\ResponseInterface;
 use Magento\Framework\Controller\ResultInterface;
-use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Model\Order;
-use MultiSafepay\ConnectCore\Config\Config;
 use MultiSafepay\ConnectCore\Logger\Logger;
 use MultiSafepay\ConnectCore\Model\Ui\Gateway\BankTransferConfigProvider;
 use MultiSafepay\ConnectCore\Service\PaymentLink;
+use MultiSafepay\ConnectCore\Util\OrderStatusUtil;
 use MultiSafepay\Exception\ApiException;
 use MultiSafepay\Exception\InvalidApiKeyException;
 use Psr\Http\Client\ClientExceptionInterface;
@@ -40,10 +39,12 @@ class Redirect extends Action
      * @var OrderRepositoryInterface
      */
     protected $orderRepository;
+
     /**
-     * @var Config
+     * @var OrderStatusUtil
      */
-    protected $config;
+    protected $orderStatusUtil;
+
     /**
      * @var Session
      */
@@ -63,18 +64,18 @@ class Redirect extends Action
      * Redirect constructor.
      *
      * @param Context $context
-     * @param Config $config
      * @param PaymentLink $paymentLink
      * @param Session $checkoutSession
      * @param OrderRepositoryInterface $orderRepository
+     * @param OrderStatusUtil $orderStatusUtil
      * @param Logger $logger
      */
     public function __construct(
         Context $context,
-        Config $config,
         PaymentLink $paymentLink,
         Session $checkoutSession,
         OrderRepositoryInterface $orderRepository,
+        OrderStatusUtil $orderStatusUtil,
         Logger $logger
     ) {
         parent::__construct($context);
@@ -82,7 +83,7 @@ class Redirect extends Action
         $this->paymentLink = $paymentLink;
         $this->checkoutSession = $checkoutSession;
         $this->orderRepository = $orderRepository;
-        $this->config = $config;
+        $this->orderStatusUtil = $orderStatusUtil;
     }
 
     /**
@@ -104,12 +105,15 @@ class Redirect extends Action
             $this->paymentLink->addPaymentLink($order, $paymentUrl);
         } catch (InvalidApiKeyException $invalidApiKeyException) {
             $this->logger->logInvalidApiKeyException($invalidApiKeyException);
+
             return $this->redirectToCheckout();
         } catch (ApiException $apiException) {
             $this->logger->logPaymentLinkError($orderId, $apiException);
+
             return $this->redirectToCheckout();
         } catch (Exception $exception) {
             $this->logger->logGeneralErrorForOrder($orderId, $exception);
+
             return $this->redirectToCheckout();
         }
 
@@ -118,8 +122,7 @@ class Redirect extends Action
             $state = Order::STATE_PENDING_PAYMENT;
 
             $order->setState($state);
-            $order->setStatus($this->getPendingPaymentStatus($order, $state));
-
+            $order->setStatus($this->orderStatusUtil->getPendingPaymentStatus($order));
             $this->orderRepository->save($order);
         }
 
@@ -137,18 +140,5 @@ class Redirect extends Action
         );
 
         return $this->_redirect('checkout/cart');
-    }
-
-    /**
-     * @param OrderInterface $order
-     * @param string $state
-     * @return string
-     */
-    public function getPendingPaymentStatus(OrderInterface $order, string $state): string
-    {
-        if ($status = $this->config->getPendingPaymentStatus($order->getStoreId())) {
-            return $status;
-        }
-        return $order->getConfig()->getStateDefaultStatus($state) ?? ORDER::STATE_PENDING_PAYMENT;
     }
 }
