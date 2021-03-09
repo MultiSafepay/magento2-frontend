@@ -18,7 +18,7 @@ declare(strict_types=1);
 namespace MultiSafepay\ConnectFrontend\Plugin\Checkout\Block\Checkout;
 
 use Magento\Checkout\Block\Checkout\LayoutProcessor;
-use Magento\Checkout\Model\CompositeConfigProvider as CheckoutCompositeConfigProvider;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Stdlib\ArrayManager;
 use Magento\Store\Model\StoreManagerInterface;
 use MultiSafepay\ConnectCore\Model\Ui\Gateway\GenericGatewayConfigProvider;
@@ -36,31 +36,24 @@ class LayoutProcessorPlugin
     private $storeManager;
 
     /**
-     * @var ArrayManager
-     */
-    private $arrayManager;
-
-    /**
      * LayoutProcessorPlugin constructor.
      *
      * @param StoreManagerInterface $storeManager
      * @param GenericGatewayConfigProvider $genericGatewayConfigProvider
-     * @param ArrayManager $arrayManager
      */
     public function __construct(
         StoreManagerInterface $storeManager,
-        GenericGatewayConfigProvider $genericGatewayConfigProvider,
-        ArrayManager $arrayManager
+        GenericGatewayConfigProvider $genericGatewayConfigProvider
     ) {
         $this->genericGatewayConfigProvider = $genericGatewayConfigProvider;
         $this->storeManager = $storeManager;
-        $this->arrayManager = $arrayManager;
     }
 
     /**
-     * @param CheckoutCompositeConfigProvider $subject
-     * @param array $config
+     * @param LayoutProcessor $subject
+     * @param array $jsLayout
      * @return array
+     * @throws NoSuchEntityException
      */
     public function beforeProcess(LayoutProcessor $subject, array $jsLayout): array
     {
@@ -69,7 +62,7 @@ class LayoutProcessorPlugin
 
         if (!isset($currentPaymentComponents[GenericGatewayConfigProvider::CODE])) {
             $genericGatewaysList = $this->genericGatewayConfigProvider
-                ->getGenericGatewaysList($this->storeManager->getStore()->getId());
+                ->getGenericList($this->storeManager->getStore()->getId());
 
             foreach ($genericGatewaysList as $gatewayCode) {
                 $currentPaymentComponents[$gatewayCode] = [
