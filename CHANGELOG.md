@@ -15,6 +15,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Checkout error when creditcard is preselected
 
+### Changed
+- Refactored the payment components by decreasing the amount of javascript files
+
 ## [1.4.0] - 2021-02-22
 ### Added
 - Added generic gateway feature for the possibility to add a gateway, which you can customize yourself.
