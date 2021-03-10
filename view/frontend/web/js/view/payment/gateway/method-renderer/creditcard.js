@@ -47,18 +47,16 @@ define(
         return Component.extend({
             defaults: {
                 template: 'MultiSafepay_ConnectFrontend/payment/gateway/creditcard',
-                transactionResult: ''
             },
 
             initialize: function () {
-                self = this;
+                this.vaultEnabler = new VaultEnabler();
 
                 this._super();
 
-                this.vaultEnabler = new VaultEnabler();
                 this.vaultEnabler.setPaymentCode(this.getVaultCode());
 
-                return self;
+                return this;
             },
 
             /**
@@ -69,8 +67,6 @@ define(
                     'method': this.getCode(),
                     'additional_data': {}
                 };
-
-                data['additional_data'] = _.extend(data['additional_data'], this.additionalData);
                 this.vaultEnabler.visitAdditionalData(data);
 
                 return data;

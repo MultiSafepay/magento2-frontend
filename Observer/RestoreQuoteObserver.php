@@ -75,7 +75,7 @@ class RestoreQuoteObserver implements ObserverInterface
             return;
         }
 
-        if ($lastRealOrder->getState() !== Order::STATE_NEW) {
+        if ($lastRealOrder->getState() !== Order::STATE_PENDING_PAYMENT) {
             return;
         }
 
