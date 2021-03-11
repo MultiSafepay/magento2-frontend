@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.5.0] - 2021-03-11
 ### Added
 - Added generic gateways and generic giftcards to the checkout dynamically.
-- Added support for custom return and cancel url for PWA users.
+- Added the possibility to modify the "Success page" and cancel payment return URLs for PWA storefronts.
 - Added support for a customizable pending_payment status when redirecting to the payment page.
 - Changed composer dependencies to support Magento 2.2.
 
