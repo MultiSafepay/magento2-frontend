@@ -217,7 +217,7 @@ class Success extends Action
      * @throws LocalizedException
      * @throws NoSuchEntityException
      */
-    public function setCheckoutSessionData(OrderInterface $order): void
+    public function setCheckoutSessionData(OrderInterface $order)
     {
         $this->checkoutSession->unsQuoteId();
 
