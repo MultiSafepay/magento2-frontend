@@ -28,11 +28,11 @@ use Magento\Sales\Api\Data\OrderInterfaceFactory;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Model\Order;
 use MultiSafepay\Api\Transactions\Transaction;
-use MultiSafepay\ConnectCore\Config\Config;
 use MultiSafepay\ConnectCore\Factory\SdkFactory;
 use MultiSafepay\ConnectCore\Logger\Logger;
 use MultiSafepay\ConnectCore\Model\SecondChance;
 use MultiSafepay\ConnectCore\Util\CustomReturnUrlUtil;
+use MultiSafepay\ConnectCore\Util\OrderStatusUtil;
 use MultiSafepay\ConnectFrontend\Validator\RequestValidator;
 use MultiSafepay\Exception\ApiException;
 use MultiSafepay\Exception\InvalidApiKeyException;
@@ -40,6 +40,10 @@ use Psr\Http\Client\ClientExceptionInterface;
 
 class Success extends Action
 {
+    /**
+     * @var OrderStatusUtil
+     */
+    protected $orderStatusUtil;
 
     /**
      * @var OrderRepositoryInterface
@@ -72,11 +76,6 @@ class Success extends Action
     private $cartRepository;
 
     /**
-     * @var Config
-     */
-    private $config;
-
-    /**
      * @var RequestValidator
      */
     private $requestValidator;
@@ -95,9 +94,9 @@ class Success extends Action
      * Success constructor.
      *
      * @param SdkFactory $sdkFactory
-     * @param Config $config
      * @param Context $context
      * @param OrderInterfaceFactory $orderFactory
+     * @param OrderStatusUtil $orderStatusUtil
      * @param OrderRepositoryInterface $orderRepository
      * @param RequestValidator $requestValidator
      * @param Session $checkoutSession
@@ -108,9 +107,9 @@ class Success extends Action
      */
     public function __construct(
         SdkFactory $sdkFactory,
-        Config $config,
         Context $context,
         OrderInterfaceFactory $orderFactory,
+        OrderStatusUtil $orderStatusUtil,
         OrderRepositoryInterface $orderRepository,
         RequestValidator $requestValidator,
         Session $checkoutSession,
@@ -120,7 +119,6 @@ class Success extends Action
         CustomReturnUrlUtil $customReturnUrlUtil
     ) {
         parent::__construct($context);
-        $this->config = $config;
         $this->sdkFactory = $sdkFactory;
         $this->orderFactory = $orderFactory;
         $this->orderRepository = $orderRepository;
@@ -130,6 +128,7 @@ class Success extends Action
         $this->checkoutSession = $checkoutSession;
         $this->cartRepository = $cartRepository;
         $this->customReturnUrlUtil = $customReturnUrlUtil;
+        $this->orderStatusUtil = $orderStatusUtil;
     }
 
     /**
@@ -203,7 +202,7 @@ class Success extends Action
             }
 
             $order->setState(Order::STATE_PROCESSING);
-            $order->setStatus($this->setOrderProcessingStatus($order));
+            $order->setStatus($this->orderStatusUtil->getProcessingStatus($order));
             $this->orderRepository->save($order);
         }
 
@@ -230,22 +229,5 @@ class Success extends Action
         $this->checkoutSession->setLastQuoteId($order->getQuoteId());
         $this->checkoutSession->setLastOrderId($order->getEntityId());
         $this->checkoutSession->setLastRealOrderId($order->getIncrementId());
-    }
-
-    /**
-     * @param OrderInterface $order
-     * @return string|null
-     */
-    public function setOrderProcessingStatus(OrderInterface $order): ?string
-    {
-        $orderStatus = $this->config->getValue('processing_order_status');
-
-        if (empty($orderStatus)) {
-            $stateDefaultStatus = $order->getConfig()->getStateDefaultStatus(Order::STATE_PROCESSING);
-
-            return $stateDefaultStatus ?? Order::STATE_PROCESSING;
-        }
-
-        return $orderStatus;
     }
 }

@@ -32,7 +32,6 @@ use Magento\Sales\Api\TransactionRepositoryInterface;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Payment;
 use Magento\Sales\Model\Order\Payment\Transaction as PaymentTransaction;
-use Magento\Sales\Model\Order\StatusResolver;
 use MultiSafepay\Api\Transactions\Transaction;
 use MultiSafepay\Api\Transactions\UpdateRequest;
 use MultiSafepay\ConnectCore\Api\RecurringDetailsInterface;
@@ -41,6 +40,7 @@ use MultiSafepay\ConnectCore\Logger\Logger;
 use MultiSafepay\ConnectCore\Model\SecondChance;
 use MultiSafepay\ConnectCore\Model\Vault;
 use MultiSafepay\ConnectCore\Service\EmailSender;
+use MultiSafepay\ConnectCore\Util\OrderStatusUtil;
 use MultiSafepay\ConnectCore\Util\PaymentMethodUtil;
 use MultiSafepay\Exception\ApiException;
 use MultiSafepay\Exception\InvalidApiKeyException;
@@ -48,6 +48,10 @@ use Psr\Http\Client\ClientExceptionInterface;
 
 class Notification extends Action
 {
+    /**
+     * @var OrderStatusUtil
+     */
+    protected $orderStatusUtil;
 
     /**
      * @var OrderInterfaceFactory
@@ -115,11 +119,6 @@ class Notification extends Action
     private $vault;
 
     /**
-     * @var StatusResolver
-     */
-    private $statusResolver;
-
-    /**
      * @var PaymentMethodUtil
      */
     private $paymentMethodUtil;
@@ -132,6 +131,7 @@ class Notification extends Action
      * @param EmailSender $emailSender
      * @param OrderInterfaceFactory $orderFactory
      * @param OrderPaymentRepositoryInterface $orderPaymentRepository
+     * @param OrderStatusUtil $orderStatusUtil
      * @param OrderRepositoryInterface $orderRepository
      * @param SecondChance $secondChance
      * @param TransactionRepositoryInterface $transactionRepository
@@ -141,7 +141,6 @@ class Notification extends Action
      * @param ScopeConfigInterface $scopeConfig
      * @param SearchCriteriaBuilder $searchCriteriaBuilder
      * @param Vault $vault
-     * @param StatusResolver $statusResolver
      * @param PaymentMethodUtil $paymentMethodUtil
      */
     public function __construct(
@@ -150,6 +149,7 @@ class Notification extends Action
         EmailSender $emailSender,
         OrderInterfaceFactory $orderFactory,
         OrderPaymentRepositoryInterface $orderPaymentRepository,
+        OrderStatusUtil $orderStatusUtil,
         OrderRepositoryInterface $orderRepository,
         SecondChance $secondChance,
         TransactionRepositoryInterface $transactionRepository,
@@ -159,7 +159,6 @@ class Notification extends Action
         ScopeConfigInterface $scopeConfig,
         SearchCriteriaBuilder $searchCriteriaBuilder,
         Vault $vault,
-        StatusResolver $statusResolver,
         PaymentMethodUtil $paymentMethodUtil
     ) {
         parent::__construct($context);
@@ -176,8 +175,8 @@ class Notification extends Action
         $this->searchCriteriaBuilder = $searchCriteriaBuilder;
         $this->scopeConfig = $scopeConfig;
         $this->vault = $vault;
-        $this->statusResolver = $statusResolver;
         $this->paymentMethodUtil = $paymentMethodUtil;
+        $this->orderStatusUtil = $orderStatusUtil;
     }
 
     /**
@@ -203,6 +202,7 @@ class Notification extends Action
             $transactionManager = $this->sdkFactory->create((int)$order->getStoreId())->get()->getTransactionManager();
         } catch (InvalidApiKeyException $invalidApiKeyException) {
             $this->logger->logInvalidApiKeyException($invalidApiKeyException);
+
             return $this->getResponse()->setContent('ng');
         }
 
@@ -210,6 +210,7 @@ class Notification extends Action
             $transaction = $transactionManager->get($orderId);
         } catch (ApiException $e) {
             $this->logger->logGetRequestApiException($orderId, $e);
+
             return $this->getResponse()->setContent('ng');
         }
 
@@ -226,7 +227,7 @@ class Notification extends Action
             RecurringDetailsInterface::RECURRING_ID => $paymentDetails->getRecurringId(),
             RecurringDetailsInterface::TYPE => $transactionType,
             RecurringDetailsInterface::EXPIRATION_DATE => $paymentDetails->getCardExpiryDate(),
-            RecurringDetailsInterface::CARD_LAST4 => $paymentDetails->getLast4()
+            RecurringDetailsInterface::CARD_LAST4 => $paymentDetails->getLast4(),
         ]);
 
         $gatewayCode = $payment->getMethodInstance()->getConfigData('gateway_code');
@@ -274,9 +275,8 @@ class Notification extends Action
                     $this->transactionRepository->save($paymentTransaction);
 
                     // Set order processing
-                    $status = $this->statusResolver->getOrderStatusByState($order, Order::STATE_PROCESSING);
                     $order->setState(Order::STATE_PROCESSING);
-                    $order->setStatus($status);
+                    $order->setStatus($this->orderStatusUtil->getProcessingStatus($order));
 
                     $this->orderRepository->save($order);
                 }
@@ -285,7 +285,7 @@ class Notification extends Action
                     $this->emailSender->sendInvoiceEmail($payment, $invoice);
 
                     $updateRequest = $this->updateRequest->addData([
-                        "invoice_id" => $invoice->getIncrementId()
+                        "invoice_id" => $invoice->getIncrementId(),
                     ]);
 
                     try {
@@ -314,6 +314,7 @@ class Notification extends Action
                 break;
         }
         $this->orderRepository->save($order);
+
         return $this->getResponse()->setContent('ok');
     }
 
@@ -330,6 +331,7 @@ class Notification extends Action
         if (!isset($params['timestamp'])) {
             return false;
         }
+
         return true;
     }
 
@@ -355,7 +357,7 @@ class Notification extends Action
         foreach ($methodList as $code => $method) {
             if (isset($method['gateway_code']) && $method['gateway_code'] === $transactionType
                 && strpos($code, '_recurring') === false) {
-                return (string) $code;
+                return (string)$code;
             }
         }
 
