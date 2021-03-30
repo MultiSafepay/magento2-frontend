@@ -2,7 +2,9 @@ var config = {
     map: {
         '*': {
             mspCrypt: 'MultiSafepay_ConnectFrontend/js/lib/msp-crypt',
-            paymentComponent: 'MultiSafepay_ConnectFrontend/js/lib/paymemt-components'
+            multisafepayPaymentComponent: 'MultiSafepay_ConnectFrontend/js/lib/paymemt-components',
+            multisafepayPaymentRequest: 'MultiSafepay_ConnectFrontend/js/payment-request',
+            multisafepayCardPaymentProcessor: 'MultiSafepay_ConnectFrontend/js/payment-request/card-payment'
         }
     }
 };

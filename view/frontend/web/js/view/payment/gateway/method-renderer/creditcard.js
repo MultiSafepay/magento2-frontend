@@ -21,7 +21,10 @@ define(
         'Magento_Checkout/js/checkout-data',
         'Magento_Checkout/js/action/redirect-on-success',
         'Magento_Vault/js/view/payment/vault-enabler',
-        'mage/url'
+        'mage/url',
+        'multisafepayPaymentRequest',
+        'Magento_Checkout/js/action/select-payment-method',
+        'Magento_Checkout/js/model/payment/additional-validators'
     ],
 
     /**
@@ -40,7 +43,10 @@ define(
         checkoutData,
         redirectOnSuccessAction,
         VaultEnabler,
-        url
+        url,
+        paymentRequest,
+        selectPaymentMethodAction,
+        additionalValidators
     ) {
         'use strict';
 
@@ -73,6 +79,16 @@ define(
             },
 
             /**
+             * @return {Boolean}
+             */
+            selectPaymentMethod: function () {
+                selectPaymentMethodAction(this.getData());
+                checkoutData.setSelectedPaymentMethod(this.item.method);
+
+                return true;
+            },
+
+            /**
              * @returns {Boolean}
              */
             isVaultEnabled: function () {
@@ -86,6 +102,53 @@ define(
              */
             getVaultCode: function () {
                 return window.checkoutConfig.payment[this.getCode()].vaultCode;
+            },
+
+            /**
+             * Place order.
+             */
+            placeOrder: function (data, event) {
+                var self = this;
+
+                if (event) {
+                    event.preventDefault();
+                }
+
+                if (this.validate() &&
+                    additionalValidators.validate() &&
+                    this.isPlaceOrderActionAllowed() === true
+                ) {
+                    // this.isPlaceOrderActionAllowed(false);
+
+                    paymentRequest.init(this.getCode());
+
+                    // this.getPlaceOrderDeferredObject()
+                    //     .done(
+                    //         function () {
+                    //             self.afterPlaceOrder();
+                    //
+                    //             if (self.redirectAfterPlaceOrder) {
+                    //                 redirectOnSuccessAction.execute();
+                    //             }
+                    //         }
+                    //     ).always(
+                    //     function () {
+                    //         self.isPlaceOrderActionAllowed(true);
+                    //     }
+                    // );
+
+                    return true;
+                }
+
+                return false;
+            },
+
+            /**
+             * Redirect to controller after place order
+             */
+            afterPlaceOrder: function () {
+                redirectOnSuccessAction.redirectUrl = url.build('multisafepay/connect/redirect/');
+                this.redirectAfterPlaceOrder = true;
             }
         });
     }
