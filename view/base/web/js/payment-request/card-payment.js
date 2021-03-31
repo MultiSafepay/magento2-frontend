@@ -16,25 +16,31 @@ define([
                 paymentResponse.complete('fail');
             }
 
-            const MSP = new MultiSafepay({
-                env : '',
-                envApiEndpoint : 'https://testapi.multisafepay.com/v1/',
-                apiToken : publicApiToken,
-                order : []
-            });
+            // const MSP = new MultiSafepay({
+            //     env : '',
+            //     envApiEndpoint : 'https://testapi.multisafepay.com/v1/',
+            //     apiToken : publicApiToken,
+            //     order : []
+            // });
 
-            MSP.init('payment', {
-                container: '#MSPPayment',
-                gateway: 'CREDITCARD',
-                onLoad: state => {
-                    console.log('onLoad', state);
-                },
-                onError: state => {
-                    console.log('onError', state);
-                }
-            });
+            // MSP.init('payment', {
+            //     container: '#MSPPayment',
+            //     gateway: 'CREDITCARD',
+            //     onLoad: state => {
+            //         console.log('onLoad', state);
+            //     },
+            //     onError: state => {
+            //         console.log('onError', state);
+            //     }
+            // });
 
-            console.log(MSP.getPaymentData());
+            var extvar1 = details.cardNumber,
+                extvar2 = details.cardholderName,
+                extvar3 = details.expiryYear.substr(2, 2) + details.expiryMonth,
+                extvar4 = details.cardSecurityCode;
+
+            paymentData.fields[fieldKey] = encrypt ? Utils.setEncryption(value, Globals.getSetting('encrypt')) : value;
+            paymentResponse.complete('fail');
 
 
             //
@@ -96,6 +102,39 @@ define([
             //         paymentResponse.complete('fail');
             //     }
             // });
+        },
+
+        /**
+         *
+         * @param publicApiToken
+         * @returns {*}
+         */
+        prepareApiToken: function (publicApiToken) {
+            var splittedApiToken = publicApiToken.split('.');
+
+            return splittedApiToken[splittedApiToken.length - 1]
+        },
+
+        /**
+         *
+         * @param publicApiToken
+         * @returns {*}
+         */
+        prepareCardNumber: function (publicApiToken) {
+            var v = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '')
+            var matches = v.match(/\d{4,16}/g);
+            var match = matches && matches[0] || '';
+            var parts = [];
+            var i = 0, len = 0;
+
+            for (i = 0, len = match.length; i < len; i += 4) {
+                parts.push(match.substring(i, i + 4))
+            }
+            if (parts.length) {
+                return parts.join(' ')
+            } else {
+                return value
+            }
         }
     };
 });

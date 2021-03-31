@@ -72,8 +72,6 @@ define([
                         paymentRequestData
                     );
                 });
-
-
             } else {
                 console.log($t("Payment Request Api data not available."));
 

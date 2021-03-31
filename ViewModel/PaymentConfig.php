@@ -90,7 +90,7 @@ class PaymentConfig implements ArgumentInterface
                     "prePaid" => 0,
                     "paymentMethod" => $methodCode,
                     "additionalInfo" => $additionalDataConfig && isset($additionalDataConfig['payment'][$methodCode])
-                            ? $additionalDataConfig['payment'][$methodCode] : []
+                        ? $additionalDataConfig['payment'][$methodCode] : [],
                 ];
             }
         }
