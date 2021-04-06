@@ -24,7 +24,8 @@ define(
         'mage/url',
         'multisafepayPaymentRequest',
         'Magento_Checkout/js/action/select-payment-method',
-        'Magento_Checkout/js/model/payment/additional-validators'
+        'Magento_Checkout/js/model/payment/additional-validators',
+        'Magento_Checkout/js/action/place-order',
     ],
 
     /**
@@ -35,6 +36,10 @@ define(
      * @param redirectOnSuccessAction
      * @param VaultEnabler
      * @param url
+     * @param paymentRequest
+     * @param selectPaymentMethodAction
+     * @param additionalValidators
+     * @param placeOrderAction
      * @returns {*}
      */
     function (
@@ -46,7 +51,8 @@ define(
         url,
         paymentRequest,
         selectPaymentMethodAction,
-        additionalValidators
+        additionalValidators,
+        placeOrderAction
     ) {
         'use strict';
 
@@ -118,24 +124,31 @@ define(
                     additionalValidators.validate() &&
                     this.isPlaceOrderActionAllowed() === true
                 ) {
-                    // this.isPlaceOrderActionAllowed(false);
+                    var deferred = $.Deferred();
+                    this.isPlaceOrderActionAllowed(false);
+                    paymentRequest.init(this.getCode(), deferred);
 
-                    paymentRequest.init(this.getCode());
+                    $.when(deferred).then(function (paymentData) {
+                        let paymentRequestData = {
+                            "method": self.item.method,
+                            "additional_data": {
+                                'payload': paymentData
+                            }
+                        };
 
-                    // this.getPlaceOrderDeferredObject()
-                    //     .done(
-                    //         function () {
-                    //             self.afterPlaceOrder();
-                    //
-                    //             if (self.redirectAfterPlaceOrder) {
-                    //                 redirectOnSuccessAction.execute();
-                    //             }
-                    //         }
-                    //     ).always(
-                    //     function () {
-                    //         self.isPlaceOrderActionAllowed(true);
-                    //     }
-                    // );
+                        $.when(placeOrderAction(paymentRequestData, self.messageContainer)).done(
+                                function () {
+                                    self.afterPlaceOrder();
+
+                                    if (self.redirectAfterPlaceOrder) {
+                                        redirectOnSuccessAction.execute();
+                                    }
+                                }
+                            ).always(function () {
+                                self.isPlaceOrderActionAllowed(true);
+                            }
+                        );
+                    });
 
                     return true;
                 }

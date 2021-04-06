@@ -20,7 +20,9 @@ define([
     'use strict';
 
     return {
-        init: function (paymentCode) {
+        init: function (paymentCode, deferred) {
+            deferred = deferred || $.Deferred();
+
             var paymentRequestData = customerData.get('multisafepay-payment-request')();
             var cartData = customerData.get('cart')();
 
@@ -28,13 +30,13 @@ define([
                 if (!paymentRequestData.cardsConfig.hasOwnProperty(paymentCode)) {
                     console.log($t("Payment data for selected payment method wasn\'t found."));
 
-                    return false;
+                    deferred.resolve(false);
                 }
 
                 if (!cartData.grandTotalAmount && !paymentRequestData.cartTotal) {
                     console.log($t("Quote data is not full."));
 
-                    return false;
+                    deferred.resolve(false);
                 }
 
                 var paymentData = paymentRequestData.cardsConfig[paymentCode];
@@ -65,17 +67,19 @@ define([
                         paymentResponse.complete('fail');
                     }
 
-                    multisafepayCardPaymentProcessor.process(
+                    let encryptedData = multisafepayCardPaymentProcessor.process(
                         paymentRequestApi,
                         paymentResponse,
                         paymentCode,
                         paymentRequestData
                     );
+
+                    deferred.resolve(encryptedData);
                 });
             } else {
                 console.log($t("Payment Request Api data not available."));
 
-                return false;
+                deferred.resolve(false);
             }
         },
 
