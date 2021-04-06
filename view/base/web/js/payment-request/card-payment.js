@@ -1,15 +1,16 @@
 define([
-    'multisafepayPaymentComponent',
+    'multisafepayUtils',
     'mage/translate',
     'jquery'
-], function (multisafepayPaymentComponent, $t, $) {
+], function (multisafepayUtils, $t, $) {
     'use strict';
 
     return {
         process: function (paymentRequest, paymentResponse, paymentCode, paymentRequestData) {
-            var details = paymentResponse.details,
+            let details = paymentResponse.details,
                 paymentData = paymentRequestData.cardsConfig[paymentCode],
-                publicApiToken = paymentRequestData.apiToken;
+                publicApiToken = paymentRequestData.apiToken,
+                payloadData = false;
 
             if (!publicApiToken) {
                 console.log($t("No public API token was provided."));
@@ -34,13 +35,20 @@ define([
             //     }
             // });
 
-            var extvar1 = details.cardNumber,
-                extvar2 = details.cardholderName,
-                extvar3 = details.expiryYear.substr(2, 2) + details.expiryMonth,
-                extvar4 = details.cardSecurityCode;
+            try {
+                let encryptedData = this.getEncryptedData(details, publicApiToken);
 
-            paymentData.fields[fieldKey] = encrypt ? Utils.setEncryption(value, Globals.getSetting('encrypt')) : value;
-            paymentResponse.complete('fail');
+                if (!encryptedData) {
+                    console.log($t("Can\'t get the payment encrypted data."));
+                    paymentResponse.complete('fail');
+                }
+
+                console.log(encryptedData);
+                paymentResponse.complete('fail');
+            } catch (e) {
+                console.log(e);
+                paymentResponse.complete('fail');
+            }
 
 
             //
@@ -106,35 +114,43 @@ define([
 
         /**
          *
+         * @param paymentDetails
          * @param publicApiToken
-         * @returns {*}
+         * @returns {boolean|{payment_data: {payload: *}, gateway: string}}
          */
-        prepareApiToken: function (publicApiToken) {
-            var splittedApiToken = publicApiToken.split('.');
+        getEncryptedData: function (paymentDetails, publicApiToken) {
+            var cardNumber = multisafepayUtils.prepareCardNumber(paymentDetails.cardNumber),
+                cardholderName = paymentDetails.cardholderName,
+                cardDate = paymentDetails.expiryYear.substr(2, 2) + paymentDetails.expiryMonth,
+                cardSecurityCode = paymentDetails.cardSecurityCode,
+                encrypt = multisafepayUtils.prepareApiToken(publicApiToken),
+                gatewayCode = 'CREDITCARD',
+                payloadData = false;
 
-            return splittedApiToken[splittedApiToken.length - 1]
+            if (!cardNumber || !cardholderName || !cardDate || !cardSecurityCode || !encrypt) {
+                return false;
+            }
+
+            payloadData = JSON.stringify({
+                gateway: gatewayCode,
+                customer: {
+                    browser: multisafepayUtils.getBrowserInfo()
+                },
+                fields: {
+                    'extvar1': multisafepayUtils.encryptData(cardNumber, encrypt),
+                    'extvar2': multisafepayUtils.encryptData(cardholderName, encrypt),
+                    'extvar3': multisafepayUtils.encryptData(cardDate, encrypt),
+                    'extvar4': multisafepayUtils.encryptData(cardSecurityCode, encrypt)
+                },
+                encrypted: true
+            });
+
+            return  {
+                gateway: gatewayCode,
+                payment_data: {
+                    payload: multisafepayUtils.base64Encode(payloadData)
+                }
+            }
         },
-
-        /**
-         *
-         * @param publicApiToken
-         * @returns {*}
-         */
-        prepareCardNumber: function (publicApiToken) {
-            var v = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '')
-            var matches = v.match(/\d{4,16}/g);
-            var match = matches && matches[0] || '';
-            var parts = [];
-            var i = 0, len = 0;
-
-            for (i = 0, len = match.length; i < len; i += 4) {
-                parts.push(match.substring(i, i + 4))
-            }
-            if (parts.length) {
-                return parts.join(' ')
-            } else {
-                return value
-            }
-        }
     };
 });
