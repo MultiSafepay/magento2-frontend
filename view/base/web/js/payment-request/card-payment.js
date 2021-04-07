@@ -70,13 +70,6 @@ define([
                 encrypted: true
             });
 
-            // return  {
-            //     gateway: gatewayCode,
-            //     payment_data: {
-            //         payload: multisafepayUtils.base64Encode(payloadData)
-            //     }
-            // }
-
             return multisafepayUtils.base64Encode(payloadData);
         },
     };

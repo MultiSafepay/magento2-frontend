@@ -29,14 +29,16 @@ define([
             if (paymentRequestData && this.isAvailable() && paymentRequestData.enabled) {
                 if (!paymentRequestData.cardsConfig.hasOwnProperty(paymentCode)) {
                     console.log($t("Payment data for selected payment method wasn\'t found."));
-
                     deferred.resolve(false);
+
+                    return;
                 }
 
                 if (!cartData.grandTotalAmount && !paymentRequestData.cartTotal) {
                     console.log($t("Quote data is not full."));
-
                     deferred.resolve(false);
+
+                    return;
                 }
 
                 var paymentData = paymentRequestData.cardsConfig[paymentCode];
@@ -78,7 +80,6 @@ define([
                 });
             } else {
                 console.log($t("Payment Request Api data not available."));
-
                 deferred.resolve(false);
             }
         },
