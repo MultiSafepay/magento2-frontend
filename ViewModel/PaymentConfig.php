@@ -26,6 +26,7 @@ class PaymentConfig implements ArgumentInterface
         MaestroConfigProvider::CODE,
         MastercardConfigProvider::CODE,
         VisaConfigProvider::CODE,
+        CreditCardConfigProvider::CODE
     ];
 
     private const DEFAULT_CARD_TYPES = ['credit', 'debit'];
@@ -69,6 +70,8 @@ class PaymentConfig implements ArgumentInterface
 
     /**
      * @return array
+     * @throws LocalizedException
+     * @throws NoSuchEntityException
      */
     public function getCardsConfig(): array
     {
@@ -77,7 +80,9 @@ class PaymentConfig implements ArgumentInterface
         foreach (self::CREDIT_CARD_PAYMENT_METHODS as $methodCode) {
             $configProvider = $this->configProviderPool->getConfigProviderByCode($methodCode);
             $additionalDataConfig = $configProvider->getConfig();
-            $paymentConfig = $configProvider->getPaymentConfig((int)$this->getQuote()->getStoreId());
+            $paymentConfig = $configProvider->getPaymentConfig(
+                (int)$this->getQuote()->getStoreId()
+            );
 
             if ($paymentConfig
                 && isset($paymentConfig['payment_type'])
@@ -106,6 +111,10 @@ class PaymentConfig implements ArgumentInterface
     {
         if ($methodCode === CreditCardConfigProvider::CODE) {
             return ['amex', 'visa', 'maestro', 'mastercard'];
+        }
+
+        if ($methodCode === MaestroConfigProvider::CODE) {
+            return ['visa', 'maestro', 'mastercard'];
         }
 
         return [str_replace('multisafepay_', '', $methodCode)];
@@ -185,19 +194,6 @@ class PaymentConfig implements ArgumentInterface
     }
 
     /**
-     * @return array
-     */
-    public function getUrls(): array
-    {
-        //$maskedQuoteId = $this->getQuoteIdMask();
-
-        return [
-            "checkout" => $this->url->getUrl("multisafepay/checkout/index"),
-            "success" => $this->url->getUrl("checkout/onepage/success"),
-        ];
-    }
-
-    /**
      * @return int
      * @throws LocalizedException
      * @throws NoSuchEntityException
@@ -215,6 +211,16 @@ class PaymentConfig implements ArgumentInterface
     public function getQuoteTotal(): float
     {
         return (float)$this->getQuote()->getGrandTotal();
+    }
+
+    /**
+     * @return int
+     * @throws LocalizedException
+     * @throws NoSuchEntityException
+     */
+    public function getStoreIdFromQuote(): int
+    {
+        return (int)$this->getQuote()->getStoreId();
     }
 
     /**

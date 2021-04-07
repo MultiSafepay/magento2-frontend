@@ -20,11 +20,16 @@ define([
     'use strict';
 
     return {
+
+        /**
+         *
+         * @param paymentCode
+         * @param deferred
+         */
         init: function (paymentCode, deferred) {
             deferred = deferred || $.Deferred();
-
-            var paymentRequestData = customerData.get('multisafepay-payment-request')();
-            var cartData = customerData.get('cart')();
+            let paymentRequestData = customerData.get('multisafepay-payment-request')();
+            let cartData = customerData.get('cart')();
 
             if (paymentRequestData && this.isAvailable() && paymentRequestData.enabled) {
                 if (!paymentRequestData.cardsConfig.hasOwnProperty(paymentCode)) {
@@ -41,11 +46,11 @@ define([
                     return;
                 }
 
-                var paymentData = paymentRequestData.cardsConfig[paymentCode];
-                var methodData = this.getPaymentMethods(paymentData);
-                var displayItems = this.getItems(paymentRequestData);
+                let paymentData = paymentRequestData.cardsConfig[paymentCode],
+                    methodData = this.getPaymentMethods(paymentData),
+                    displayItems = this.getItems(paymentRequestData);
 
-                var details = {
+                let details = {
                     displayItems: displayItems,
                     total: {
                         label: $t("Total"),
@@ -58,7 +63,7 @@ define([
                     }
                 };
 
-                var paymentRequestApi = new PaymentRequest(methodData, details);
+                let paymentRequestApi = new PaymentRequest(methodData, details);
 
                 /**
                  * payment process
@@ -77,9 +82,11 @@ define([
                     );
 
                     deferred.resolve(encryptedData);
+                }).catch(function(error) {
+                    deferred.resolve(false);
                 });
             } else {
-                console.log($t("Payment Request Api data not available."));
+                console.log($t("Payment Request Api data not available for selected payment method."));
                 deferred.resolve(false);
             }
         },
