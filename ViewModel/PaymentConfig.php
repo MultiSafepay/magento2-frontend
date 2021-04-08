@@ -11,6 +11,7 @@ use Magento\Framework\UrlInterface;
 use Magento\Framework\View\Element\Block\ArgumentInterface;
 use Magento\Quote\Api\Data\CartInterface;
 use Magento\Quote\Api\Data\CartItemInterface;
+use Magento\Quote\Model\Quote;
 use MultiSafepay\ConnectAdminhtml\Model\Config\Source\CardPaymentTypes;
 use MultiSafepay\ConnectCore\Model\Ui\ConfigProviderPool;
 use MultiSafepay\ConnectCore\Model\Ui\Gateway\AmexConfigProvider;
@@ -26,7 +27,7 @@ class PaymentConfig implements ArgumentInterface
         MaestroConfigProvider::CODE,
         MastercardConfigProvider::CODE,
         VisaConfigProvider::CODE,
-        CreditCardConfigProvider::CODE
+        CreditCardConfigProvider::CODE,
     ];
 
     private const DEFAULT_CARD_TYPES = ['credit', 'debit'];
@@ -92,7 +93,6 @@ class PaymentConfig implements ArgumentInterface
                 $result[$methodCode] = [
                     "types" => self::DEFAULT_CARD_TYPES,
                     "flags" => $this->getCardFlagByMethodCode($methodCode),
-                    "prePaid" => 0,
                     "paymentMethod" => $methodCode,
                     "additionalInfo" => $additionalDataConfig && isset($additionalDataConfig['payment'][$methodCode])
                         ? $additionalDataConfig['payment'][$methodCode] : [],
@@ -121,31 +121,18 @@ class PaymentConfig implements ArgumentInterface
     }
 
     /**
-     * Generate product label using the sku and quantity
-     *
      * @param CartItemInterface $item
      * @return string
-     * @throws LocalizedException
-     * @throws NoSuchEntityException
      */
     protected function generateProductLabel(CartItemInterface $item): string
     {
         $quantity = $item->getQty();
+        $result = $item->getName() . " (SKU: " . $item->getSku() . ")";
 
-        if ($quantity > 0) {
-            $currencyCode = $this->getCurrency();
-            if (filter_var($quantity, FILTER_VALIDATE_INT) === false) {
-                return $item->getName() . " (#" . $item->getSku() . ") (" . $currencyCode .
-                       number_format((float)$item->getPrice(), 2, '.', '') .
-                       ") x" . (int)$quantity;
-            } else {
-                return $item->getName() . " (#" . $item->getSku() . ") (" . $currencyCode .
-                       number_format((float)$item->getPrice(), 2, '.', '') . ") x" .
-                       number_format((float)$quantity, 2, '.', '');
-            }
-        } else {
-            return $item->getName() . " (#" . $item->getSku() . ")";
-        }
+        return $quantity > 0
+            ? $result . "; Qty: " . (is_int($quantity) ? (int)$quantity
+                : number_format((float)$quantity, 2, '.', ''))
+            : $result;
     }
 
     /**
@@ -155,12 +142,8 @@ class PaymentConfig implements ArgumentInterface
      */
     public function getQuoteItems(): array
     {
-        $products = [];
-
-        /**
-         * @var CartInterface $quote
-         */
         $quote = $this->getQuote();
+        $products = [];
 
         foreach ($quote->getAllVisibleItems() as $item) {
             $products[$item->getSku()] = [
@@ -173,18 +156,19 @@ class PaymentConfig implements ArgumentInterface
     }
 
     /**
-     * @return CartInterface|null
+     * @return CartInterface
      * @throws LocalizedException
      * @throws NoSuchEntityException
      */
-    private function getQuote()
+    private function getQuote(): CartInterface
     {
-
         if ($this->quote) {
             return $this->quote;
         }
 
-        if (!($quote = $this->session->getQuote())) {
+        $quote = $this->session->getQuote();
+
+        if (!$quote->getId()) {
             throw new LocalizedException(__('Cart ID was\'t found'));
         }
 
@@ -238,29 +222,34 @@ class PaymentConfig implements ArgumentInterface
      * @throws LocalizedException
      * @throws NoSuchEntityException
      */
-    public function getDiscount(): array
+    public function getAdditionalTotalItems(): array
     {
-        $coupon = (string)$this->getQuote()->getCouponCode();
+        $result = [];
+        $quote = $this->getQuote();
+        $shippingAddress = $quote->getShippingAddress();
+        $taxAmount = $shippingAddress->getTaxAmount();
 
-        if ($coupon !== "") {
-            return [
-                "label" => sprintf(__("Discount (%s)"), $coupon),
-                "amount" => -(
-                    $this->session->getQuote()->getSubtotal() - $this->session->getQuote()->getSubtotalWithDiscount()
-                ),
+        if ($shippingAddress->getShippingMethod()) {
+            $result[] = [
+                "label" => sprintf(__("Shipping Method: (%s)"), $shippingAddress->getShippingDescription()),
+                "amount" => $shippingAddress->getShippingInclTax(),
             ];
         }
 
-        return [];
-    }
+        if ((float)$taxAmount) {
+            $result[] = [
+                "label" => "Tax:",
+                "amount" => $taxAmount,
+            ];
+        }
 
-    /**
-     * @return int
-     * @throws LocalizedException
-     * @throws NoSuchEntityException
-     */
-    public function getCustomerId(): int
-    {
-        return (int)($this->getQuote()->getCustomerId() ? : null);
+        if ($coupon = (string)$quote->getCouponCode()) {
+            $result[] = [
+                "label" => sprintf(__("Discount (%s)"), $coupon),
+                "amount" => $shippingAddress->getDiscountAmount(),
+            ];
+        }
+
+        return $result;
     }
 }

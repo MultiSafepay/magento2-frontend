@@ -1,3 +1,16 @@
+/**
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Open Software License (OSL 3.0)
+ * that is provided with Magento in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/osl-3.0.php
+ *
+ * Copyright © 2021 MultiSafepay, Inc. All rights reserved.
+ * See DISCLAIMER.md for disclaimer details.
+ *
+ */
 define([
     'multisafepayUtils',
     'mage/translate',
@@ -6,6 +19,14 @@ define([
     'use strict';
 
     return {
+        /**
+         *
+         * @param paymentRequest
+         * @param paymentResponse
+         * @param paymentCode
+         * @param paymentRequestData
+         * @returns {*|string|boolean|boolean}
+         */
         process: function (paymentRequest, paymentResponse, paymentCode, paymentRequestData) {
             let details = paymentResponse.details,
                 publicApiToken = paymentRequestData.apiToken;
@@ -18,7 +39,7 @@ define([
             }
 
             try {
-                let encryptedData = this.getEncryptedData(details, publicApiToken);
+                let encryptedData = multisafepayUtils.getEncryptedData(details, publicApiToken);
 
                 if (!encryptedData) {
                     console.log($t("Can\'t get the payment encrypted data."));
@@ -33,44 +54,9 @@ define([
             } catch (e) {
                 console.log(e);
                 paymentResponse.complete('fail');
+
                 return false;
             }
-        },
-
-        /**
-         *
-         * @param paymentDetails
-         * @param publicApiToken
-         * @returns {boolean|{payment_data: {payload: *}, gateway: string}}
-         */
-        getEncryptedData: function (paymentDetails, publicApiToken) {
-            var cardNumber = multisafepayUtils.prepareCardNumber(paymentDetails.cardNumber),
-                cardholderName = paymentDetails.cardholderName,
-                cardDate = paymentDetails.expiryYear.substr(2, 2) + paymentDetails.expiryMonth,
-                cardSecurityCode = paymentDetails.cardSecurityCode,
-                encrypt = multisafepayUtils.prepareApiToken(publicApiToken),
-                gatewayCode = 'CREDITCARD',
-                payloadData = false;
-
-            if (!cardNumber || !cardholderName || !cardDate || !cardSecurityCode || !encrypt) {
-                return false;
-            }
-
-            payloadData = JSON.stringify({
-                gateway: gatewayCode,
-                customer: {
-                    browser: multisafepayUtils.getBrowserInfo()
-                },
-                fields: {
-                    'extvar1': multisafepayUtils.encryptData(cardNumber, encrypt),
-                    'extvar2': multisafepayUtils.encryptData(cardholderName, encrypt),
-                    'extvar3': multisafepayUtils.encryptData(cardDate, encrypt),
-                    'extvar4': multisafepayUtils.encryptData(cardSecurityCode, encrypt)
-                },
-                encrypted: true
-            });
-
-            return multisafepayUtils.base64Encode(payloadData);
-        },
+        }
     };
 });

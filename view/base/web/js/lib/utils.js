@@ -1,8 +1,19 @@
+/**
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Open Software License (OSL 3.0)
+ * that is provided with Magento in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/osl-3.0.php
+ *
+ * Copyright © 2021 MultiSafepay, Inc. All rights reserved.
+ * See DISCLAIMER.md for disclaimer details.
+ *
+ */
 define([
-    'mspCrypt',
-    'mage/translate',
-    'jquery'
-], function (mspCrypt, $t, $) {
+    'mspCrypt'
+], function (mspCrypt) {
     'use strict';
 
     return {
@@ -12,7 +23,7 @@ define([
          * @returns {*}
          */
         prepareApiToken: function (publicApiToken) {
-            var splittedApiToken = publicApiToken.split('.');
+            let splittedApiToken = publicApiToken.split('.');
 
             return splittedApiToken[splittedApiToken.length - 1]
         },
@@ -23,8 +34,8 @@ define([
          * @returns {string|boolean}
          */
         prepareCardNumber: function (publicApiToken) {
-            let v = publicApiToken.replace(/\s+/g, '').replace(/[^0-9]/gi, ''),
-                matches = v.match(/\d{4,16}/g),
+            let value = publicApiToken.replace(/\s+/g, '').replace(/[^0-9]/gi, ''),
+                matches = value.match(/\d{4,16}/g),
                 match = matches && matches[0] || '',
                 parts = [],
                 i = 0, len = 0;
@@ -43,7 +54,13 @@ define([
          * @returns {*}
          */
         encryptData: function (value, publicKey) {
-            const encrypt = new MSPCrypt();
+            const lib = 'MSPCrypt';
+
+            if (!window[lib]) {
+                throw 'Encryption library not loaded';
+            }
+
+            const encrypt = new window[lib]();
             encrypt.setPublicKey(publicKey);
 
             return encrypt.encrypt(value);
@@ -108,6 +125,58 @@ define([
          */
         base64Decode: function (string) {
             return decodeURIComponent(escape(window.atob(str)));
+        },
+
+        /**
+         *
+         * @param paymentDetails
+         * @param publicApiToken
+         * @returns {string|boolean}
+         */
+        getEncryptedData: function (paymentDetails, publicApiToken) {
+            const gatewayCode = 'CREDITCARD';
+            let cardNumber = this.prepareCardNumber(paymentDetails.cardNumber),
+                cardholderName = paymentDetails.cardholderName,
+                cardDate = paymentDetails.expiryYear.substr(2, 2) + paymentDetails.expiryMonth,
+                cardSecurityCode = paymentDetails.cardSecurityCode,
+                encrypt = this.prepareApiToken(publicApiToken),
+                payloadData = false;
+
+            if (!cardNumber || !cardholderName || !cardDate || !cardSecurityCode || !encrypt) {
+                return false;
+            }
+
+            payloadData = JSON.stringify({
+                gateway: gatewayCode,
+                customer: {
+                    browser: this.getBrowserInfo()
+                },
+                fields: {
+                    'extvar1': this.encryptData(cardNumber, encrypt),
+                    'extvar2': this.encryptData(cardholderName, encrypt),
+                    'extvar3': this.encryptData(cardDate, encrypt),
+                    'extvar4': this.encryptData(cardSecurityCode, encrypt)
+                },
+                encrypted: true
+            });
+
+            return this.base64Encode(payloadData);
+        },
+
+        /**
+         *
+         * @returns {boolean}
+         */
+        isPaymentRequestAvailable: function () {
+            let userAgent = navigator.userAgent;
+
+            if (userAgent.indexOf("Chrome") <= -1 && userAgent.indexOf("Safari") > -1) {
+                return false;
+            } else if (window.PaymentRequest) {
+                return true;
+            }
+
+            return false;
         }
     };
 });

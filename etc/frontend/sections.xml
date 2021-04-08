@@ -1,10 +1,5 @@
 <?xml version="1.0"?>
-<!--
-/**
- * Copyright © Magento, Inc. All rights reserved.
- * See COPYING.txt for license details.
- */
--->
+
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Customer:etc/sections.xsd">
     <action name="checkout/cart/add">
@@ -49,7 +44,25 @@
     <action name="rest/*/V1/guest-carts/*/selected-payment-method">
         <section name="multisafepay-payment-request"/>
     </action>
+    <action name="rest/*/V1/guest-carts/*/shipping-information">
+        <section name="multisafepay-payment-request"/>
+    </action>
+    <action name="rest/*/V1/carts/*/shipping-information">
+        <section name="multisafepay-payment-request"/>
+    </action>
     <action name="rest/*/V1/carts/*/selected-payment-method">
+        <section name="multisafepay-payment-request"/>
+    </action>
+    <action name="rest/*/V1/guest-carts/*/set-payment-information">
+        <section name="multisafepay-payment-request"/>
+    </action>
+    <action name="rest/*/V1/carts/*/set-payment-information">
+        <section name="multisafepay-payment-request"/>
+    </action>
+    <action name="rest/*/V1/guest-carts/*/totals">
+        <section name="multisafepay-payment-request"/>
+    </action>
+    <action name="rest/*/V1/carts/*/totals">
         <section name="multisafepay-payment-request"/>
     </action>
 </config>

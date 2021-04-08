@@ -1,26 +1,32 @@
+/**
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Open Software License (OSL 3.0)
+ * that is provided with Magento in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/osl-3.0.php
+ *
+ * Copyright © 2021 MultiSafepay, Inc. All rights reserved.
+ * See DISCLAIMER.md for disclaimer details.
+ *
+ */
 define([
     'jquery',
-    'ko',
-    'underscore',
-    'mageUtils',
-    'Magento_Ui/js/lib/collapsible',
     'mage/translate',
     'Magento_Customer/js/customer-data',
-    'multisafepayCardPaymentProcessor'
+    'multisafepayCardPaymentProcessor',
+    'multisafepayUtils'
 ], function (
     $,
-    ko,
-    _,
-    utils,
-    Collapsible,
     $t,
     customerData,
-    multisafepayCardPaymentProcessor
+    multisafepayCardPaymentProcessor,
+    multisafepayUtils
 ) {
     'use strict';
 
     return {
-
         /**
          *
          * @param paymentCode
@@ -31,7 +37,7 @@ define([
             let paymentRequestData = customerData.get('multisafepay-payment-request')();
             let cartData = customerData.get('cart')();
 
-            if (paymentRequestData && this.isAvailable() && paymentRequestData.enabled) {
+            if (paymentRequestData && multisafepayUtils.isPaymentRequestAvailable() && paymentRequestData.enabled) {
                 if (!paymentRequestData.cardsConfig.hasOwnProperty(paymentCode)) {
                     console.log($t("Payment data for selected payment method wasn\'t found."));
                     deferred.resolve(false);
@@ -48,7 +54,7 @@ define([
 
                 let paymentData = paymentRequestData.cardsConfig[paymentCode],
                     methodData = this.getPaymentMethods(paymentData),
-                    displayItems = this.getItems(paymentRequestData);
+                    displayItems = this.getTotalItems(paymentRequestData);
 
                 let details = {
                     displayItems: displayItems,
@@ -82,7 +88,8 @@ define([
                     );
 
                     deferred.resolve(encryptedData);
-                }).catch(function(error) {
+                }).catch(function (error) {
+                    console.log(error);
                     deferred.resolve(false);
                 });
             } else {
@@ -93,11 +100,51 @@ define([
 
         /**
          *
+         * @param paymentRequest
+         * @returns {[]}
+         */
+        getTotalItems: function (paymentRequest) {
+            let displayItems = [];
+            let values = Object.values(paymentRequest.cartItems);
+
+            for (let sku in values) {
+                let cartItem = values[sku];
+
+                displayItems.push({
+                    label: cartItem.label,
+                    amount: {
+                        currency: paymentRequest.currency,
+                        value: cartItem.price
+                    }
+                });
+            }
+
+            let additionalItems = paymentRequest.additionalTotalItems;
+
+            if (additionalItems.length) {
+                $(additionalItems).each(function (index, value) {
+                    if (value.amount) {
+                        displayItems.push({
+                            label: value.label,
+                            amount: {
+                                currency: paymentRequest.currency,
+                                value: value.amount
+                            }
+                        });
+                    }
+                });
+            }
+
+            return displayItems;
+        },
+
+        /**
+         *
          * @param paymentData
          * @returns {[]}
          */
         getPaymentMethods: function (paymentData) {
-            var methodData = [];
+            let methodData = [];
 
             if (paymentData.prePaid) {
                 types.push("prepaid");
@@ -112,54 +159,6 @@ define([
             });
 
             return methodData;
-        },
-
-        /**
-         *
-         * @param paymentRequest
-         * @returns {[]}
-         */
-        getItems: function (paymentRequest) {
-            var displayItems = [];
-            var values = Object.values(paymentRequest.cartItems);
-
-            for (var sku in values) {
-                var cartItem = values[sku];
-
-                displayItems.push({
-                    label: cartItem.label,
-                    amount: {
-                        currency: paymentRequest.currency,
-                        value: cartItem.price
-                    }
-                });
-            }
-
-            if (paymentRequest.discount.amount) {
-                displayItems.push({
-                    label: paymentRequest.discount.label,
-                    amount: {
-                        currency: paymentRequest.currency,
-                        value: paymentRequest.discount.amount
-                    }
-                });
-            }
-
-            return displayItems;
-        },
-
-        /**
-         *
-         * @returns {boolean}
-         */
-        isAvailable: function () {
-            var sUsrAg = navigator.userAgent;
-            if (sUsrAg.indexOf("Chrome") <= -1 && sUsrAg.indexOf("Safari") > -1) {
-                return false;
-            } else if (window.PaymentRequest) {
-                return true;
-            }
-            return false;
         }
     };
 });

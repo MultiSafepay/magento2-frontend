@@ -63,9 +63,7 @@ define(
 
             initialize: function () {
                 this.vaultEnabler = new VaultEnabler();
-
                 this._super();
-
                 this.vaultEnabler.setPaymentCode(this.getVaultCode());
 
                 return this;
@@ -75,13 +73,10 @@ define(
              * @returns {Object}
              */
             getData: function () {
-                let data = {
+                return  {
                     'method': this.getCode(),
                     'additional_data': {}
                 };
-                this.vaultEnabler.visitAdditionalData(data);
-
-                return data;
             },
 
             /**
@@ -127,14 +122,14 @@ define(
                     var deferred = $.Deferred();
                     this.isPlaceOrderActionAllowed(false);
                     paymentRequest.init(this.getCode(), deferred);
+                    let paymentRequestData = this.getData();
 
                     $.when(deferred).then(function (paymentData) {
-                        let paymentRequestData = {
-                            "method": self.item.method,
-                            "additional_data": {
-                                'payload': paymentData
-                            }
-                        };
+                        if (paymentData) {
+                            paymentRequestData['additional_data']['payload'] = paymentData;
+                        }
+
+                        self.vaultEnabler.visitAdditionalData(paymentRequestData);
 
                         $.when(placeOrderAction(paymentRequestData, self.messageContainer)).done(
                                 function () {
