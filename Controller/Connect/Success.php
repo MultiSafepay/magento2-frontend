@@ -25,18 +25,10 @@ use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Quote\Api\CartRepositoryInterface;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\Data\OrderInterfaceFactory;
-use Magento\Sales\Api\OrderRepositoryInterface;
-use Magento\Sales\Model\Order;
-use MultiSafepay\Api\Transactions\Transaction;
-use MultiSafepay\ConnectCore\Factory\SdkFactory;
 use MultiSafepay\ConnectCore\Logger\Logger;
-use MultiSafepay\ConnectCore\Model\SecondChance;
 use MultiSafepay\ConnectCore\Util\CustomReturnUrlUtil;
 use MultiSafepay\ConnectCore\Util\OrderStatusUtil;
 use MultiSafepay\ConnectFrontend\Validator\RequestValidator;
-use MultiSafepay\Exception\ApiException;
-use MultiSafepay\Exception\InvalidApiKeyException;
-use Psr\Http\Client\ClientExceptionInterface;
 
 class Success extends Action
 {
@@ -44,11 +36,6 @@ class Success extends Action
      * @var OrderStatusUtil
      */
     protected $orderStatusUtil;
-
-    /**
-     * @var OrderRepositoryInterface
-     */
-    private $orderRepository;
 
     /**
      * @var OrderInterfaceFactory
@@ -59,11 +46,6 @@ class Success extends Action
      * @var Logger
      */
     private $logger;
-
-    /**
-     * @var SdkFactory
-     */
-    private $sdkFactory;
 
     /**
      * @var Session
@@ -81,11 +63,6 @@ class Success extends Action
     private $requestValidator;
 
     /**
-     * @var SecondChance
-     */
-    private $secondChance;
-
-    /**
      * @var CustomReturnUrlUtil
      */
     private $customReturnUrlUtil;
@@ -93,37 +70,28 @@ class Success extends Action
     /**
      * Success constructor.
      *
-     * @param SdkFactory $sdkFactory
      * @param Context $context
      * @param OrderInterfaceFactory $orderFactory
      * @param OrderStatusUtil $orderStatusUtil
-     * @param OrderRepositoryInterface $orderRepository
      * @param RequestValidator $requestValidator
      * @param Session $checkoutSession
-     * @param SecondChance $secondChance
      * @param Logger $logger
      * @param CartRepositoryInterface $cartRepository
      * @param CustomReturnUrlUtil $customReturnUrlUtil
      */
     public function __construct(
-        SdkFactory $sdkFactory,
         Context $context,
         OrderInterfaceFactory $orderFactory,
         OrderStatusUtil $orderStatusUtil,
-        OrderRepositoryInterface $orderRepository,
         RequestValidator $requestValidator,
         Session $checkoutSession,
-        SecondChance $secondChance,
         Logger $logger,
         CartRepositoryInterface $cartRepository,
         CustomReturnUrlUtil $customReturnUrlUtil
     ) {
         parent::__construct($context);
-        $this->sdkFactory = $sdkFactory;
         $this->orderFactory = $orderFactory;
-        $this->orderRepository = $orderRepository;
         $this->requestValidator = $requestValidator;
-        $this->secondChance = $secondChance;
         $this->logger = $logger;
         $this->checkoutSession = $checkoutSession;
         $this->cartRepository = $cartRepository;
@@ -133,7 +101,6 @@ class Success extends Action
 
     /**
      * @inheritDoc
-     * @throws ClientExceptionInterface
      * @throws LocalizedException
      */
     public function execute()
@@ -170,42 +137,9 @@ class Success extends Action
             $redirectUrl = $this->_redirect('checkout/onepage/success?utm_nooverride=1');
         }
 
-        try {
-            $multiSafepaySdk = $this->sdkFactory->create((int)$order->getStoreId())->get();
-        } catch (InvalidApiKeyException $invalidApiKeyException) {
-            $this->logger->logInvalidApiKeyException($invalidApiKeyException);
-
-            return $redirectUrl;
-        }
-
-        $transactionManager = $multiSafepaySdk->getTransactionManager();
-
-        try {
-            $transaction = $transactionManager->get($orderId);
-        } catch (ApiException $e) {
-            $this->logger->logGetRequestApiException($orderId, $e);
-
-            return $redirectUrl;
-        }
-
         $order->addCommentToStatusHistory('User redirected to the success page.');
 
         $this->setCheckoutSessionData($order);
-
-        if ($transaction->getStatus() === Transaction::COMPLETED) {
-            if ($order->getState() === Order::STATE_COMPLETE) {
-                return $redirectUrl;
-            }
-
-            if ($order->getState() === Order::STATE_CANCELED) {
-                $this->secondChance->reopenOrder($order);
-            }
-
-            $order->setState(Order::STATE_PROCESSING);
-            $order->setStatus($this->orderStatusUtil->getProcessingStatus($order));
-            $this->orderRepository->save($order);
-        }
-
         $this->logger->logPaymentSuccessInfo($orderId);
 
         return $redirectUrl;
