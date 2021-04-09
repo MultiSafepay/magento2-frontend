@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.6.1] - 2021-04-09
+### Removed
+- Removed order status check and reopening a cancelled order process from the Success controller, since it is already being done by the Notification controller instead.
+
 ## [1.6.0] - 2021-03-26
 ### Removed
 - Removed obsolete emandate field from Direct Debit checkout
