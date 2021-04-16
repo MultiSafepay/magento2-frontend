@@ -18,61 +18,24 @@ declare(strict_types=1);
 namespace MultiSafepay\ConnectFrontend\Controller\Connect;
 
 use Exception;
-use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
-use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Exception\LocalizedException;
-use Magento\Sales\Api\Data\InvoiceInterface;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Sales\Api\Data\OrderInterfaceFactory;
-use Magento\Sales\Api\InvoiceRepositoryInterface;
-use Magento\Sales\Api\OrderPaymentRepositoryInterface;
-use Magento\Sales\Api\OrderRepositoryInterface;
-use Magento\Sales\Api\TransactionRepositoryInterface;
 use Magento\Sales\Model\Order;
-use Magento\Sales\Model\Order\Payment;
-use Magento\Sales\Model\Order\Payment\Transaction as PaymentTransaction;
-use Magento\Sales\Model\Order\StatusResolver;
-use MultiSafepay\Api\Transactions\Transaction;
-use MultiSafepay\Api\Transactions\UpdateRequest;
-use MultiSafepay\ConnectCore\Api\RecurringDetailsInterface;
-use MultiSafepay\ConnectCore\Factory\SdkFactory;
 use MultiSafepay\ConnectCore\Logger\Logger;
-use MultiSafepay\ConnectCore\Model\SecondChance;
-use MultiSafepay\ConnectCore\Model\Vault;
-use MultiSafepay\ConnectCore\Service\EmailSender;
-use MultiSafepay\ConnectCore\Util\PaymentMethodUtil;
+use MultiSafepay\ConnectCore\Service\OrderService;
 use MultiSafepay\Exception\ApiException;
 use MultiSafepay\Exception\InvalidApiKeyException;
 use Psr\Http\Client\ClientExceptionInterface;
 
 class Notification extends Action
 {
-
     /**
      * @var OrderInterfaceFactory
      */
     private $orderFactory;
-
-    /**
-     * @var OrderRepositoryInterface
-     */
-    private $orderRepository;
-
-    /**
-     * @var SdkFactory
-     */
-    private $sdkFactory;
-
-    /**
-     * @var OrderPaymentRepositoryInterface
-     */
-    private $orderPaymentRepository;
-
-    /**
-     * @var TransactionRepositoryInterface
-     */
-    private $transactionRepository;
 
     /**
      * @var Logger
@@ -80,285 +43,72 @@ class Notification extends Action
     private $logger;
 
     /**
-     * @var SecondChance
+     * @var OrderService
      */
-    private $secondChance;
-
-    /**
-     * @var UpdateRequest
-     */
-    private $updateRequest;
-
-    /**
-     * @var InvoiceRepositoryInterface
-     */
-    private $invoiceRepository;
-
-    /**
-     * @var SearchCriteriaBuilder
-     */
-    private $searchCriteriaBuilder;
-
-    /**
-     * @var ScopeConfigInterface
-     */
-    private $scopeConfig;
-
-    /**
-     * @var EmailSender
-     */
-    private $emailSender;
-
-    /**
-     * @var Vault
-     */
-    private $vault;
-
-    /**
-     * @var StatusResolver
-     */
-    private $statusResolver;
-
-    /**
-     * @var PaymentMethodUtil
-     */
-    private $paymentMethodUtil;
+    private $orderService;
 
     /**
      * Notification constructor.
      *
-     * @param SdkFactory $sdkFactory
      * @param Context $context
-     * @param EmailSender $emailSender
      * @param OrderInterfaceFactory $orderFactory
-     * @param OrderPaymentRepositoryInterface $orderPaymentRepository
-     * @param OrderRepositoryInterface $orderRepository
-     * @param SecondChance $secondChance
-     * @param TransactionRepositoryInterface $transactionRepository
      * @param Logger $logger
-     * @param UpdateRequest $updateRequest
-     * @param InvoiceRepositoryInterface $invoiceRepository
-     * @param ScopeConfigInterface $scopeConfig
-     * @param SearchCriteriaBuilder $searchCriteriaBuilder
-     * @param Vault $vault
-     * @param StatusResolver $statusResolver
-     * @param PaymentMethodUtil $paymentMethodUtil
+     * @param OrderService $orderService
      */
     public function __construct(
-        SdkFactory $sdkFactory,
         Context $context,
-        EmailSender $emailSender,
         OrderInterfaceFactory $orderFactory,
-        OrderPaymentRepositoryInterface $orderPaymentRepository,
-        OrderRepositoryInterface $orderRepository,
-        SecondChance $secondChance,
-        TransactionRepositoryInterface $transactionRepository,
         Logger $logger,
-        UpdateRequest $updateRequest,
-        InvoiceRepositoryInterface $invoiceRepository,
-        ScopeConfigInterface $scopeConfig,
-        SearchCriteriaBuilder $searchCriteriaBuilder,
-        Vault $vault,
-        StatusResolver $statusResolver,
-        PaymentMethodUtil $paymentMethodUtil
+        OrderService $orderService
     ) {
         parent::__construct($context);
-        $this->emailSender = $emailSender;
-        $this->sdkFactory = $sdkFactory;
         $this->orderFactory = $orderFactory;
-        $this->orderPaymentRepository = $orderPaymentRepository;
-        $this->orderRepository = $orderRepository;
-        $this->secondChance = $secondChance;
-        $this->transactionRepository = $transactionRepository;
         $this->logger = $logger;
-        $this->updateRequest = $updateRequest;
-        $this->invoiceRepository = $invoiceRepository;
-        $this->searchCriteriaBuilder = $searchCriteriaBuilder;
-        $this->scopeConfig = $scopeConfig;
-        $this->vault = $vault;
-        $this->statusResolver = $statusResolver;
-        $this->paymentMethodUtil = $paymentMethodUtil;
+        $this->orderService = $orderService;
     }
 
     /**
      * @inheritDoc
-     * @throws LocalizedException
-     * @throws ClientExceptionInterface
      * @throws Exception
      */
     public function execute()
     {
         $params = $this->getRequest()->getParams();
-
-        if (!$this->validateParams($params)) {
-            return $this->getResponse()->setContent('ng');
-        }
-
-        $orderId = $params['transactionid'];
-
-        /** @var Order $order */
-        $order = $this->orderFactory->create()->loadByIncrementId($orderId);
+        $orderId = '';
 
         try {
-            $transactionManager = $this->sdkFactory->create((int)$order->getStoreId())->getTransactionManager();
+            if (!isset($params['transactionid'], $params['timestamp'])) {
+                throw new LocalizedException(__('Transaction params are not correct.'));
+            }
+
+            $orderId = $params['transactionid'];
+
+            /** @var Order $order */
+            $order = $this->orderFactory->create()->loadByIncrementId($orderId);
+          
+            if (!$order->getId()) {
+                throw new NoSuchEntityException(__('Requested order doesn\'t exist'));
+            }
+
+            $this->orderService->processOrderTransaction($order);
         } catch (InvalidApiKeyException $invalidApiKeyException) {
             $this->logger->logInvalidApiKeyException($invalidApiKeyException);
-            return $this->getResponse()->setContent('ng');
-        }
 
-        try {
-            $transaction = $transactionManager->get($orderId);
+            return $this->getResponse()->setContent('ng');
         } catch (ApiException $e) {
             $this->logger->logGetRequestApiException($orderId, $e);
+
+            return $this->getResponse()->setContent('ng');
+        } catch (ClientExceptionInterface $clientException) {
+            $this->logger->logClientException($orderId, $clientException);
+
+            return $this->getResponse()->setContent('ng');
+        } catch (Exception $exception) {
+            $this->logger->logExceptionForOrder($orderId, $exception);
+
             return $this->getResponse()->setContent('ng');
         }
 
-        $this->emailSender->sendOrderConfirmationEmailAfterTransaction($order);
-
-        /** @var Payment $payment */
-        $payment = $order->getPayment();
-
-        $paymentDetails = $transaction->getPaymentDetails();
-        $transactionType = $paymentDetails->getType();
-
-        //Check if Vault needs to be initialized
-        $this->vault->initialize($payment, [
-            RecurringDetailsInterface::RECURRING_ID => $paymentDetails->getRecurringId(),
-            RecurringDetailsInterface::TYPE => $transactionType,
-            RecurringDetailsInterface::EXPIRATION_DATE => $paymentDetails->getCardExpiryDate(),
-            RecurringDetailsInterface::CARD_LAST4 => $paymentDetails->getLast4()
-        ]);
-
-        $gatewayCode = $payment->getMethodInstance()->getConfigData('gateway_code');
-
-        if ($transactionType !== $gatewayCode && $this->paymentMethodUtil->isMultisafepayOrder($order)) {
-            $payment->setMethod($this->setDifferentPaymentMethod($transactionType));
-            $order->addCommentToStatusHistory(__('Payment method changed to ') . $transactionType);
-        }
-
-        $transactionStatus = $transaction->getStatus();
-
-        $transactionStatusMessage = __('MultiSafepay Transaction status: ') . $transactionStatus;
-        $order->addCommentToStatusHistory($transactionStatusMessage);
-
-        switch ($transactionStatus) {
-            case Transaction::COMPLETED:
-            case Transaction::SHIPPED:
-                if ($order->getState() === Order::STATE_CANCELED) {
-                    $this->secondChance->reopenOrder($order);
-                }
-
-                $this->emailSender->sendOrderConfirmationEmailAfterPaidTransaction($order);
-
-                if ($order->canInvoice()) {
-                    $payment->setTransactionId($transaction->getData()['transaction_id']);
-                    $payment->setAdditionalInformation(
-                        [PaymentTransaction::RAW_DETAILS => (array)$payment->getAdditionalInformation()]
-                    );
-
-                    $payment->setParentTransactionId($transaction->getData()['transaction_id']);
-                    $payment->setShouldCloseParentTransaction(false);
-                    $payment->setIsTransactionClosed(0);
-                    $payment->registerCaptureNotification($order->getBaseTotalDue(), true);
-                    $this->logger->info('(Order ID: ' . $orderId . ') Invoice created');
-                    $payment->setIsTransactionApproved(true);
-                    $this->orderPaymentRepository->save($payment);
-
-                    $paymentTransaction = $payment->addTransaction(PaymentTransaction::TYPE_CAPTURE, null, true);
-                    if ($paymentTransaction !== null) {
-                        $paymentTransaction->setParentTxnId($transaction->getData()['transaction_id']);
-                    }
-
-                    $paymentTransaction->setIsClosed(1);
-
-                    $this->transactionRepository->save($paymentTransaction);
-
-                    // Set order processing
-                    $status = $this->statusResolver->getOrderStatusByState($order, Order::STATE_PROCESSING);
-                    $order->setState(Order::STATE_PROCESSING);
-                    $order->setStatus($status);
-
-                    $this->orderRepository->save($order);
-                }
-
-                foreach ($this->getInvoicesByOrderId($order->getId()) as $invoice) {
-                    $this->emailSender->sendInvoiceEmail($payment, $invoice);
-
-                    $updateRequest = $this->updateRequest->addData([
-                        "invoice_id" => $invoice->getIncrementId()
-                    ]);
-
-                    try {
-                        $transactionManager->update($orderId, $updateRequest)->getResponseData();
-                        $msg = '(Order ID: ' . $orderId . ') Invoice update request has been sent to MultiSafepay';
-                        $this->logger->info($msg);
-                    } catch (ApiException $e) {
-                        $this->logger->logUpdateRequestApiException($orderId, $e);
-                    }
-                }
-                break;
-
-            case Transaction::UNCLEARED:
-                if ($gatewayCode !== 'SANTANDER') {
-                    $msg = __('Uncleared Transaction. You can accept the transaction manually in MultiSafepay Control');
-                    $order->addCommentToStatusHistory($msg);
-                }
-                break;
-
-            case Transaction::EXPIRED:
-            case Transaction::DECLINED:
-            case Transaction::CANCELLED:
-            case Transaction::VOID:
-                $order->cancel();
-                $order->addCommentToStatusHistory($transactionStatusMessage);
-                break;
-        }
-        $this->orderRepository->save($order);
         return $this->getResponse()->setContent('ok');
-    }
-
-    /**
-     * @param $params
-     * @return bool
-     */
-    public function validateParams($params): bool
-    {
-        if (!isset($params['transactionid'])) {
-            return false;
-        }
-
-        if (!isset($params['timestamp'])) {
-            return false;
-        }
-        return true;
-    }
-
-    /**
-     * @param string $orderId
-     * @return InvoiceInterface[]|null
-     */
-    public function getInvoicesByOrderId(string $orderId): ?array
-    {
-        $searchCriteria = $this->searchCriteriaBuilder->addFilter('order_id', $orderId)->create();
-
-        return $this->invoiceRepository->getList($searchCriteria)->getItems();
-    }
-
-    /**
-     * @param string $transactionType
-     * @return string
-     */
-    public function setDifferentPaymentMethod(string $transactionType): string
-    {
-        $methodList = $this->scopeConfig->getValue('payment');
-
-        foreach ($methodList as $code => $method) {
-            if (isset($method['gateway_code']) && $method['gateway_code'] === $transactionType
-                && strpos($code, '_recurring') === false) {
-                return (string) $code;
-            }
-        }
-
-        return $transactionType;
     }
 }

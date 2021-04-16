@@ -112,7 +112,7 @@ class Redirect extends Action
 
             return $this->redirectToCheckout();
         } catch (Exception $exception) {
-            $this->logger->logGeneralErrorForOrder($orderId, $exception);
+            $this->logger->logExceptionForOrder($orderId, $exception);
 
             return $this->redirectToCheckout();
         }
