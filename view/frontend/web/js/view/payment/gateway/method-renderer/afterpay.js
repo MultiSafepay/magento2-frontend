@@ -84,6 +84,13 @@ define(
              * @returns {{additional_data: {account_number: *, date_of_birth: *}, method: *}}
              */
             getData: function () {
+                if (!this.dateOfBirth() && !this.genderId()) {
+                    return {
+                        "method": this.item.method,
+                        "additional_data": null
+                    };
+                }
+
                 return {
                     "method": this.item.method,
                     "additional_data": {
