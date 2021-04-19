@@ -24,23 +24,17 @@ use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Quote\Api\CartRepositoryInterface;
 use Magento\Sales\Api\Data\OrderInterface;
-use Magento\Sales\Api\Data\OrderInterfaceFactory;
 use MultiSafepay\ConnectCore\Logger\Logger;
 use MultiSafepay\ConnectCore\Util\CustomReturnUrlUtil;
-use MultiSafepay\ConnectCore\Util\OrderStatusUtil;
+use MultiSafepay\ConnectCore\Util\OrderUtil;
 use MultiSafepay\ConnectFrontend\Validator\RequestValidator;
 
 class Success extends Action
 {
     /**
-     * @var OrderStatusUtil
+     * @var OrderUtil
      */
-    protected $orderStatusUtil;
-
-    /**
-     * @var OrderInterfaceFactory
-     */
-    private $orderFactory;
+    private $orderUtil;
 
     /**
      * @var Logger
@@ -71,8 +65,7 @@ class Success extends Action
      * Success constructor.
      *
      * @param Context $context
-     * @param OrderInterfaceFactory $orderFactory
-     * @param OrderStatusUtil $orderStatusUtil
+     * @param OrderUtil $orderUtil
      * @param RequestValidator $requestValidator
      * @param Session $checkoutSession
      * @param Logger $logger
@@ -81,8 +74,7 @@ class Success extends Action
      */
     public function __construct(
         Context $context,
-        OrderInterfaceFactory $orderFactory,
-        OrderStatusUtil $orderStatusUtil,
+        OrderUtil $orderUtil,
         RequestValidator $requestValidator,
         Session $checkoutSession,
         Logger $logger,
@@ -90,13 +82,12 @@ class Success extends Action
         CustomReturnUrlUtil $customReturnUrlUtil
     ) {
         parent::__construct($context);
-        $this->orderFactory = $orderFactory;
         $this->requestValidator = $requestValidator;
         $this->logger = $logger;
         $this->checkoutSession = $checkoutSession;
         $this->cartRepository = $cartRepository;
         $this->customReturnUrlUtil = $customReturnUrlUtil;
-        $this->orderStatusUtil = $orderStatusUtil;
+        $this->orderUtil = $orderUtil;
     }
 
     /**
@@ -121,10 +112,9 @@ class Success extends Action
             return $this->_redirect('checkout/cart');
         }
 
-        $orderId = $parameters['transactionid'];
+        $orderIncrementId = $parameters['transactionid'];
 
-        /** @var OrderInterface $order */
-        $order = $this->orderFactory->create()->loadByIncrementId($orderId);
+        $order = $this->orderUtil->getOrderByIncrementId($orderIncrementId);
         $customReturnUrl = $this->customReturnUrlUtil->getCustomReturnUrlByType(
             $order,
             $parameters,
@@ -140,7 +130,7 @@ class Success extends Action
         $order->addCommentToStatusHistory('User redirected to the success page.');
 
         $this->setCheckoutSessionData($order);
-        $this->logger->logPaymentSuccessInfo($orderId);
+        $this->logger->logPaymentSuccessInfo($orderIncrementId);
 
         return $redirectUrl;
     }
