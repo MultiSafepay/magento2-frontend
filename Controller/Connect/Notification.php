@@ -22,21 +22,16 @@ use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
-use Magento\Sales\Api\Data\OrderInterfaceFactory;
 use Magento\Sales\Model\Order;
 use MultiSafepay\ConnectCore\Logger\Logger;
 use MultiSafepay\ConnectCore\Service\OrderService;
+use MultiSafepay\ConnectCore\Util\OrderUtil;
 use MultiSafepay\Exception\ApiException;
 use MultiSafepay\Exception\InvalidApiKeyException;
 use Psr\Http\Client\ClientExceptionInterface;
 
 class Notification extends Action
 {
-    /**
-     * @var OrderInterfaceFactory
-     */
-    private $orderFactory;
-
     /**
      * @var Logger
      */
@@ -48,23 +43,28 @@ class Notification extends Action
     private $orderService;
 
     /**
+     * @var OrderUtil
+     */
+    private $orderUtil;
+
+    /**
      * Notification constructor.
      *
      * @param Context $context
-     * @param OrderInterfaceFactory $orderFactory
      * @param Logger $logger
      * @param OrderService $orderService
+     * @param OrderUtil $orderUtil
      */
     public function __construct(
         Context $context,
-        OrderInterfaceFactory $orderFactory,
         Logger $logger,
-        OrderService $orderService
+        OrderService $orderService,
+        OrderUtil $orderUtil
     ) {
         parent::__construct($context);
-        $this->orderFactory = $orderFactory;
         $this->logger = $logger;
         $this->orderService = $orderService;
+        $this->orderUtil = $orderUtil;
     }
 
     /**
@@ -81,11 +81,10 @@ class Notification extends Action
                 throw new LocalizedException(__('Transaction params are not correct.'));
             }
 
-            $orderId = $params['transactionid'];
+            $orderIncrementId = $params['transactionid'];
 
             /** @var Order $order */
-            $order = $this->orderFactory->create()->loadByIncrementId($orderId);
-          
+            $order = $this->orderUtil->getOrderByIncrementId($orderIncrementId);
             if (!$order->getId()) {
                 throw new NoSuchEntityException(__('Requested order doesn\'t exist'));
             }
