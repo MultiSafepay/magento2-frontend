@@ -5,8 +5,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Fixed
+- Fixed an issue related to 400 bad request errors with empty fields in the payment additional data.
+
 ### Changed
-- Orders are now being retrieved with OrderRepositoryInterface instead of OrderInterfaceFactory
+- (dev) Orders are now being retrieved with OrderRepositoryInterface instead of OrderInterfaceFactory
 
 ## [1.6.1] - 2021-04-09
 ### Removed
