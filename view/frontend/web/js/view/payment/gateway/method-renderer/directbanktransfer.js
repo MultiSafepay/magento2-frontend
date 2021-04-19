@@ -70,6 +70,20 @@ define(
              * @returns {{additional_data: {account_holder_iban: *, account_id: *, account_holder_name: *, account_holder_country: *, account_holder_city: *, account_holder_bic: *}, method: *}}
              */
             getData: function () {
+                if (!this.accountId()
+                    && !this.accountHolderName()
+                    && !this.accountHolderCity()
+                    && !this.accountHolderCountry()
+                    && !this.accountHolderIban()
+                    && !this.accountHolderBic()
+                ) {
+                    return {
+                        "method": this.item.method,
+                        "additional_data": null
+                    };
+                }
+
+
                 return {
                     "method": this.item.method,
                     "additional_data": {
