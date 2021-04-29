@@ -79,6 +79,15 @@ define(
             },
 
             /**
+             * Get the gateway image
+             *
+             * @returns {boolean}
+             */
+            isDirect: function () {
+                return this.paymentConfig.transaction_type === 'direct';
+            },
+
+            /**
              * Add payment method specific data to additional data
              *
              * @returns {{additional_data: {account_number: *, date_of_birth: *}, method: *}}
