@@ -31,6 +31,7 @@
         <!-- ko template: getTemplate() --><!-- /ko -->
         <!--/ko-->
 
+        <!-- ko if: isDirect() -->
         <div class="payment-method-directdebit" style="margin: 0 0 20px;">
             <fieldset class="fieldset">
                 <div class="field required">
@@ -71,6 +72,7 @@
                 </div>
             </fieldset>
         </div>
+        <!--/ko-->
 
         <div class="checkout-agreements-block">
             <!-- ko foreach: $parent.getRegion('before-place-order') -->

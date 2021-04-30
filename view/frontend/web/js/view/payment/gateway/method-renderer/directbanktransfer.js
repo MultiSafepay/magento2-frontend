@@ -65,9 +65,18 @@ define(
             },
 
             /**
+             * Get the gateway image
+             *
+             * @returns {boolean}
+             */
+            isDirect: function () {
+                return this.paymentConfig.transaction_type === 'direct';
+            },
+
+            /**
              * Add payment method specific data to additional data
              *
-             * @returns {{additional_data: {account_holder_iban: *, account_id: *, account_holder_name: *, account_holder_country: *, account_holder_city: *, account_holder_bic: *}, method: *}}
+             * @returns {{additional_data: *, method: *}}
              */
             getData: function () {
                 if (!this.accountId()
