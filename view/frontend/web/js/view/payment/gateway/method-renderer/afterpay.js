@@ -48,13 +48,7 @@ define(
          * @returns {string}
          */
         function getTelephoneFromBillingAddress() {
-            let billingAddress = quote.billingAddress();
-
-            if (billingAddress.telephone) {
-                return billingAddress.telephone
-            }
-
-            return '';
+            return quote.billingAddress().telephone
         }
 
         return Component.extend({
@@ -62,13 +56,13 @@ define(
                 template: 'MultiSafepay_ConnectFrontend/payment/gateway/afterpay',
                 dateOfBirth: '',
                 genderId: '',
-                telephone: getTelephoneFromBillingAddress()
+                phoneNumber: getTelephoneFromBillingAddress()
             },
 
             initObservable: function () {
                 this.observe('dateOfBirth')
                     .observe('genderId')
-                    .observe('telephone')
+                    .observe('phoneNumber')
                     ._super();
 
                 return this;
@@ -102,7 +96,7 @@ define(
              * @returns {{additional_data: *, method}}
              */
             getData: function () {
-                if (!this.dateOfBirth() && !this.genderId() && !this.telephone()) {
+                if (!this.dateOfBirth() && !this.genderId() && !this.phoneNumber()) {
                     return {
                         "method": this.item.method,
                         "additional_data": null
@@ -114,7 +108,7 @@ define(
                     "additional_data": {
                         'date_of_birth': this.dateOfBirth(),
                         'gender': this.genderId(),
-                        'telephone': this.telephone()
+                        'phone_number': this.phoneNumber()
                     }
                 };
             },
