@@ -66,6 +66,15 @@ define(
             /**
              * Get the gateway image
              *
+             * @returns {boolean}
+             */
+            isDirect: function () {
+                return this.paymentConfig.transaction_type === 'direct';
+            },
+
+            /**
+             * Get the gateway image
+             *
              * @returns {string}
              */
             getImage: function () {
