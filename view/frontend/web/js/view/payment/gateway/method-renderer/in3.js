@@ -18,7 +18,9 @@ define(
     [
         'jquery',
         'MultiSafepay_ConnectFrontend/js/view/payment/method-renderer/base-renderer',
+        'Magento_Checkout/js/checkout-data',
         'Magento_Checkout/js/action/redirect-on-success',
+        'Magento_Checkout/js/model/quote',
         'mage/url'
     ],
 
@@ -26,28 +28,41 @@ define(
      *
      * @param $
      * @param Component
+     * @param checkoutData
      * @param redirectOnSuccessAction
+     * @param quote
      * @param url
      * @returns {*}
      */
     function (
         $,
         Component,
+        checkoutData,
         redirectOnSuccessAction,
+        quote,
         url
     ) {
         'use strict';
+
+        /**
+         * @returns {string}
+         */
+        function getTelephoneFromBillingAddress() {
+            return quote.billingAddress().telephone
+        }
 
         return Component.extend({
             defaults: {
                 template: 'MultiSafepay_ConnectFrontend/payment/gateway/in3',
                 dateOfBirth: '',
                 genderId: '',
+                phoneNumber: getTelephoneFromBillingAddress()
             },
 
             initObservable: function () {
                 this.observe('dateOfBirth')
                     .observe('genderId')
+                    .observe('phoneNumber')
                     ._super();
 
                 return this;
@@ -77,7 +92,7 @@ define(
              * @returns {{additional_data: *, method: *}}
              */
             getData: function () {
-                if (!this.dateOfBirth() && !this.genderId()) {
+                if (!this.dateOfBirth() && !this.genderId() && !this.phoneNumber()) {
                     return {
                         "method": this.item.method,
                         "additional_data": null
@@ -88,7 +103,8 @@ define(
                     "method": this.item.method,
                     "additional_data": {
                         'date_of_birth': this.dateOfBirth(),
-                        'gender': this.genderId()
+                        'gender': this.genderId(),
+                        'phone_number': this.phoneNumber()
                     }
                 };
             },
