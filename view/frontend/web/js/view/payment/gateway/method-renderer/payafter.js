@@ -59,7 +59,7 @@ define(
             /**
              * Add payment method specific data to additional data
              *
-             * @returns {{additional_data: {account_number: *, date_of_birth: *}, method: *}}
+             * @returns {{additional_data: *, method: *}}
              */
             getData: function () {
                 if (!this.dateOfBirth() && !this.accountNumber()) {
