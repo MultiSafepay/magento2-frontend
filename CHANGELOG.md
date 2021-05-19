@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.7.1] - 2021-05-19
+### Fixed
+- Fixed a bug in payment validation transaction type constant scope, changed it from private to public.
+
+### Changed
+- Changed composer dependencies to fix  bug related payment validation transaction type constant scope.
+
 ## [1.7.0] - 2021-05-12
 
 ### Added

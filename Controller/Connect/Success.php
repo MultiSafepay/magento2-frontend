@@ -126,7 +126,7 @@ class Success extends Action
         } else {
             $redirectUrl = $this->_redirect('checkout/onepage/success?utm_nooverride=1');
         }
-      
+
         $order->addCommentToStatusHistory('User redirected to the success page.');
 
         $this->setCheckoutSessionData($order);
