@@ -21,7 +21,8 @@ define(
         'Magento_Checkout/js/checkout-data',
         'Magento_Checkout/js/action/redirect-on-success',
         'Magento_Checkout/js/model/quote',
-        'mage/url'
+        'mage/url',
+        'mage/translate'
     ],
 
     /**
@@ -32,6 +33,7 @@ define(
      * @param redirectOnSuccessAction
      * @param quote
      * @param url
+     * @param $t
      * @returns {*}
      */
     function (
@@ -40,7 +42,8 @@ define(
         checkoutData,
         redirectOnSuccessAction,
         quote,
-        url
+        url,
+        $t
     ) {
         'use strict';
 
@@ -77,15 +80,15 @@ define(
                 return [
                     {
                         "code": "mr",
-                        "label": 'Mr.'
+                        "label": $t('Mr.')
                     },
                     {
                         "code": "mrs",
-                        "label": 'Mrs.'
+                        "label": $t('Mrs.')
                     },
                     {
                         "code": "miss",
-                        "label": 'Miss'
+                        "label": $t('Miss')
                     }
                 ];
             },
