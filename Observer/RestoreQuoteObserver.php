@@ -60,7 +60,7 @@ class RestoreQuoteObserver implements ObserverInterface
     {
         $lastRealOrder = $this->checkoutSession->getLastRealOrder();
 
-        if (!$lastRealOrder->getPayment()) {
+        if ($this->checkoutSession->getQuoteId() || !$lastRealOrder->getPayment()) {
             return;
         }
 
