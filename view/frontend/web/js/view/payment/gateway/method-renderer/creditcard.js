@@ -26,6 +26,8 @@ define(
         'Magento_Checkout/js/action/select-payment-method',
         'Magento_Checkout/js/model/payment/additional-validators',
         'Magento_Checkout/js/action/place-order',
+        'Magento_Customer/js/customer-data',
+        'multisafepayCreditCardComponent'
     ],
 
     /**
@@ -40,6 +42,8 @@ define(
      * @param selectPaymentMethodAction
      * @param additionalValidators
      * @param placeOrderAction
+     * @param customerData
+     * @param multisafepayCreditCardComponent
      * @returns {*}
      */
     function (
@@ -52,19 +56,23 @@ define(
         paymentRequest,
         selectPaymentMethodAction,
         additionalValidators,
-        placeOrderAction
+        placeOrderAction,
+        customerData,
+        multisafepayCreditCardComponent
     ) {
         'use strict';
 
         return Component.extend({
             defaults: {
-                template: 'MultiSafepay_ConnectFrontend/payment/gateway/creditcard',
+                template: 'MultiSafepay_ConnectFrontend/payment/gateway/creditcard'
             },
 
             initialize: function () {
                 this.vaultEnabler = new VaultEnabler();
                 this._super();
                 this.vaultEnabler.setPaymentCode(this.getVaultCode());
+                this.paymentRequestConfig = customerData.get('multisafepay-payment-request')();
+                this.paymentComponent = false;
 
                 return this;
             },
@@ -86,6 +94,10 @@ define(
                 selectPaymentMethodAction(this.getData());
                 checkoutData.setSelectedPaymentMethod(this.item.method);
 
+                if (this.isCreditCardComponentEnabled()) {
+                    this.paymentComponent = multisafepayCreditCardComponent.init(this.getCode());
+                }
+
                 return true;
             },
 
@@ -94,6 +106,21 @@ define(
              */
             isVaultEnabled: function () {
                 return this.vaultEnabler.isVaultEnabled();
+            },
+
+            /**
+             * @returns {Boolean}
+             */
+            isCreditCardComponentEnabled: function () {
+                return this.paymentRequestConfig.creditCardComponent;
+            },
+
+            /**
+             *
+             * @returns {string|*}
+             */
+            getCreditCardComponentContainerId: function () {
+                return this.paymentRequestConfig.cardComponentContainerId + "-" + this.getCode();
             },
 
             /**
@@ -119,19 +146,22 @@ define(
                     additionalValidators.validate() &&
                     this.isPlaceOrderActionAllowed() === true
                 ) {
-                    var deferred = $.Deferred();
-                    this.isPlaceOrderActionAllowed(false);
-                    paymentRequest.init(this.getCode(), deferred);
                     let paymentRequestData = this.getData();
+                    if (this.isCreditCardComponentEnabled() && this.paymentComponent) {
+                        console.log(this.paymentComponent);
+                    } else {
+                        var deferred = $.Deferred();
+                        this.isPlaceOrderActionAllowed(false);
+                        paymentRequest.init(this.getCode(), deferred);
 
-                    $.when(deferred).then(function (paymentData) {
-                        if (paymentData) {
-                            paymentRequestData['additional_data']['payload'] = paymentData;
-                        }
+                        $.when(deferred).then(function (paymentData) {
+                            if (paymentData) {
+                                paymentRequestData['additional_data']['payload'] = paymentData;
+                            }
 
-                        self.vaultEnabler.visitAdditionalData(paymentRequestData);
+                            self.vaultEnabler.visitAdditionalData(paymentRequestData);
 
-                        $.when(placeOrderAction(paymentRequestData, self.messageContainer)).done(
+                            $.when(placeOrderAction(paymentRequestData, self.messageContainer)).done(
                                 function () {
                                     self.afterPlaceOrder();
 
@@ -140,12 +170,13 @@ define(
                                     }
                                 }
                             ).always(function () {
-                                self.isPlaceOrderActionAllowed(true);
-                            }
-                        );
-                    });
+                                    self.isPlaceOrderActionAllowed(true);
+                                }
+                            );
+                        });
 
-                    return true;
+                        return true;
+                    }
                 }
 
                 return false;

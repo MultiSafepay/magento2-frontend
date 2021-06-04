@@ -18,7 +18,10 @@ var config = {
             mspCrypt: 'MultiSafepay_ConnectFrontend/js/lib/msp-crypt',
             multisafepayUtils: 'MultiSafepay_ConnectFrontend/js/lib/utils',
             multisafepayPaymentRequest: 'MultiSafepay_ConnectFrontend/js/payment-request',
-            multisafepayCardPaymentProcessor: 'MultiSafepay_ConnectFrontend/js/payment-request/card-payment'
+            multisafepayCreditCardComponent: 'MultiSafepay_ConnectFrontend/js/credit-card-component',
+            // multisafepayCreditCardComponentLib:  'https://pay.multisafepay.com/sdk/components/v1/components.js',
+            multisafepayCreditCardComponentLib:  'https://testpay.multisafepay.com/sdk/components/v1/components.js',
+            multisafepayCardPaymentProcessor: 'MultiSafepay_ConnectFrontend/js/payment-request/card-payment',
         }
     }
 };

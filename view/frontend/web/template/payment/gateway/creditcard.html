@@ -30,6 +30,11 @@
         <!-- ko foreach: getRegion('messages') -->
         <!-- ko template: getTemplate() --><!-- /ko -->
         <!--/ko-->
+
+        <!-- ko if: (isCreditCardComponentEnabled())-->
+        <div data-bind="attr: {'id': getCreditCardComponentContainerId()}"></div>
+        <!-- /ko -->
+
         <div class="payment-method-billing-address">
             <!-- ko foreach: $parent.getRegion(getBillingAddressFormName()) -->
             <!-- ko template: getTemplate() --><!-- /ko -->
