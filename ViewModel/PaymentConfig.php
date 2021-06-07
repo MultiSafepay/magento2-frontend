@@ -31,6 +31,7 @@ class PaymentConfig implements ArgumentInterface
     ];
 
     private const DEFAULT_CARD_TYPES = ['credit', 'debit'];
+    private const CREDITCARD_GATEWAY_CODE = 'CREDITCARD';
 
     /**
      * @var CartInterface|null
@@ -94,6 +95,7 @@ class PaymentConfig implements ArgumentInterface
                     "types" => self::DEFAULT_CARD_TYPES,
                     "flags" => $this->getCardFlagByMethodCode($methodCode),
                     "paymentMethod" => $methodCode,
+                    "gatewayCode" => self::CREDITCARD_GATEWAY_CODE,
                     "additionalInfo" => $additionalDataConfig && isset($additionalDataConfig['payment'][$methodCode])
                         ? $additionalDataConfig['payment'][$methodCode] : [],
                 ];

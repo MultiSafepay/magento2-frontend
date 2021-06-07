@@ -95,10 +95,32 @@ define(
                 checkoutData.setSelectedPaymentMethod(this.item.method);
 
                 if (this.isCreditCardComponentEnabled()) {
-                    this.paymentComponent = multisafepayCreditCardComponent.init(this.getCode());
+                    this.initializeCreditCardComponent();
                 }
 
                 return true;
+            },
+
+            /**
+             *
+             * @returns {*}
+             */
+            initializeCreditCardComponent: function () {
+                this.paymentComponent = multisafepayCreditCardComponent.init(this.getCode());
+
+                return this;
+            },
+
+            /**
+             *
+             * @returns {*}
+             */
+            checkIfNeedPreRenderCreditCardComponent: function () {
+                if (checkoutData.getSelectedPaymentMethod() === this.getCode() && this.isCreditCardComponentEnabled()) {
+                    this.initializeCreditCardComponent();
+                }
+
+                return this;
             },
 
             /**
@@ -133,7 +155,10 @@ define(
             },
 
             /**
-             * Place order.
+             *
+             * @param data
+             * @param event
+             * @returns {boolean}
              */
             placeOrder: function (data, event) {
                 var self = this;
@@ -147,10 +172,22 @@ define(
                     this.isPlaceOrderActionAllowed() === true
                 ) {
                     let paymentRequestData = this.getData();
+
                     if (this.isCreditCardComponentEnabled() && this.paymentComponent) {
-                        console.log(this.paymentComponent);
+                        if (!this.paymentComponent.hasErrors()) {
+                            this.isPlaceOrderActionAllowed(false);
+                            let payload = this.paymentComponent.getPaymentData().payment_data.payload;
+
+                            if (payload) {
+                                paymentRequestData['additional_data']['payload'] = payload;
+                            }
+
+                            this.placeOderDefault(paymentRequestData);
+
+                            return true;
+                        }
                     } else {
-                        var deferred = $.Deferred();
+                        let deferred = $.Deferred();
                         this.isPlaceOrderActionAllowed(false);
                         paymentRequest.init(this.getCode(), deferred);
 
@@ -159,20 +196,7 @@ define(
                                 paymentRequestData['additional_data']['payload'] = paymentData;
                             }
 
-                            self.vaultEnabler.visitAdditionalData(paymentRequestData);
-
-                            $.when(placeOrderAction(paymentRequestData, self.messageContainer)).done(
-                                function () {
-                                    self.afterPlaceOrder();
-
-                                    if (self.redirectAfterPlaceOrder) {
-                                        redirectOnSuccessAction.execute();
-                                    }
-                                }
-                            ).always(function () {
-                                    self.isPlaceOrderActionAllowed(true);
-                                }
-                            );
+                            self.placeOderDefault(paymentRequestData);
                         });
 
                         return true;
@@ -180,6 +204,28 @@ define(
                 }
 
                 return false;
+            },
+
+            /**
+             *
+             * @param paymentRequestData
+             */
+            placeOderDefault: function (paymentRequestData) {
+                var self = this;
+                this.vaultEnabler.visitAdditionalData(paymentRequestData);
+
+                $.when(placeOrderAction(paymentRequestData, self.messageContainer)).done(
+                    function () {
+                        self.afterPlaceOrder();
+
+                        if (self.redirectAfterPlaceOrder) {
+                            redirectOnSuccessAction.execute();
+                        }
+                    }
+                ).always(function () {
+                        self.isPlaceOrderActionAllowed(true);
+                    }
+                );
             },
 
             /**

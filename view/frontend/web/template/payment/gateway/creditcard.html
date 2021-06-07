@@ -32,7 +32,7 @@
         <!--/ko-->
 
         <!-- ko if: (isCreditCardComponentEnabled())-->
-        <div data-bind="attr: {'id': getCreditCardComponentContainerId()}"></div>
+        <div data-bind="attr: {'id': getCreditCardComponentContainerId()}, afterRender: checkIfNeedPreRenderCreditCardComponent()"></div>
         <!-- /ko -->
 
         <div class="payment-method-billing-address">
