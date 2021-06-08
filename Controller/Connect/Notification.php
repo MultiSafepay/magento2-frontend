@@ -113,8 +113,8 @@ class Notification extends Action
             if (!$this->requestValidator->validatePostNotification(
                 $this->getRequest()->getHeader('Auth'),
                 $transaction,
-                $order->getStoreId())
-            ) {
+                $order->getStoreId()
+            )) {
                 $this->logger->logInfoForOrder($orderIncrementId, 'Hashes do not match, process aborted');
 
                 return $this->getResponse()->setContent('ng');
