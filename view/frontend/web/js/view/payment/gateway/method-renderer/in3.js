@@ -92,7 +92,7 @@ define(
             /**
              * Add payment method specific data to additional data
              *
-             * @returns {{additional_data: *, method}}
+             * @returns {{additional_data: *, method: *}}
              */
             getData: function () {
                 if (!this.dateOfBirth() && !this.genderId() && !this.phoneNumber()) {
