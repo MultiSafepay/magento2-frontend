@@ -23,6 +23,7 @@ use Magento\Framework\App\Action\Context;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Sales\Model\Order;
+use MultiSafepay\ConnectCore\Config\Config;
 use MultiSafepay\ConnectCore\Logger\Logger;
 use MultiSafepay\ConnectCore\Service\OrderService;
 use MultiSafepay\ConnectCore\Util\OrderUtil;
@@ -48,15 +49,22 @@ class Notification extends Action
     private $orderUtil;
 
     /**
+     * @var Config
+     */
+    private $config;
+
+    /**
      * Notification constructor.
      *
      * @param Context $context
+     * @param Config $config
      * @param Logger $logger
      * @param OrderService $orderService
      * @param OrderUtil $orderUtil
      */
     public function __construct(
         Context $context,
+        Config $config,
         Logger $logger,
         OrderService $orderService,
         OrderUtil $orderUtil
@@ -65,6 +73,7 @@ class Notification extends Action
         $this->logger = $logger;
         $this->orderService = $orderService;
         $this->orderUtil = $orderUtil;
+        $this->config = $config;
     }
 
     /**
@@ -74,6 +83,7 @@ class Notification extends Action
     public function execute()
     {
         $params = $this->getRequest()->getParams();
+
         $orderId = '';
 
         try {
@@ -87,6 +97,21 @@ class Notification extends Action
             $order = $this->orderUtil->getOrderByIncrementId($orderIncrementId);
             if (!$order->getId()) {
                 throw new NoSuchEntityException(__('Requested order doesn\'t exist'));
+            }
+
+            $authHeader = $this->getRequest()->getHeader('Auth');
+
+            // phpcs:ignore Magento2.Functions.DiscouragedFunction
+            $base64Auth = base64_decode($authHeader);
+            $timestampAndHash = explode(':', $base64Auth);
+
+            $dataToHash = $timestampAndHash[0] . ':' . $this->getRequest()->getContent();
+
+            $hashToCheck = hash_hmac('sha512', $dataToHash, $this->config->getApiKey($order->getStoreId()));
+
+            if ($hashToCheck !== $timestampAndHash[1]) {
+                $this->logger->logInfoForOrder($orderIncrementId, 'Hashes do not match, process aborted');
+                return $this->getResponse()->setContent('ng');
             }
 
             $this->orderService->processOrderTransaction($order);
