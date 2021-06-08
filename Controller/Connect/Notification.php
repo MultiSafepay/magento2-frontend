@@ -23,10 +23,11 @@ use Magento\Framework\App\Action\Context;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Sales\Model\Order;
-use MultiSafepay\ConnectCore\Config\Config;
 use MultiSafepay\ConnectCore\Logger\Logger;
 use MultiSafepay\ConnectCore\Service\OrderService;
+use MultiSafepay\ConnectCore\Util\JsonHandler;
 use MultiSafepay\ConnectCore\Util\OrderUtil;
+use MultiSafepay\ConnectFrontend\Validator\RequestValidator;
 use MultiSafepay\Exception\ApiException;
 use MultiSafepay\Exception\InvalidApiKeyException;
 use Psr\Http\Client\ClientExceptionInterface;
@@ -49,31 +50,39 @@ class Notification extends Action
     private $orderUtil;
 
     /**
-     * @var Config
+     * @var RequestValidator
      */
-    private $config;
+    private $requestValidator;
+
+    /**
+     * @var JsonHandler
+     */
+    private $jsonHandler;
 
     /**
      * Notification constructor.
      *
      * @param Context $context
-     * @param Config $config
+     * @param JsonHandler $jsonHandler
      * @param Logger $logger
      * @param OrderService $orderService
      * @param OrderUtil $orderUtil
+     * @param RequestValidator $requestValidator
      */
     public function __construct(
         Context $context,
-        Config $config,
+        JsonHandler $jsonHandler,
         Logger $logger,
         OrderService $orderService,
-        OrderUtil $orderUtil
+        OrderUtil $orderUtil,
+        RequestValidator $requestValidator
     ) {
         parent::__construct($context);
+        $this->jsonHandler = $jsonHandler;
         $this->logger = $logger;
         $this->orderService = $orderService;
         $this->orderUtil = $orderUtil;
-        $this->config = $config;
+        $this->requestValidator = $requestValidator;
     }
 
     /**
@@ -99,22 +108,19 @@ class Notification extends Action
                 throw new NoSuchEntityException(__('Requested order doesn\'t exist'));
             }
 
-            $authHeader = $this->getRequest()->getHeader('Auth');
+            $transaction = $this->getRequest()->getContent();
 
-            // phpcs:ignore Magento2.Functions.DiscouragedFunction
-            $base64Auth = base64_decode($authHeader);
-            $timestampAndHash = explode(':', $base64Auth);
-
-            $dataToHash = $timestampAndHash[0] . ':' . $this->getRequest()->getContent();
-
-            $hashToCheck = hash_hmac('sha512', $dataToHash, $this->config->getApiKey($order->getStoreId()));
-
-            if ($hashToCheck !== $timestampAndHash[1]) {
+            if (!$this->requestValidator->validatePostNotification(
+                $this->getRequest()->getHeader('Auth'),
+                $transaction,
+                $order->getStoreId())
+            ) {
                 $this->logger->logInfoForOrder($orderIncrementId, 'Hashes do not match, process aborted');
+
                 return $this->getResponse()->setContent('ng');
             }
 
-            $this->orderService->processOrderTransaction($order);
+            $this->orderService->processOrderTransaction($order, $this->jsonHandler->ReadJson($transaction));
         } catch (InvalidApiKeyException $invalidApiKeyException) {
             $this->logger->logInvalidApiKeyException($invalidApiKeyException);
 

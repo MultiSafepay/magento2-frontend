@@ -17,6 +17,7 @@ declare(strict_types=1);
 
 namespace MultiSafepay\ConnectFrontend\Validator;
 
+use MultiSafepay\ConnectCore\Config\Config;
 use MultiSafepay\ConnectCore\Logger\Logger;
 use MultiSafepay\ConnectCore\Model\SecureToken;
 
@@ -32,10 +33,17 @@ class RequestValidator
      */
     private $secureToken;
 
+    /**
+     * @var Config
+     */
+    private $config;
+
     public function __construct(
+        Config $config,
         Logger $logger,
         SecureToken $secureToken
     ) {
+        $this->config = $config;
         $this->logger = $logger;
         $this->secureToken = $secureToken;
     }
@@ -44,7 +52,7 @@ class RequestValidator
      * @param $parameters
      * @return bool
      */
-    public function validate($parameters): bool
+    public function validateSecureToken($parameters): bool
     {
         if (!isset($parameters['transactionid'])) {
             return false;
@@ -64,5 +72,24 @@ class RequestValidator
             return false;
         }
         return true;
+    }
+
+    /**
+     * @param $authHeader
+     * @param $requestBody
+     * @param $storeId
+     * @return bool
+     */
+    public function validatePostNotification($authHeader, $requestBody, $storeId): bool
+    {
+        // phpcs:ignore Magento2.Functions.DiscouragedFunction
+        $base64Auth = base64_decode($authHeader);
+        $timestampAndHash = explode(':', $base64Auth);
+
+        $dataToHash = $timestampAndHash[0] . ':' . $requestBody;
+
+        $hashToCheck = hash_hmac('sha512', $dataToHash, $this->config->getApiKey($storeId));
+
+        return $hashToCheck === $timestampAndHash[1];
     }
 }
