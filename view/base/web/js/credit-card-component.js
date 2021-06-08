@@ -28,7 +28,7 @@ define([
 
     return {
         /**
-         * 
+         *
          * @param paymentCode
          * @param paymentRequestData
          * @param cardConfig
@@ -55,9 +55,6 @@ define([
                     gateway: cardConfig.gatewayCode,
                     onLoad: state => {
                         console.log('onLoad', state);
-                    },
-                    onError: state => {
-                        console.log('onError', state);
                     }
                 });
 

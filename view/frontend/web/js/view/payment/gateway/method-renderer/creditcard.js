@@ -75,6 +75,7 @@ define(
                 this.vaultEnabler.setPaymentCode(this.getVaultCode());
                 this.paymentRequestConfig = customerData.get('multisafepay-payment-request')();
                 this.paymentComponent = false;
+                this.paymentPayload = false;
 
                 return this;
             },
@@ -83,10 +84,18 @@ define(
              * @returns {Object}
              */
             getData: function () {
-                return {
+                let data =  {
                     'method': this.getCode(),
                     'additional_data': {}
                 };
+
+                if (this.paymentPayload) {
+                    data['additional_data']['payload'] = this.paymentPayload;
+                }
+
+                this.vaultEnabler.visitAdditionalData(data);
+
+                return data;
             },
 
             /**
@@ -205,6 +214,7 @@ define(
                             let payload = this.paymentComponent.getPaymentData().payment_data.payload;
 
                             if (payload) {
+                                this.paymentPayload = payload;
                                 paymentRequestData['additional_data']['payload'] = payload;
                             }
 
@@ -219,6 +229,7 @@ define(
 
                         $.when(deferred).then(function (paymentData) {
                             if (paymentData) {
+                                self.paymentPayload = paymentData;
                                 paymentRequestData['additional_data']['payload'] = paymentData;
                             }
 
