@@ -75,7 +75,6 @@ class PaymentRequest implements SectionSourceInterface
 
                 return [
                     "enabled" => true,
-                    "creditCardComponent" => $this->config->useCreditCardComponent($storeId),
                     "environment" => $this->config->getMode($storeId) ? 'live' : 'test',
                     "locale" => $this->localeResolver->getLocale(),
                     "cardComponentContainerId" => self::CREDIT_CARD_COMPONENT_CONTAINER_ID,

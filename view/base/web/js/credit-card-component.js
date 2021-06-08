@@ -28,21 +28,22 @@ define([
 
     return {
         /**
-         *
+         * 
          * @param paymentCode
+         * @param paymentRequestData
+         * @param cardConfig
+         * @returns {{}|MultiSafepay}
          */
-        init: function (paymentCode) {
-            let paymentRequestData = customerData.get('multisafepay-payment-request')();
+        init: function (paymentCode, paymentRequestData, cardConfig) {
             let cartData = customerData.get('cart')();
 
-            if (paymentRequestData && paymentRequestData.creditCardComponent) {
-                if (!paymentRequestData.cardsConfig.hasOwnProperty(paymentCode)) {
+            if (paymentCode && paymentRequestData) {
+                if (!cardConfig) {
                     console.log($t("Payment data for selected payment method wasn\'t found."));
 
                     return;
                 }
 
-                let cardConfig = this.getCardConfig(paymentRequestData, paymentCode);
                 const MSP = new MultiSafepay({
                     env : paymentRequestData.environment,
                     apiToken : paymentRequestData.apiToken,
@@ -64,6 +65,8 @@ define([
             } else {
                 console.log($t("Credit Card component data not available for selected payment method."));
             }
+
+            return {};
         },
 
         /**
@@ -85,16 +88,6 @@ define([
                     }
                 }
             }
-        },
-
-        /**
-         *
-         * @param paymentData
-         * @param paymentCode
-         * @returns {*}
-         */
-        getCardConfig: function (paymentData, paymentCode) {
-            return paymentData.cardsConfig[paymentCode];
         }
     };
 });

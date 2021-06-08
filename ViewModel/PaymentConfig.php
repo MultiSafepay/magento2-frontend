@@ -11,8 +11,6 @@ use Magento\Framework\UrlInterface;
 use Magento\Framework\View\Element\Block\ArgumentInterface;
 use Magento\Quote\Api\Data\CartInterface;
 use Magento\Quote\Api\Data\CartItemInterface;
-use Magento\Quote\Model\Quote;
-use MultiSafepay\ConnectAdminhtml\Model\Config\Source\CardPaymentTypes;
 use MultiSafepay\ConnectCore\Model\Ui\ConfigProviderPool;
 use MultiSafepay\ConnectCore\Model\Ui\Gateway\AmexConfigProvider;
 use MultiSafepay\ConnectCore\Model\Ui\Gateway\CreditCardConfigProvider;
@@ -86,16 +84,13 @@ class PaymentConfig implements ArgumentInterface
                 (int)$this->getQuote()->getStoreId()
             );
 
-            if ($paymentConfig
-                && isset($paymentConfig['payment_type'])
-                && $paymentConfig['active']
-                && $paymentConfig['payment_type'] == CardPaymentTypes::PAYMENT_REQUEST_PAYMENT_TYPE
-            ) {
+            if ($paymentConfig && isset($paymentConfig['payment_type']) && $paymentConfig['active']) {
                 $result[$methodCode] = [
                     "types" => self::DEFAULT_CARD_TYPES,
                     "flags" => $this->getCardFlagByMethodCode($methodCode),
                     "paymentMethod" => $methodCode,
                     "gatewayCode" => self::CREDITCARD_GATEWAY_CODE,
+                    "paymentType" => $paymentConfig['payment_type'],
                     "additionalInfo" => $additionalDataConfig && isset($additionalDataConfig['payment'][$methodCode])
                         ? $additionalDataConfig['payment'][$methodCode] : [],
                 ];
