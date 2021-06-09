@@ -35,8 +35,6 @@ define([
          * @returns {{}|MultiSafepay}
          */
         init: function (paymentCode, paymentRequestData, cardConfig) {
-            let cartData = customerData.get('cart')();
-
             if (paymentCode && paymentRequestData) {
                 if (!cardConfig) {
                     console.log($t("Payment data for selected payment method wasn\'t found."));
