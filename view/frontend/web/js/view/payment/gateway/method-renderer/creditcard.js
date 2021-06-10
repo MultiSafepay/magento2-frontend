@@ -168,7 +168,10 @@ define(
              * @returns {{}|*}
              */
             getPaymentData: function () {
-                if (this.paymentRequestConfig && this.paymentRequestConfig.cardsConfig.hasOwnProperty(this.getCode())) {
+                if (this.paymentRequestConfig
+                    && this.paymentRequestConfig.cardsConfig
+                    && this.paymentRequestConfig.cardsConfig.hasOwnProperty(this.getCode())
+                ) {
                     return this.paymentRequestConfig.cardsConfig[this.getCode()];
                 }
 
