@@ -92,7 +92,6 @@ class Notification extends Action
     public function execute()
     {
         $params = $this->getRequest()->getParams();
-
         $orderId = '';
 
         try {
@@ -113,7 +112,7 @@ class Notification extends Action
             if (!$this->requestValidator->validatePostNotification(
                 $this->getRequest()->getHeader('Auth'),
                 $transaction,
-                $order->getStoreId()
+                (int)$order->getStoreId()
             )) {
                 $this->logger->logInfoForOrder($orderIncrementId, 'Hashes do not match, process aborted');
 

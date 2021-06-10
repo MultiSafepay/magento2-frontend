@@ -49,46 +49,50 @@ class RequestValidator
     }
 
     /**
-     * @param $parameters
+     * @param array $parameters
      * @return bool
      */
-    public function validateSecureToken($parameters): bool
+    public function validateSecureToken(array $parameters): bool
     {
-        if (!isset($parameters['transactionid'])) {
+        if (!($orderId = $parameters['transactionid'] ?? null)) {
             return false;
         }
 
-        $orderId = $parameters['transactionid'];
-
-        if (!isset($parameters['secureToken'])) {
+        if (!($secureToken = $parameters['secureToken'] ?? null)) {
             $this->logger->logMissingSecureToken($orderId);
+
             return false;
         }
-
-        $secureToken = $parameters['secureToken'];
 
         if (!$this->secureToken->validate($orderId, $secureToken)) {
             $this->logger->logInvalidSecureToken($orderId);
+
             return false;
         }
+
         return true;
     }
 
     /**
-     * @param $authHeader
-     * @param $requestBody
-     * @param $storeId
+     * @param string $authHeader
+     * @param string $requestBody
+     * @param int $storeId
      * @return bool
      */
-    public function validatePostNotification($authHeader, $requestBody, $storeId): bool
+    public function validatePostNotification(string $authHeader, string $requestBody, int $storeId): bool
     {
         // phpcs:ignore Magento2.Functions.DiscouragedFunction
-        $base64Auth = base64_decode($authHeader);
-        $timestampAndHash = explode(':', $base64Auth);
+        $timestampAndHash = explode(':', (string)base64_decode($authHeader));
 
-        $dataToHash = $timestampAndHash[0] . ':' . $requestBody;
+        if (!isset($timestampAndHash[0], $timestampAndHash[1])) {
+            return false;
+        }
 
-        $hashToCheck = hash_hmac('sha512', $dataToHash, $this->config->getApiKey($storeId));
+        $hashToCheck = hash_hmac(
+            'sha512',
+            $timestampAndHash[0] . ':' . $requestBody,
+            $this->config->getApiKey($storeId)
+        );
 
         return $hashToCheck === $timestampAndHash[1];
     }
