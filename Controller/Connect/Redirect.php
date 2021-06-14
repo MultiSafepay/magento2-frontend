@@ -24,11 +24,8 @@ use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\ResponseInterface;
 use Magento\Framework\Controller\ResultInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
-use Magento\Sales\Model\Order;
 use MultiSafepay\ConnectCore\Logger\Logger;
-use MultiSafepay\ConnectCore\Model\Ui\Gateway\BankTransferConfigProvider;
 use MultiSafepay\ConnectCore\Service\PaymentLink;
-use MultiSafepay\ConnectCore\Util\OrderStatusUtil;
 use MultiSafepay\Exception\ApiException;
 use MultiSafepay\Exception\InvalidApiKeyException;
 use Psr\Http\Client\ClientExceptionInterface;
@@ -39,11 +36,6 @@ class Redirect extends Action
      * @var OrderRepositoryInterface
      */
     protected $orderRepository;
-
-    /**
-     * @var OrderStatusUtil
-     */
-    protected $orderStatusUtil;
 
     /**
      * @var Session
@@ -67,7 +59,6 @@ class Redirect extends Action
      * @param PaymentLink $paymentLink
      * @param Session $checkoutSession
      * @param OrderRepositoryInterface $orderRepository
-     * @param OrderStatusUtil $orderStatusUtil
      * @param Logger $logger
      */
     public function __construct(
@@ -75,7 +66,6 @@ class Redirect extends Action
         PaymentLink $paymentLink,
         Session $checkoutSession,
         OrderRepositoryInterface $orderRepository,
-        OrderStatusUtil $orderStatusUtil,
         Logger $logger
     ) {
         parent::__construct($context);
@@ -83,7 +73,6 @@ class Redirect extends Action
         $this->paymentLink = $paymentLink;
         $this->checkoutSession = $checkoutSession;
         $this->orderRepository = $orderRepository;
-        $this->orderStatusUtil = $orderStatusUtil;
     }
 
     /**
@@ -92,38 +81,31 @@ class Redirect extends Action
      */
     public function execute()
     {
-        $order = $this->checkoutSession->getLastRealOrder();
-        $orderId = $order->getRealOrderId();
+        $orderId = $this->checkoutSession->getLastRealOrder()->getId();
 
         if (!$orderId) {
             return $this->redirectToCheckout();
         }
 
+        $order = $this->orderRepository->get($orderId);
+        $orderIncrementId = $order->getRealOrderId();
+
         try {
             $paymentUrl = $this->paymentLink->getPaymentLinkByOrder($order);
-            $this->logger->logPaymentRedirectInfo($orderId, $paymentUrl);
+            $this->logger->logPaymentRedirectInfo($orderIncrementId, $paymentUrl);
             $this->paymentLink->addPaymentLink($order, $paymentUrl);
         } catch (InvalidApiKeyException $invalidApiKeyException) {
             $this->logger->logInvalidApiKeyException($invalidApiKeyException);
 
             return $this->redirectToCheckout();
         } catch (ApiException $apiException) {
-            $this->logger->logPaymentLinkError($orderId, $apiException);
+            $this->logger->logPaymentLinkError($orderIncrementId, $apiException);
 
             return $this->redirectToCheckout();
         } catch (Exception $exception) {
-            $this->logger->logExceptionForOrder($orderId, $exception);
+            $this->logger->logExceptionForOrder($orderIncrementId, $exception);
 
             return $this->redirectToCheckout();
-        }
-
-        // For bank transfers we don't want the order to be automatically canceled to give customers time to pay
-        if ($order->getPayment()->getMethod() !== BankTransferConfigProvider::CODE) {
-            $state = Order::STATE_PENDING_PAYMENT;
-
-            $order->setState($state);
-            $order->setStatus($this->orderStatusUtil->getPendingPaymentStatus($order));
-            $this->orderRepository->save($order);
         }
 
         return $this->_redirect($paymentUrl);
