@@ -23,6 +23,7 @@ use Magento\Framework\App\Action\Context;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Sales\Model\Order;
+use MultiSafepay\Client\Client;
 use MultiSafepay\ConnectCore\Logger\Logger;
 use MultiSafepay\ConnectCore\Service\OrderService;
 use MultiSafepay\ConnectCore\Util\JsonHandler;
@@ -91,6 +92,10 @@ class Notification extends Action
      */
     public function execute()
     {
+        if ($this->getRequest()->getMethod() === Client::METHOD_GET) {
+            return $this->getResponse()->setContent('ng');
+        }
+
         $params = $this->getRequest()->getParams();
         $orderId = '';
 
