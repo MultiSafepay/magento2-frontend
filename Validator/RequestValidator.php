@@ -20,6 +20,7 @@ namespace MultiSafepay\ConnectFrontend\Validator;
 use MultiSafepay\ConnectCore\Config\Config;
 use MultiSafepay\ConnectCore\Logger\Logger;
 use MultiSafepay\ConnectCore\Model\SecureToken;
+use MultiSafepay\Util\Notification;
 
 class RequestValidator
 {
@@ -38,6 +39,13 @@ class RequestValidator
      */
     private $config;
 
+    /**
+     * RequestValidator constructor.
+     *
+     * @param Config $config
+     * @param Logger $logger
+     * @param SecureToken $secureToken
+     */
     public function __construct(
         Config $config,
         Logger $logger,
@@ -81,19 +89,6 @@ class RequestValidator
      */
     public function validatePostNotification(string $authHeader, string $requestBody, int $storeId): bool
     {
-        // phpcs:ignore Magento2.Functions.DiscouragedFunction
-        $timestampAndHash = explode(':', (string)base64_decode($authHeader));
-
-        if (!isset($timestampAndHash[0], $timestampAndHash[1])) {
-            return false;
-        }
-
-        $hashToCheck = hash_hmac(
-            'sha512',
-            $timestampAndHash[0] . ':' . $requestBody,
-            $this->config->getApiKey($storeId)
-        );
-
-        return $hashToCheck === $timestampAndHash[1];
+        return Notification::verifyNotification($requestBody, $authHeader, $this->config->getApiKey($storeId));
     }
 }
