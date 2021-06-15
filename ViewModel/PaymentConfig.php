@@ -78,7 +78,10 @@ class PaymentConfig implements ArgumentInterface
         $result = [];
 
         foreach (self::CREDIT_CARD_PAYMENT_METHODS as $methodCode) {
-            $configProvider = $this->configProviderPool->getConfigProviderByCode($methodCode);
+            if (!($configProvider = $this->configProviderPool->getConfigProviderByCode($methodCode))) {
+                continue;
+            }
+
             $additionalDataConfig = $configProvider->getConfig();
             $paymentConfig = $configProvider->getPaymentConfig(
                 (int)$this->getQuote()->getStoreId()
@@ -211,7 +214,9 @@ class PaymentConfig implements ArgumentInterface
      */
     public function getCurrency(): string
     {
-        return (string)$this->getQuote()->getCurrency()->getQuoteCurrencyCode();
+        $currency = $this->getQuote()->getCurrency();
+
+        return (string)($currency ? $currency->getQuoteCurrencyCode() : '');
     }
 
     /**
@@ -228,7 +233,7 @@ class PaymentConfig implements ArgumentInterface
 
         if ($shippingAddress->getShippingMethod()) {
             $result[] = [
-                "label" => sprintf(__("Shipping Method: (%s)"), $shippingAddress->getShippingDescription()),
+                "label" => __("Shipping Method: (%1)", $shippingAddress->getShippingDescription())->render(),
                 "amount" => $shippingAddress->getShippingInclTax(),
             ];
         }
@@ -242,7 +247,7 @@ class PaymentConfig implements ArgumentInterface
 
         if ($coupon = (string)$quote->getCouponCode()) {
             $result[] = [
-                "label" => sprintf(__("Discount (%s)"), $coupon),
+                "label" => __("Discount (%1)", $coupon)->render(),
                 "amount" => $shippingAddress->getDiscountAmount(),
             ];
         }

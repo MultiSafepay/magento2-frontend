@@ -32,7 +32,7 @@ define([
          * @param paymentCode
          * @param paymentRequestData
          * @param cardConfig
-         * @returns {{}|MultiSafepay}
+         * @returns {void|{}|MultiSafepay}
          */
         init: function (paymentCode, paymentRequestData, cardConfig) {
             if (paymentCode && paymentRequestData) {
@@ -42,13 +42,13 @@ define([
                     return;
                 }
 
-                const MSP = new MultiSafepay({
+                const MultiSafepayCreditCardComponent = new MultiSafepay({
                     env : paymentRequestData.environment,
                     apiToken : paymentRequestData.apiToken,
                     order : this.getOrderData(paymentRequestData)
                 });
 
-                MSP.init('payment', {
+                MultiSafepayCreditCardComponent.init('payment', {
                     container: '#' + paymentRequestData.cardComponentContainerId + '-' + paymentCode,
                     gateway: cardConfig.gatewayCode,
                     onLoad: state => {
@@ -56,7 +56,7 @@ define([
                     }
                 });
 
-                return MSP;
+                return MultiSafepayCreditCardComponent;
             } else {
                 console.log($t("Credit Card component data not available for selected payment method."));
             }

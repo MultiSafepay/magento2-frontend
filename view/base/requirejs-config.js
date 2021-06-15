@@ -12,7 +12,7 @@
  *
  */
 
-var config = {
+let config = {
     map: {
         '*': {
             mspCrypt: 'MultiSafepay_ConnectFrontend/js/lib/msp-crypt',
