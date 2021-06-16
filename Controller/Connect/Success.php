@@ -98,7 +98,7 @@ class Success extends Action
     {
         $parameters = $this->getRequest()->getParams();
 
-        if (!$this->requestValidator->validate($parameters)) {
+        if (!$this->requestValidator->validateSecureToken($parameters)) {
             $customReturnUrl = $this->customReturnUrlUtil->getCustomReturnUrlByType(
                 $this->checkoutSession->getLastRealOrder(),
                 $parameters,

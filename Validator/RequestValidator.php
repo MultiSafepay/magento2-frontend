@@ -17,8 +17,10 @@ declare(strict_types=1);
 
 namespace MultiSafepay\ConnectFrontend\Validator;
 
+use MultiSafepay\ConnectCore\Config\Config;
 use MultiSafepay\ConnectCore\Logger\Logger;
 use MultiSafepay\ConnectCore\Model\SecureToken;
+use MultiSafepay\Util\Notification;
 
 class RequestValidator
 {
@@ -32,37 +34,61 @@ class RequestValidator
      */
     private $secureToken;
 
+    /**
+     * @var Config
+     */
+    private $config;
+
+    /**
+     * RequestValidator constructor.
+     *
+     * @param Config $config
+     * @param Logger $logger
+     * @param SecureToken $secureToken
+     */
     public function __construct(
+        Config $config,
         Logger $logger,
         SecureToken $secureToken
     ) {
+        $this->config = $config;
         $this->logger = $logger;
         $this->secureToken = $secureToken;
     }
 
     /**
-     * @param $parameters
+     * @param array $parameters
      * @return bool
      */
-    public function validate($parameters): bool
+    public function validateSecureToken(array $parameters): bool
     {
-        if (!isset($parameters['transactionid'])) {
+        if (!($orderId = $parameters['transactionid'] ?? null)) {
             return false;
         }
 
-        $orderId = $parameters['transactionid'];
-
-        if (!isset($parameters['secureToken'])) {
+        if (!($secureToken = $parameters['secureToken'] ?? null)) {
             $this->logger->logMissingSecureToken($orderId);
+
             return false;
         }
-
-        $secureToken = $parameters['secureToken'];
 
         if (!$this->secureToken->validate($orderId, $secureToken)) {
             $this->logger->logInvalidSecureToken($orderId);
+
             return false;
         }
+
         return true;
+    }
+
+    /**
+     * @param string $authHeader
+     * @param string $requestBody
+     * @param int $storeId
+     * @return bool
+     */
+    public function validatePostNotification(string $authHeader, string $requestBody, int $storeId): bool
+    {
+        return Notification::verifyNotification($requestBody, $authHeader, $this->config->getApiKey($storeId));
     }
 }
