@@ -162,17 +162,9 @@ class PaymentConfig implements ArgumentInterface
      */
     private function getQuote(): CartInterface
     {
-        if ($this->quote) {
-            return $this->quote;
+        if (!$this->quote) {
+            $this->quote = $this->session->getQuote();
         }
-
-        $quote = $this->session->getQuote();
-
-        if (!$quote->getId()) {
-            throw new LocalizedException(__('Cart ID was\'t found'));
-        }
-
-        $this->quote = $quote;
 
         return $this->quote;
     }
