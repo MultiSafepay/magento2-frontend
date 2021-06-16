@@ -23,9 +23,12 @@ use Magento\Framework\App\Action\Context;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Sales\Model\Order;
+use MultiSafepay\Client\Client;
 use MultiSafepay\ConnectCore\Logger\Logger;
 use MultiSafepay\ConnectCore\Service\OrderService;
+use MultiSafepay\ConnectCore\Util\JsonHandler;
 use MultiSafepay\ConnectCore\Util\OrderUtil;
+use MultiSafepay\ConnectFrontend\Validator\RequestValidator;
 use MultiSafepay\Exception\ApiException;
 use MultiSafepay\Exception\InvalidApiKeyException;
 use Psr\Http\Client\ClientExceptionInterface;
@@ -48,23 +51,39 @@ class Notification extends Action
     private $orderUtil;
 
     /**
+     * @var RequestValidator
+     */
+    private $requestValidator;
+
+    /**
+     * @var JsonHandler
+     */
+    private $jsonHandler;
+
+    /**
      * Notification constructor.
      *
      * @param Context $context
+     * @param JsonHandler $jsonHandler
      * @param Logger $logger
      * @param OrderService $orderService
      * @param OrderUtil $orderUtil
+     * @param RequestValidator $requestValidator
      */
     public function __construct(
         Context $context,
+        JsonHandler $jsonHandler,
         Logger $logger,
         OrderService $orderService,
-        OrderUtil $orderUtil
+        OrderUtil $orderUtil,
+        RequestValidator $requestValidator
     ) {
         parent::__construct($context);
+        $this->jsonHandler = $jsonHandler;
         $this->logger = $logger;
         $this->orderService = $orderService;
         $this->orderUtil = $orderUtil;
+        $this->requestValidator = $requestValidator;
     }
 
     /**
@@ -73,37 +92,54 @@ class Notification extends Action
      */
     public function execute()
     {
+        if ($this->getRequest()->getMethod() === Client::METHOD_GET) {
+            return $this->getResponse()->setContent('ng');
+        }
+
         $params = $this->getRequest()->getParams();
-        $orderId = '';
+
+        if (!isset($params['transactionid'], $params['timestamp'])) {
+            return $this->getResponse()->setContent('ng');
+        }
+
+        $orderIncrementId = $params['transactionid'];
 
         try {
-            if (!isset($params['transactionid'], $params['timestamp'])) {
-                throw new LocalizedException(__('Transaction params are not correct.'));
-            }
-
-            $orderIncrementId = $params['transactionid'];
-
             /** @var Order $order */
             $order = $this->orderUtil->getOrderByIncrementId($orderIncrementId);
-            if (!$order->getId()) {
-                throw new NoSuchEntityException(__('Requested order doesn\'t exist'));
-            }
+        } catch (NoSuchEntityException $noSuchEntityException) {
+            $this->logger->logExceptionForOrder($orderIncrementId, $noSuchEntityException);
 
-            $this->orderService->processOrderTransaction($order);
+            return $this->getResponse()->setContent('ng');
+        }
+
+        try {
+            $transaction = $this->getRequest()->getContent();
+
+            if (!$this->requestValidator->validatePostNotification(
+                $this->getRequest()->getHeader('Auth'),
+                $transaction,
+                (int)$order->getStoreId()
+            )) {
+                $this->logger->logInfoForOrder($orderIncrementId, 'Hashes do not match, process aborted');
+
+                return $this->getResponse()->setContent('ng');
+            }
+            $this->orderService->processOrderTransaction($order, $this->jsonHandler->ReadJson($transaction));
         } catch (InvalidApiKeyException $invalidApiKeyException) {
             $this->logger->logInvalidApiKeyException($invalidApiKeyException);
 
             return $this->getResponse()->setContent('ng');
         } catch (ApiException $e) {
-            $this->logger->logGetRequestApiException($orderId, $e);
+            $this->logger->logGetRequestApiException($orderIncrementId, $e);
 
             return $this->getResponse()->setContent('ng');
         } catch (ClientExceptionInterface $clientException) {
-            $this->logger->logClientException($orderId, $clientException);
+            $this->logger->logClientException($orderIncrementId, $clientException);
 
             return $this->getResponse()->setContent('ng');
         } catch (Exception $exception) {
-            $this->logger->logExceptionForOrder($orderId, $exception);
+            $this->logger->logExceptionForOrder($orderIncrementId, $exception);
 
             return $this->getResponse()->setContent('ng');
         }
