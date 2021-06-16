@@ -97,21 +97,23 @@ class Notification extends Action
         }
 
         $params = $this->getRequest()->getParams();
-        $orderId = '';
+
+        if (!isset($params['transactionid'], $params['timestamp'])) {
+            return $this->getResponse()->setContent('ng');
+        }
+
+        $orderIncrementId = $params['transactionid'];
 
         try {
-            if (!isset($params['transactionid'], $params['timestamp'])) {
-                throw new LocalizedException(__('Transaction params are not correct.'));
-            }
-
-            $orderIncrementId = $params['transactionid'];
-
             /** @var Order $order */
             $order = $this->orderUtil->getOrderByIncrementId($orderIncrementId);
-            if (!$order->getId()) {
-                throw new NoSuchEntityException(__('Requested order doesn\'t exist'));
-            }
+        } catch (NoSuchEntityException $noSuchEntityException) {
+            $this->logger->logExceptionForOrder($orderIncrementId, $noSuchEntityException);
 
+            return $this->getResponse()->setContent('ng');
+        }
+
+        try {
             $transaction = $this->getRequest()->getContent();
 
             if (!$this->requestValidator->validatePostNotification(
@@ -123,22 +125,21 @@ class Notification extends Action
 
                 return $this->getResponse()->setContent('ng');
             }
-
             $this->orderService->processOrderTransaction($order, $this->jsonHandler->ReadJson($transaction));
         } catch (InvalidApiKeyException $invalidApiKeyException) {
             $this->logger->logInvalidApiKeyException($invalidApiKeyException);
 
             return $this->getResponse()->setContent('ng');
         } catch (ApiException $e) {
-            $this->logger->logGetRequestApiException($orderId, $e);
+            $this->logger->logGetRequestApiException($orderIncrementId, $e);
 
             return $this->getResponse()->setContent('ng');
         } catch (ClientExceptionInterface $clientException) {
-            $this->logger->logClientException($orderId, $clientException);
+            $this->logger->logClientException($orderIncrementId, $clientException);
 
             return $this->getResponse()->setContent('ng');
         } catch (Exception $exception) {
-            $this->logger->logExceptionForOrder($orderId, $exception);
+            $this->logger->logExceptionForOrder($orderIncrementId, $exception);
 
             return $this->getResponse()->setContent('ng');
         }
