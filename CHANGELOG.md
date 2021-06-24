@@ -5,6 +5,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Fixed
+- Removed trailing comma for compatibility with IE11 in frontend plugin. (Thanks to @barryvdh)
+
+
 ## [1.9.0] - 2021-06-17
 - Added MultiSafepay Credit Card component support for credit card payment methods.
 

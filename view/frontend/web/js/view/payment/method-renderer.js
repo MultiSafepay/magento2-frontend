@@ -103,7 +103,7 @@ define(
             {type: 'multisafepay_wellnessgiftcard', component: baseRenderer},
             {type: 'multisafepay_wijncadeau', component: baseRenderer},
             {type: 'multisafepay_winkelcheque', component: baseRenderer},
-            {type: 'multisafepay_yourgift', component: baseRenderer},
+            {type: 'multisafepay_yourgift', component: baseRenderer}
         );
 
         /** Add view logic here if needed */
