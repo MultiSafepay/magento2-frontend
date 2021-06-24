@@ -20,7 +20,6 @@ namespace MultiSafepay\ConnectFrontend\Controller\Connect;
 use Exception;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
-use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Sales\Model\Order;
 use MultiSafepay\Client\Client;
@@ -92,10 +91,6 @@ class Notification extends Action
      */
     public function execute()
     {
-        if ($this->getRequest()->getMethod() === Client::METHOD_GET) {
-            return $this->getResponse()->setContent('ng');
-        }
-
         $params = $this->getRequest()->getParams();
 
         if (!isset($params['transactionid'], $params['timestamp'])) {
@@ -113,35 +108,60 @@ class Notification extends Action
             return $this->getResponse()->setContent('ng');
         }
 
-        try {
-            $transaction = $this->getRequest()->getContent();
 
-            if (!$this->requestValidator->validatePostNotification(
-                $this->getRequest()->getHeader('Auth'),
-                $transaction,
-                (int)$order->getStoreId()
-            )) {
-                $this->logger->logInfoForOrder($orderIncrementId, 'Hashes do not match, process aborted');
+        if ($this->getRequest()->getMethod() === Client::METHOD_GET) {
+            try {
+                $this->orderService->processOrderTransaction($order);
+            } catch (InvalidApiKeyException $invalidApiKeyException) {
+                $this->logger->logInvalidApiKeyException($invalidApiKeyException);
+
+                return $this->getResponse()->setContent('ng');
+            } catch (ApiException $e) {
+                $this->logger->logGetRequestApiException($orderIncrementId, $e);
+
+                return $this->getResponse()->setContent('ng');
+            } catch (ClientExceptionInterface $clientException) {
+                $this->logger->logClientException($orderIncrementId, $clientException);
+
+                return $this->getResponse()->setContent('ng');
+            } catch (Exception $exception) {
+                $this->logger->logExceptionForOrder($orderIncrementId, $exception);
 
                 return $this->getResponse()->setContent('ng');
             }
-            $this->orderService->processOrderTransaction($order, $this->jsonHandler->ReadJson($transaction));
-        } catch (InvalidApiKeyException $invalidApiKeyException) {
-            $this->logger->logInvalidApiKeyException($invalidApiKeyException);
+        }
 
-            return $this->getResponse()->setContent('ng');
-        } catch (ApiException $e) {
-            $this->logger->logGetRequestApiException($orderIncrementId, $e);
+        if ($this->getRequest()->getMethod() === Client::METHOD_POST) {
+            try {
+                $transaction = $this->getRequest()->getContent();
 
-            return $this->getResponse()->setContent('ng');
-        } catch (ClientExceptionInterface $clientException) {
-            $this->logger->logClientException($orderIncrementId, $clientException);
+                if (!$this->requestValidator->validatePostNotification(
+                    $this->getRequest()->getHeader('Auth'),
+                    $transaction,
+                    (int)$order->getStoreId()
+                )) {
+                    $this->logger->logInfoForOrder($orderIncrementId, 'Hashes do not match, process aborted');
 
-            return $this->getResponse()->setContent('ng');
-        } catch (Exception $exception) {
-            $this->logger->logExceptionForOrder($orderIncrementId, $exception);
+                    return $this->getResponse()->setContent('ng');
+                }
+                $this->orderService->processOrderTransaction($order, $this->jsonHandler->ReadJson($transaction));
+            } catch (InvalidApiKeyException $invalidApiKeyException) {
+                $this->logger->logInvalidApiKeyException($invalidApiKeyException);
 
-            return $this->getResponse()->setContent('ng');
+                return $this->getResponse()->setContent('ng');
+            } catch (ApiException $e) {
+                $this->logger->logGetRequestApiException($orderIncrementId, $e);
+
+                return $this->getResponse()->setContent('ng');
+            } catch (ClientExceptionInterface $clientException) {
+                $this->logger->logClientException($orderIncrementId, $clientException);
+
+                return $this->getResponse()->setContent('ng');
+            } catch (Exception $exception) {
+                $this->logger->logExceptionForOrder($orderIncrementId, $exception);
+
+                return $this->getResponse()->setContent('ng');
+            }
         }
 
         return $this->getResponse()->setContent('ok');
