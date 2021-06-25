@@ -21,6 +21,7 @@ use Magento\Checkout\Model\Session;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Sales\Api\OrderRepositoryInterface;
+use Magento\Sales\Model\Service\OrderService;
 use MultiSafepay\ConnectCore\Util\CustomReturnUrlUtil;
 use MultiSafepay\ConnectFrontend\Validator\RequestValidator;
 
@@ -47,6 +48,11 @@ class Cancel extends Action
     private $customReturnUrlUtil;
 
     /**
+     * @var OrderService
+     */
+    private $orderService;
+
+    /**
      * Cancel constructor.
      *
      * @param OrderRepositoryInterface $orderRepository
@@ -54,18 +60,21 @@ class Cancel extends Action
      * @param Session $checkoutSession
      * @param Context $context
      * @param CustomReturnUrlUtil $customReturnUrlUtil
+     * @param OrderService $orderService
      */
     public function __construct(
         OrderRepositoryInterface $orderRepository,
         RequestValidator $requestValidator,
         Session $checkoutSession,
         Context $context,
-        CustomReturnUrlUtil $customReturnUrlUtil
+        CustomReturnUrlUtil $customReturnUrlUtil,
+        OrderService $orderService
     ) {
         $this->orderRepository = $orderRepository;
         $this->checkoutSession = $checkoutSession;
         $this->requestValidator = $requestValidator;
         $this->customReturnUrlUtil = $customReturnUrlUtil;
+        $this->orderService = $orderService;
         parent::__construct($context);
     }
 
@@ -95,7 +104,7 @@ class Cancel extends Action
 
         $order = $this->checkoutSession->getLastRealOrder()->loadByIncrementId($orderId);
 
-        $order->cancel();
+        $this->orderService->cancel($order->getEntityId());
         $order->addCommentToStatusHistory(__('The order has been canceled'));
         $this->orderRepository->save($order);
 
