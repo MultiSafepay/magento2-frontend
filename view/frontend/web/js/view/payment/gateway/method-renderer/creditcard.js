@@ -216,9 +216,13 @@ define(
                             this.isPlaceOrderActionAllowed(false);
                             let payload = this.paymentComponent.getPaymentData().payment_data.payload;
 
+//                            todo need to do it right way
+                            let cardBrand = this.paymentComponent.ref.paymentFormRef.state.brandsAllowed[0].id;
+
                             if (payload) {
                                 this.paymentPayload = payload;
                                 paymentRequestData['additional_data']['payload'] = payload;
+                                paymentRequestData['additional_data']['card_brand'] = cardBrand;
                             }
 
                             this.placeOderDefault(paymentRequestData);
