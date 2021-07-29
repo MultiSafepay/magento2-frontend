@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Added rule for exclusion from minification MultiSafepay payment component external js file
 
+### Fixed
+- Fixed a bug where some header elements were still visible inside the checkout (Thanks to @Davie82)
+
 ## [1.9.1] - 2021-06-25
 ### Fixed
 - Fixed a bug related to GET notifications where orders would stay in pending_payment status
