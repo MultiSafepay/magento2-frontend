@@ -5,11 +5,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-### Added
-- Added rule for exclusion from minification MultiSafepay payment component external js file
 
+## [1.9.2] - 2021-07-30
 ### Fixed
 - Fixed a bug where some header elements were still visible inside the checkout (Thanks to @Davie82)
+- Fixed a bug where the MultiSafepay payment component external js file could not be loaded when using Magento javascript minification
 
 ## [1.9.1] - 2021-06-25
 ### Fixed
