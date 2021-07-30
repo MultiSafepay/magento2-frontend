@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.9.2] - 2021-07-30
+### Fixed
+- Fixed a bug where some header elements were still visible inside the checkout (Thanks to @Davie82)
+- Fixed a bug where the MultiSafepay payment component external js file could not be loaded when using Magento javascript minification
+
 ## [1.9.1] - 2021-06-25
 ### Fixed
 - Fixed a bug related to GET notifications where orders would stay in pending_payment status

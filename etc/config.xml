@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <dev>
+            <js>
+                <minify_exclude>
+                    <multisafepay_component_js>pay.multisafepay.com/sdk/components/v1/components.js</multisafepay_component_js>
+                </minify_exclude>
+            </js>
+        </dev>
+    </default>
+</config>
