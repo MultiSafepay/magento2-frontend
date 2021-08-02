@@ -26,6 +26,7 @@ use Magento\Framework\Controller\ResultInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use MultiSafepay\ConnectCore\Logger\Logger;
 use MultiSafepay\ConnectCore\Service\PaymentLink;
+use MultiSafepay\ConnectCore\Service\PaymentService;
 use MultiSafepay\Exception\ApiException;
 use MultiSafepay\Exception\InvalidApiKeyException;
 use Psr\Http\Client\ClientExceptionInterface;
@@ -53,6 +54,11 @@ class Redirect extends Action
     private $paymentLink;
 
     /**
+     * @var PaymentService
+     */
+    private $paymentService;
+
+    /**
      * Redirect constructor.
      *
      * @param Context $context
@@ -60,19 +66,22 @@ class Redirect extends Action
      * @param Session $checkoutSession
      * @param OrderRepositoryInterface $orderRepository
      * @param Logger $logger
+     * @param PaymentService $paymentService
      */
     public function __construct(
         Context $context,
         PaymentLink $paymentLink,
         Session $checkoutSession,
         OrderRepositoryInterface $orderRepository,
-        Logger $logger
+        Logger $logger,
+        PaymentService $paymentService
     ) {
         parent::__construct($context);
         $this->logger = $logger;
         $this->paymentLink = $paymentLink;
         $this->checkoutSession = $checkoutSession;
         $this->orderRepository = $orderRepository;
+        $this->paymentService = $paymentService;
     }
 
     /**
@@ -94,6 +103,7 @@ class Redirect extends Action
             $paymentUrl = $this->paymentLink->getPaymentLinkByOrder($order);
             $this->logger->logPaymentRedirectInfo($orderIncrementId, $paymentUrl);
             $this->paymentLink->addPaymentLink($order, $paymentUrl);
+            $this->paymentService->removeAdditionalInformation($order);
         } catch (InvalidApiKeyException $invalidApiKeyException) {
             $this->logger->logInvalidApiKeyException($invalidApiKeyException);
 
