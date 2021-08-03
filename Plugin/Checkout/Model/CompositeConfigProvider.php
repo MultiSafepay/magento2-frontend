@@ -42,6 +42,8 @@ class CompositeConfigProvider
      * @param CheckoutCompositeConfigProvider $subject
      * @param array $config
      * @return array
+     *
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     public function afterGetConfig(CheckoutCompositeConfigProvider $subject, array $config): array
     {

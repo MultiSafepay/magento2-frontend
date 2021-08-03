@@ -8,3 +8,4 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: extdn/github-actions-m2/magento-coding-standard@master
+      - uses: extdn/github-actions-m2/magento-mess-detector@master
