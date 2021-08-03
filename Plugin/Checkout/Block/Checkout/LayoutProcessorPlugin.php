@@ -54,6 +54,8 @@ class LayoutProcessorPlugin
      * @param array $jsLayout
      * @return array
      * @throws NoSuchEntityException
+     *
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     public function beforeProcess(LayoutProcessor $subject, array $jsLayout): array
     {
