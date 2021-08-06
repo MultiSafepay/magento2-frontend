@@ -20,6 +20,9 @@ namespace MultiSafepay\ConnectFrontend\Controller\Connect;
 use Exception;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
+use Magento\Framework\App\CsrfAwareActionInterface;
+use Magento\Framework\App\RequestInterface;
+use Magento\Framework\App\Request\InvalidRequestException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Sales\Model\Order;
 use MultiSafepay\Client\Client;
@@ -32,7 +35,10 @@ use MultiSafepay\Exception\ApiException;
 use MultiSafepay\Exception\InvalidApiKeyException;
 use Psr\Http\Client\ClientExceptionInterface;
 
-class Notification extends Action
+/**
+ * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
+ */
+class Notification extends Action implements CsrfAwareActionInterface
 {
     /**
      * @var Logger
@@ -83,6 +89,28 @@ class Notification extends Action
         $this->orderService = $orderService;
         $this->orderUtil = $orderUtil;
         $this->requestValidator = $requestValidator;
+    }
+
+    /**
+     * @param RequestInterface $request
+     * @return InvalidRequestException|null
+     *
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     */
+    public function createCsrfValidationException(RequestInterface $request): ?InvalidRequestException
+    {
+        return null;
+    }
+
+    /**
+     * @param RequestInterface $request
+     * @return bool|null
+     *
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     */
+    public function validateForCsrf(RequestInterface $request): ?bool
+    {
+        return true;
     }
 
     /**

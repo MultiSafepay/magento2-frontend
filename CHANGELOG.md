@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - We are now removing sensitive data from the payment after the customer has been redirected.
 - Added date picker field for Date of Birth checkout fields to further increase the consistency of input
+- Dropped support for Magento 2.2.x versions.
+
+### Fixed
+- Fixed a bug where some POST notification can be restricted because of CSRF validation.
 
 ## [1.9.2] - 2021-07-30
 ### Fixed
