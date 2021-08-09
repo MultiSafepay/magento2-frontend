@@ -25,6 +25,7 @@ use Magento\Framework\App\ResponseInterface;
 use Magento\Framework\Controller\ResultInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use MultiSafepay\ConnectCore\Logger\Logger;
+use MultiSafepay\ConnectCore\Service\Payment\RemoveAdditionalInformation;
 use MultiSafepay\ConnectCore\Service\PaymentLink;
 use MultiSafepay\Exception\ApiException;
 use MultiSafepay\Exception\InvalidApiKeyException;
@@ -53,6 +54,11 @@ class Redirect extends Action
     private $paymentLink;
 
     /**
+     * @var RemoveAdditionalInformation
+     */
+    private $removeAdditionalInformation;
+
+    /**
      * Redirect constructor.
      *
      * @param Context $context
@@ -60,19 +66,22 @@ class Redirect extends Action
      * @param Session $checkoutSession
      * @param OrderRepositoryInterface $orderRepository
      * @param Logger $logger
+     * @param RemoveAdditionalInformation $removeAdditionalInformation
      */
     public function __construct(
         Context $context,
         PaymentLink $paymentLink,
         Session $checkoutSession,
         OrderRepositoryInterface $orderRepository,
-        Logger $logger
+        Logger $logger,
+        RemoveAdditionalInformation $removeAdditionalInformation
     ) {
         parent::__construct($context);
         $this->logger = $logger;
         $this->paymentLink = $paymentLink;
         $this->checkoutSession = $checkoutSession;
         $this->orderRepository = $orderRepository;
+        $this->removeAdditionalInformation = $removeAdditionalInformation;
     }
 
     /**
@@ -94,6 +103,7 @@ class Redirect extends Action
             $paymentUrl = $this->paymentLink->getPaymentLinkByOrder($order);
             $this->logger->logPaymentRedirectInfo($orderIncrementId, $paymentUrl);
             $this->paymentLink->addPaymentLink($order, $paymentUrl);
+            $this->removeAdditionalInformation->execute($order);
         } catch (InvalidApiKeyException $invalidApiKeyException) {
             $this->logger->logInvalidApiKeyException($invalidApiKeyException);
 
