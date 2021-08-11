@@ -67,7 +67,7 @@ class CardRenderer extends AbstractCardRenderer
     public function getNumberLast4Digits(): string
     {
         return (string)!empty($this->getTokenDetails()[MultiSafepayPaymentTokenInterface::MASKED_CC]) ?
-            $this->getTokenDetails()[MultiSafepayPaymentTokenInterface::MASKED_CC] : '';
+            (string)$this->getTokenDetails()[MultiSafepayPaymentTokenInterface::MASKED_CC] : '';
     }
 
     /**
