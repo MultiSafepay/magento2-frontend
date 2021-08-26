@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - Fixed a bug where some POST notification can be restricted because of CSRF validation.
+- Fixed a bug where retrieving Vault stored cards would cause a type error.
 
 ## [1.9.2] - 2021-07-30
 ### Fixed
