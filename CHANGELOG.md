@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [1.10.0] - 2021-08-27
 ### Changed
 - We are now removing sensitive data from the payment after the customer has been redirected.
 - Added date picker field for Date of Birth checkout fields to further increase the consistency of input
@@ -13,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Fixed a bug where some POST notification can be restricted because of CSRF validation.
 - Fixed a bug where retrieving Vault stored cards would cause a type error.
+- Fixed PHP Mess detector issues.
 
 ## [1.9.2] - 2021-07-30
 ### Fixed
