@@ -2,7 +2,7 @@
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:App/etc/routes.xsd">
     <router id="standard">
         <route id="multisafepay_connect" frontName="multisafepay">
-            <module name="MultiSafepay_ConnectFrontend" />
+            <module name="MultiSafepay_ConnectFrontend" before="MultiSafepay_Connect"/>
         </route>
     </router>
 </config>
