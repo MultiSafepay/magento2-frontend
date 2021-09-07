@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.10.1] - 2021-09-07
+### Fixed
+- Fixed an issue where there were duplicate controllers with the legacy plugin, causing an error on transaction placement.
+
 ## [1.10.0] - 2021-08-27
 ### Changed
 - We are now removing sensitive data from the payment after the customer has been redirected.
