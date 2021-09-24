@@ -9,6 +9,7 @@ use Magento\Customer\CustomerData\SectionSourceInterface;
 use Magento\Framework\Locale\ResolverInterface;
 use MultiSafepay\ConnectCore\Config\Config;
 use MultiSafepay\ConnectCore\Logger\Logger;
+use MultiSafepay\ConnectCore\Model\Ui\Gateway\ApplePayConfigProvider;
 use MultiSafepay\ConnectCore\Model\Ui\GenericConfigProvider;
 use MultiSafepay\ConnectFrontend\ViewModel\PaymentConfig;
 use MultiSafepay\ConnectCore\Model\Ui\Gateway\GooglePayConfigProvider;
@@ -48,6 +49,11 @@ class PaymentRequest implements SectionSourceInterface
     private $googlePayConfigProvider;
 
     /**
+     * @var ApplePayConfigProvider
+     */
+    private $applePayConfigProvider;
+
+    /**
      * PaymentRequest constructor.
      *
      * @param PaymentConfig $paymentConfig
@@ -55,6 +61,7 @@ class PaymentRequest implements SectionSourceInterface
      * @param Logger $logger
      * @param Config $config
      * @param ResolverInterface $localeResolver
+     * @param ApplePayConfigProvider $applePayConfigProvider
      */
     public function __construct(
         PaymentConfig $paymentConfig,
@@ -62,6 +69,7 @@ class PaymentRequest implements SectionSourceInterface
         Logger $logger,
         Config $config,
         ResolverInterface $localeResolver,
+        ApplePayConfigProvider $applePayConfigProvider,
         GooglePayConfigProvider $googlePayConfigProvider
     ) {
         $this->paymentConfig = $paymentConfig;
@@ -69,6 +77,7 @@ class PaymentRequest implements SectionSourceInterface
         $this->logger = $logger;
         $this->config = $config;
         $this->localeResolver = $localeResolver;
+        $this->applePayConfigProvider = $applePayConfigProvider;
         $this->googlePayConfigProvider = $googlePayConfigProvider;
     }
 
@@ -93,6 +102,10 @@ class PaymentRequest implements SectionSourceInterface
                     "currency" => $this->paymentConfig->getCurrency(),
                     "quoteId" => $this->paymentConfig->getQuoteId(),
                     'apiToken' => $this->genericConfigProvider->getApiToken($storeId),
+                    'applePayButton' => [
+                        'isActive' => $this->applePayConfigProvider->isApplePayActive($storeId),
+                        'applePayButtonId' => ApplePayConfigProvider::APPLE_PAY_BUTTON_ID
+                    ],
                     'googlePayButton' => [
                         'isActive' => $this->googlePayConfigProvider->isApplePayActive($storeId),
                         'applePayButtonId' => GooglePayConfigProvider::GOOGLE_PAY_BUTTON_ID,
