@@ -43,18 +43,25 @@
             <!--/ko-->
         </div>
 
-        <div class="actions-toolbar">
-            <div class="primary">
-                <button class="action primary checkout"
-                        type="submit"
-                        data-bind="
+        <button type="button"
+                data-bind="
+                attr: {'id': getApplePayButtonId(), title: $t('Apple Pay')},
+                click: initApplePayButton,
+                visible: isAppleButtonVisible()
+                "></button>
+
+            <div class="actions-toolbar">
+                <div class="primary">
+                    <button class="action primary checkout"
+                            type="submit"
+                            data-bind="
                         click: placeOrder,
                         attr: {title: $t('Place Order')}
                         ">
-                    <span data-bind="i18n: 'Place Order'"></span>
-                </button>
+                        <span data-bind="i18n: 'Place Order'"></span>
+                    </button>
+                </div>
             </div>
-        </div>
     </div>
 </div>
 <!--/ko-->

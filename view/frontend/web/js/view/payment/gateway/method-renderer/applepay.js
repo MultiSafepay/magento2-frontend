@@ -20,7 +20,9 @@ define(
         'MultiSafepay_ConnectFrontend/js/view/payment/method-renderer/base-renderer',
         'Magento_Checkout/js/checkout-data',
         'Magento_Checkout/js/action/redirect-on-success',
-        'mage/url'
+        'mage/url',
+        'Magento_Customer/js/customer-data',
+        'multisafepayApplePayButton'
     ],
 
     /**
@@ -30,6 +32,8 @@ define(
      * @param checkoutData
      * @param redirectOnSuccessAction
      * @param url
+     * @param customerData
+     * @param multisafepayApplePayButton
      * @returns {*}
      */
     function (
@@ -37,13 +41,66 @@ define(
         Component,
         checkoutData,
         redirectOnSuccessAction,
-        url
+        url,
+        customerData,
+        multisafepayApplePayButton
     ) {
         'use strict';
 
         return Component.extend({
             defaults: {
                 template: 'MultiSafepay_ConnectFrontend/payment/gateway/applepay',
+            },
+
+            initialize: function () {
+                this._super();
+                this.paymentRequestConfig = customerData.get('multisafepay-payment-request')();
+                this.paymentPayload = false;
+
+                return this;
+            },
+
+            /**
+             *
+             * @returns {string|*}
+             */
+            getApplePayButtonId: function () {
+                return this.paymentRequestConfig.applePayButton.applePayButtonId;
+            },
+
+            /**
+             *
+             * @returns {*}
+             */
+            isApplePayButtonAvailable: function () {
+                return this.paymentRequestConfig && this.paymentRequestConfig.applePayButton.isActive;
+            },
+
+            /**
+             * Check if Apple Pay is allowed to be used
+             *
+             * @returns {boolean|*}
+             */
+            initApplePayButton: function () {
+                let paymentRequestData = this.getData();
+                let deferred = $.Deferred();
+                this.isPlaceOrderActionAllowed(false);
+                multisafepayApplePayButton.init(this.getCode(), deferred);
+
+                $.when(deferred).then(function (paymentData) {
+                    if (paymentData) {
+                        self.paymentPayload = paymentData;
+                        paymentRequestData['additional_data']['payload'] = paymentData;
+                    }
+
+                    // self.placeOderDefault(paymentRequestData);
+                });
+
+                return true;
+            },
+
+            isAppleButtonVisible: function () {
+                return this.isApplePayButtonAvailable();
             },
 
             /**
@@ -53,7 +110,11 @@ define(
              */
             isAllowed: function () {
                 try {
-                    return window.ApplePaySession && window.ApplePaySession.canMakePayments();
+                    $(this.getApplePayButtonId()).hide();
+
+                    if (window.ApplePaySession && window.ApplePaySession.canMakePayments()) {
+                        return true;
+                    }
                 } catch (error) {
                     console.warn('MultiSafepay error when trying to initialize Apple Pay:', error);
                     return false;

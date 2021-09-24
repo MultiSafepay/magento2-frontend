@@ -9,6 +9,7 @@ use Magento\Customer\CustomerData\SectionSourceInterface;
 use Magento\Framework\Locale\ResolverInterface;
 use MultiSafepay\ConnectCore\Config\Config;
 use MultiSafepay\ConnectCore\Logger\Logger;
+use MultiSafepay\ConnectCore\Model\Ui\Gateway\ApplePayConfigProvider;
 use MultiSafepay\ConnectCore\Model\Ui\GenericConfigProvider;
 use MultiSafepay\ConnectFrontend\ViewModel\PaymentConfig;
 
@@ -42,6 +43,11 @@ class PaymentRequest implements SectionSourceInterface
     private $localeResolver;
 
     /**
+     * @var ApplePayConfigProvider
+     */
+    private $applePayConfigProvider;
+
+    /**
      * PaymentRequest constructor.
      *
      * @param PaymentConfig $paymentConfig
@@ -49,19 +55,22 @@ class PaymentRequest implements SectionSourceInterface
      * @param Logger $logger
      * @param Config $config
      * @param ResolverInterface $localeResolver
+     * @param ApplePayConfigProvider $applePayConfigProvider
      */
     public function __construct(
         PaymentConfig $paymentConfig,
         GenericConfigProvider $genericConfigProvider,
         Logger $logger,
         Config $config,
-        ResolverInterface $localeResolver
+        ResolverInterface $localeResolver,
+        ApplePayConfigProvider $applePayConfigProvider
     ) {
         $this->paymentConfig = $paymentConfig;
         $this->genericConfigProvider = $genericConfigProvider;
         $this->logger = $logger;
         $this->config = $config;
         $this->localeResolver = $localeResolver;
+        $this->applePayConfigProvider = $applePayConfigProvider;
     }
 
     /**
@@ -84,7 +93,11 @@ class PaymentRequest implements SectionSourceInterface
                     "cartTotal" => $this->paymentConfig->getQuoteTotal(),
                     "currency" => $this->paymentConfig->getCurrency(),
                     "quoteId" => $this->paymentConfig->getQuoteId(),
-                    'apiToken' => $this->genericConfigProvider->getApiToken($storeId)
+                    'apiToken' => $this->genericConfigProvider->getApiToken($storeId),
+                    'applePayButton' => [
+                        'isActive' => $this->applePayConfigProvider->isApplePayActive($storeId),
+                        'applePayButtonId' => ApplePayConfigProvider::APPLE_PAY_BUTTON_ID
+                    ]
                 ];
             }
         } catch (Exception $exception) {
