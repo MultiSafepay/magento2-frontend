@@ -17,7 +17,8 @@ define([
     'Magento_Customer/js/customer-data',
     'multisafepayCardPaymentProcessor',
     'multisafepayUtils',
-    'Magento_Checkout/js/model/quote'
+    'Magento_Checkout/js/model/quote',
+    'MultiSafepay_ConnectFrontend/js/action/get-apple-merchant-session'
     // 'applePaySdk'
 ], function (
     $,
@@ -25,7 +26,8 @@ define([
     customerData,
     multisafepayCardPaymentProcessor,
     multisafepayUtils,
-    quote
+    quote,
+    getAppleMerchantSessionAction
     // applePaySdk
 ) {
     'use strict';
@@ -38,9 +40,11 @@ define([
          */
         init: function (paymentCode, deferred) {
             deferred = deferred || $.Deferred();
+
             let paymentRequestData = customerData.get('multisafepay-payment-request')();
             let applePayButtonData = paymentRequestData.applePayButton;
             let cartData = customerData.get('cart')();
+            let self = this;
 
             if (paymentRequestData && applePayButtonData.isActive) {
                 // if (!paymentRequestData.cardsConfig.hasOwnProperty(paymentCode)) {
@@ -68,29 +72,67 @@ define([
                     countryCode: quote.billingAddress().countryId,
                     total: {
                         label: $t("Total"),
-                        amount: {
-                            currency: paymentRequestData.currency,
-                            value: paymentRequestData.cartTotal ?
-                                paymentRequestData.cartTotal
-                                : cartData.grandTotalAmount
-                        },
+                        amount: paymentRequestData.cartTotal ?
+                            paymentRequestData.cartTotal
+                            : cartData.grandTotalAmount
                     },
-                    supportedNetworks: ['amex', 'masterCard', 'visa' ],
-                    merchantCapabilities: [ 'supports3DS', 'supportsEMV', 'supportsCredit', 'supportsDebit' ]
+                    supportedNetworks: ['amex', 'masterCard', 'visa'],
+                    merchantCapabilities: ['supports3DS', 'supportsEMV', 'supportsCredit', 'supportsDebit']
                 };
 
-                console.log(details);
+                console.log(window, details);
+                var session = new ApplePaySession(10, details);
 
-                var session = new ApplePaySession(1, details);
+                console.log(session);
 
                 // Merchant Validation
                 session.onvalidatemerchant = function (event) {
-                    logit(event);
-                    // var promise = performValidation(event.validationURL);
-                    // promise.then(function (merchantSession) {
-                    //     session.completeMerchantValidation(merchantSession);
-                    // });
+                    console.log(event);
+                    console.log(event.validationURL);
+                    var promise = self.performValidation(
+                        event.validationURL,
+                        applePayButtonData.getMerchantSessionUrl
+                    );
+
+                    promise.then(function (merchantSession) {
+                        session.completeMerchantValidation(merchantSession);
+                    });
                 }
+
+                session.onpaymentmethodselected = event => {
+                    // Define ApplePayPaymentMethodUpdate based on the selected payment method.
+                    // No updates or errors are needed, pass an empty object.
+                    const update = {};
+                    session.completePaymentMethodSelection(update);
+                };
+
+                session.onshippingmethodselected = event => {
+                    // Define ApplePayShippingMethodUpdate based on the selected shipping method.
+                    // No updates or errors are needed, pass an empty object.
+                    const update = {};
+                    session.completeShippingMethodSelection(update);
+                };
+
+                session.onshippingcontactselected = event => {
+                    // Define ApplePayShippingContactUpdate based on the selected shipping contact.
+                    const update = {};
+                    session.completeShippingContactSelection(update);
+                };
+
+                session.onpaymentauthorized = event => {
+                    // Define ApplePayPaymentAuthorizationResult
+                    const result = {
+                        "status": ApplePaySession.STATUS_SUCCESS
+                    };
+                    session.completePayment(result);
+                };
+
+                session.oncancel = event => {
+                    console.log('starting session.cancel');
+                    console.log(event);
+                };
+
+                session.begin();
 
                 // let paymentRequestApi = new PaymentRequest(methodData, details);
                 //
@@ -121,6 +163,34 @@ define([
             }
         },
 
+        performValidation: function (validationUrl, serviceUrl) {
+            // return new Promise(function (resolve, reject) {
+            //     let xhr = new XMLHttpRequest();
+            //     xhr.onload = function () {
+            //         var data = JSON.parse(this.responseText);
+            //         console.log(data);
+            //         resolve(data);
+            //     };
+            //     xhr.onerror = reject;
+            //     xhr.open('GET', 'apple_pay_comm.php?u=' + valURL);
+            //     xhr.send();
+            // });
+
+            return getAppleMerchantSessionAction(serviceUrl, validationUrl);
+
+            // $.when(getAppleMerchantSessionAction(serviceUrl, validationUrl)).done(
+            //     function () {
+            //         self.afterPlaceOrder();
+            //
+            //         if (self.redirectAfterPlaceOrder) {
+            //             redirectOnSuccessAction.execute();
+            //         }
+            //     }
+            // ).always(function () {
+            //     }
+            // );
+        },
+
         /**
          *
          * @param paymentRequest
@@ -149,10 +219,7 @@ define([
                     if (value.amount) {
                         displayItems.push({
                             label: value.label,
-                            amount: {
-                                currency: paymentRequest.currency,
-                                value: value.amount
-                            }
+                            amount: value.amount
                         });
                     }
                 });
