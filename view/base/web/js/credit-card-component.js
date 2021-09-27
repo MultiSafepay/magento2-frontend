@@ -51,7 +51,7 @@ define([
                 MultiSafepayCreditCardComponent.init('payment', {
                     container: '#' + paymentRequestData.cardComponentContainerId + '-' + paymentCode,
                     gateway: cardConfig.gatewayCode,
-                    onLoad: state => {
+                    onLoad: function(state) {
                         console.log('onLoad', state);
                     }
                 });
