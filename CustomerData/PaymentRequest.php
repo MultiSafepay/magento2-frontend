@@ -96,7 +96,9 @@ class PaymentRequest implements SectionSourceInterface
                     'apiToken' => $this->genericConfigProvider->getApiToken($storeId),
                     'applePayButton' => [
                         'isActive' => $this->applePayConfigProvider->isApplePayActive($storeId),
-                        'applePayButtonId' => ApplePayConfigProvider::APPLE_PAY_BUTTON_ID
+                        'applePayButtonId' => ApplePayConfigProvider::APPLE_PAY_BUTTON_ID,
+                        'getMerchantSessionUrl' =>
+                            $this->applePayConfigProvider->getApplePayMerchantSessionUrl($storeId)
                     ]
                 ];
             }
