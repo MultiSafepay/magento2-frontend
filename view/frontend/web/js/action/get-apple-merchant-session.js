@@ -22,7 +22,6 @@ define(
         'use strict';
 
         return function (serviceUrl, validationUrl) {
-            let headers = {};
             let payload = {
                 originDomain: window.location.hostname,
                 validationUrl: validationUrl
@@ -30,8 +29,10 @@ define(
 
             fullScreenLoader.startLoader();
 
+            console.log(payload);
+
             return storage.post(
-                serviceUrl, JSON.stringify(payload), true, 'application/json', headers
+                serviceUrl, JSON.stringify(payload), false
             ).fail(
                 function (response) {
                     // errorProcessor.process(response, messageContainer);
