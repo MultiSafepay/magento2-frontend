@@ -23,14 +23,41 @@ use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\CsrfAwareActionInterface;
 use Magento\Framework\App\RequestInterface;
 use Magento\Framework\App\Request\InvalidRequestException;
+use Magento\Framework\Controller\Result\Json;
+use Magento\Framework\Controller\Result\JsonFactory;
+use MultiSafepay\ConnectCore\Model\Ui\Gateway\ApplePayConfigProvider;
+use MultiSafepay\ConnectCore\Util\JsonHandler;
 
 /**
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  */
 class Session extends Action implements CsrfAwareActionInterface
 {
-    public function __construct(Context $context)
+    /**
+     * @var JsonHandler
+     */
+    private $jsonHandler;
+
+    /**
+     * @var JsonFactory
+     */
+    private $resultJsonFactory;
+
+    /**
+     * @var ApplePayConfigProvider
+     */
+    private $applePayConfigProvider;
+
+    public function __construct(
+        Context $context,
+        JsonHandler $jsonHandler,
+        JsonFactory $resultJsonFactory,
+        ApplePayConfigProvider $applePayConfigProvider
+    )
     {
+        $this->jsonHandler = $jsonHandler;
+        $this->resultJsonFactory = $resultJsonFactory;
+        $this->applePayConfigProvider = $applePayConfigProvider;
         parent::__construct($context);
     }
 
@@ -62,8 +89,33 @@ class Session extends Action implements CsrfAwareActionInterface
      */
     public function execute()
     {
-        $params = $this->getRequest()->getParams();
+        /** @var Json $resultJson */
+        $resultJson = $this->resultJsonFactory->create();
+        $response = [
+            'status' => 'error',
+            'message' => ''
+        ];
 
-        return $this->getResponse()->setContent('ok');
+        if ($requestContent = $this->getRequest()->getContent()) {
+            $requestData = $this->jsonHandler->readJSON($requestContent);
+
+            if (!isset($requestData['originDomain'], $requestData['validationUrl'])) {
+                $response = [
+                    'status' => 'error',
+                    'message' => __('Please check POST params.')
+                ];
+
+                return $resultJson->setData($response);
+            }
+
+            $session = $this->applePayConfigProvider->createApplePayMerchantSession(
+                [
+                    'origin_domain' => $requestData['originDomain'],
+                    'validation_url' => $requestData['validationUrl']
+                ]
+            );
+        }
+
+        return $resultJson->setData($response);
     }
 }

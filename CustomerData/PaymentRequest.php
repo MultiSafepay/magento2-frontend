@@ -79,33 +79,40 @@ class PaymentRequest implements SectionSourceInterface
     public function getSectionData(): array
     {
         try {
-            if ($cardsConfig = $this->paymentConfig->getCardsConfig()) {
-                $storeId = $this->paymentConfig->getStoreIdFromQuote();
+            $storeId = $this->paymentConfig->getStoreIdFromQuote();
 
-                return [
-                    "enabled" => true,
-                    "environment" => $this->config->isLiveMode($storeId) ? 'live' : 'test',
-                    "locale" => $this->localeResolver->getLocale(),
-                    "cardComponentContainerId" => self::CREDIT_CARD_COMPONENT_CONTAINER_ID,
-                    "cardsConfig" => $cardsConfig,
-                    "cartItems" => $this->paymentConfig->getQuoteItems(),
-                    "additionalTotalItems" => $this->paymentConfig->getAdditionalTotalItems(),
-                    "cartTotal" => $this->paymentConfig->getQuoteTotal(),
-                    "currency" => $this->paymentConfig->getCurrency(),
-                    "quoteId" => $this->paymentConfig->getQuoteId(),
-                    'apiToken' => $this->genericConfigProvider->getApiToken($storeId),
-                    'applePayButton' => [
-                        'isActive' => $this->applePayConfigProvider->isApplePayActive($storeId),
-                        'applePayButtonId' => ApplePayConfigProvider::APPLE_PAY_BUTTON_ID,
-                        'getMerchantSessionUrl' =>
-                            $this->applePayConfigProvider->getApplePayMerchantSessionUrl($storeId)
+            $result = [
+                "enabled" => false,
+                'apiToken' => $this->genericConfigProvider->getApiToken($storeId),
+                'applePayButton' => [
+                    'isActive' => $this->applePayConfigProvider->isApplePayActive($storeId),
+                    'applePayButtonId' => ApplePayConfigProvider::APPLE_PAY_BUTTON_ID,
+                    'getMerchantSessionUrl' => $this->applePayConfigProvider->getApplePayMerchantSessionUrl($storeId),
+                ]
+            ];
+
+            if ($cardsConfig = $this->paymentConfig->getCardsConfig()) {
+                return array_merge(
+                    $result,
+                    [
+                        "enabled" => true,
+                        "environment" => $this->config->isLiveMode($storeId) ? 'live' : 'test',
+                        "locale" => $this->localeResolver->getLocale(),
+                        "cardComponentContainerId" => self::CREDIT_CARD_COMPONENT_CONTAINER_ID,
+                        "cardsConfig" => $cardsConfig,
+                        "cartItems" => $this->paymentConfig->getQuoteItems(),
+                        "additionalTotalItems" => $this->paymentConfig->getAdditionalTotalItems(),
+                        "cartTotal" => $this->paymentConfig->getQuoteTotal(),
+                        "currency" => $this->paymentConfig->getCurrency(),
+                        "quoteId" => $this->paymentConfig->getQuoteId(),
                     ]
-                ];
+                );
             }
         } catch (Exception $exception) {
             $this->logger->logPaymentRequestGetCustomerDataException($exception);
+            $result = ["enabled" => false];
         }
 
-        return ["enabled" => false];
+        return $result;
     }
 }
