@@ -114,6 +114,11 @@ class Session extends Action implements CsrfAwareActionInterface
                     'validation_url' => $requestData['validationUrl']
                 ]
             );
+
+            $response = [
+                'status' => 'success',
+                'session' => $session
+            ];
         }
 
         return $resultJson->setData($response);

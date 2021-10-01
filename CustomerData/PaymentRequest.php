@@ -83,7 +83,6 @@ class PaymentRequest implements SectionSourceInterface
 
             $result = [
                 "enabled" => false,
-                'apiToken' => $this->genericConfigProvider->getApiToken($storeId),
                 'applePayButton' => [
                     'isActive' => $this->applePayConfigProvider->isApplePayActive($storeId),
                     'applePayButtonId' => ApplePayConfigProvider::APPLE_PAY_BUTTON_ID,
@@ -92,7 +91,7 @@ class PaymentRequest implements SectionSourceInterface
             ];
 
             if ($cardsConfig = $this->paymentConfig->getCardsConfig()) {
-                return array_merge(
+                $result = array_merge(
                     $result,
                     [
                         "enabled" => true,
@@ -104,13 +103,20 @@ class PaymentRequest implements SectionSourceInterface
                         "additionalTotalItems" => $this->paymentConfig->getAdditionalTotalItems(),
                         "cartTotal" => $this->paymentConfig->getQuoteTotal(),
                         "currency" => $this->paymentConfig->getCurrency(),
-                        "quoteId" => $this->paymentConfig->getQuoteId(),
+                        "quoteId" => $this->paymentConfig->getQuoteId()
+                    ]
+                );
+
+                $result = array_merge(
+                    $result,
+                    [
+                        'apiToken' => $this->genericConfigProvider->getApiToken($storeId)
                     ]
                 );
             }
         } catch (Exception $exception) {
             $this->logger->logPaymentRequestGetCustomerDataException($exception);
-            $result = ["enabled" => false];
+            $result = !isset($result) ? ["enabled" => false] : $result;
         }
 
         return $result;
