@@ -77,7 +77,6 @@ define([
                 // Merchant Validation
                 session.onvalidatemerchant = function (event) {
                     console.log(event);
-                    console.log(event.validationURL);
                     var promise = self.performValidation(
                         event.validationURL,
                         applePayButtonData.getMerchantSessionUrl
