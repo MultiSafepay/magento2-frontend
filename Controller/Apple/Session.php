@@ -108,7 +108,7 @@ class Session extends Action implements CsrfAwareActionInterface
                 return $resultJson->setData($response);
             }
 
-            $session = $this->applePayConfigProvider->createApplePayMerchantSession(
+            $sessionData = $this->applePayConfigProvider->createApplePayMerchantSession(
                 [
                     'origin_domain' => $requestData['originDomain'],
                     'validation_url' => $requestData['validationUrl']
@@ -117,7 +117,7 @@ class Session extends Action implements CsrfAwareActionInterface
 
             $response = [
                 'status' => 'success',
-                'session' => $session
+                'session' => $sessionData
             ];
         }
 
