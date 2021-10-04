@@ -56,6 +56,7 @@
                             type="submit"
                             data-bind="
                         click: placeOrder,
+                        visible: !isAppleButtonVisible(),
                         attr: {title: $t('Place Order')}
                         ">
                         <span data-bind="i18n: 'Place Order'"></span>
