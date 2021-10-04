@@ -29,22 +29,8 @@ define(
 
             fullScreenLoader.startLoader();
 
-            console.log(payload);
-
             return storage.post(
                 serviceUrl, JSON.stringify(payload), false
-            ).fail(
-                function (response) {
-                    // errorProcessor.process(response, messageContainer);
-                }
-            ).success(
-                function (response) {
-
-                }
-            ).always(
-                function () {
-                    fullScreenLoader.stopLoader();
-                }
             );
         };
     }

@@ -22,7 +22,8 @@ define(
         'Magento_Checkout/js/action/redirect-on-success',
         'mage/url',
         'Magento_Customer/js/customer-data',
-        'multisafepayApplePayButton'
+        'multisafepayApplePayButton',
+        'Magento_Checkout/js/action/place-order'
     ],
 
     /**
@@ -34,6 +35,7 @@ define(
      * @param url
      * @param customerData
      * @param multisafepayApplePayButton
+     * @param placeOrderAction
      * @returns {*}
      */
     function (
@@ -43,7 +45,8 @@ define(
         redirectOnSuccessAction,
         url,
         customerData,
-        multisafepayApplePayButton
+        multisafepayApplePayButton,
+        placeOrderAction
     ) {
         'use strict';
 
@@ -82,18 +85,35 @@ define(
              * @returns {boolean|*}
              */
             initApplePayButton: function () {
+                var self = this;
                 let paymentRequestData = this.getData();
                 let deferred = $.Deferred();
                 this.isPlaceOrderActionAllowed(false);
                 multisafepayApplePayButton.init(this.getCode(), deferred);
 
-                $.when(deferred).then(function (paymentData) {
+                $.when(deferred).then(function (paymentData, applePaySession) {
+                    console.log(paymentRequestData, paymentData);
+
                     if (paymentData) {
-                        self.paymentPayload = paymentData;
-                        paymentRequestData['additional_data']['payload'] = paymentData;
+                        paymentRequestData['additional_data'] = {
+                            token: JSON.stringify(paymentData.token)
+                        };
                     }
 
-                    // self.placeOderDefault(paymentRequestData);
+                    $.when(placeOrderAction(paymentRequestData, self.messageContainer)).done(
+                        function () {
+                            self.afterPlaceOrder();
+
+                            if (self.redirectAfterPlaceOrder) {
+                                redirectOnSuccessAction.execute();
+                            }
+                        }
+                    ).always(function () {
+                            self.isPlaceOrderActionAllowed(true);
+                        }
+                    );
+
+                    applePaySession.completePayment(ApplePaySession.STATUS_SUCCESS);
                 });
 
                 return true;

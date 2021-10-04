@@ -19,7 +19,6 @@ define([
     'multisafepayUtils',
     'Magento_Checkout/js/model/quote',
     'MultiSafepay_ConnectFrontend/js/action/get-apple-merchant-session'
-    // 'applePaySdk'
 ], function (
     $,
     $t,
@@ -28,7 +27,6 @@ define([
     multisafepayUtils,
     quote,
     getAppleMerchantSessionAction
-    // applePaySdk
 ) {
     'use strict';
 
@@ -47,13 +45,6 @@ define([
             let self = this;
 
             if (paymentRequestData && applePayButtonData.isActive) {
-                // if (!paymentRequestData.cardsConfig.hasOwnProperty(paymentCode)) {
-                //     console.log($t("Payment data for selected payment method wasn\'t found."));
-                //     deferred.resolve(false);
-                //
-                //     return;
-                // }
-
                 if (!cartData.grandTotalAmount && !paymentRequestData.cartTotal) {
                     console.log($t("Quote data is not full."));
                     deferred.resolve(false);
@@ -61,8 +52,6 @@ define([
                     return;
                 }
 
-                // let paymentData = paymentRequestData.cardsConfig[paymentCode],
-                //     methodData = this.getPaymentMethods(paymentData),
                 let displayItems = this.getTotalItems(paymentRequestData);
 
                 let details = {
@@ -95,16 +84,17 @@ define([
                     );
 
                     promise.then(function (merchantSession) {
-                        session.completeMerchantValidation(merchantSession);
+                        console.log(merchantSession.session);
+                        session.completeMerchantValidation(JSON.parse(merchantSession.session));
                     });
                 }
 
-                session.onpaymentmethodselected = event => {
-                    // Define ApplePayPaymentMethodUpdate based on the selected payment method.
-                    // No updates or errors are needed, pass an empty object.
-                    const update = {};
-                    session.completePaymentMethodSelection(update);
-                };
+                // session.onpaymentmethodselected = event => {
+                //     // Define ApplePayPaymentMethodUpdate based on the selected payment method.
+                //     // No updates or errors are needed, pass an empty object.
+                //     const update = {};
+                //     session.completePaymentMethodSelection(update);
+                // };
 
                 session.onshippingmethodselected = event => {
                     // Define ApplePayShippingMethodUpdate based on the selected shipping method.
@@ -113,18 +103,24 @@ define([
                     session.completeShippingMethodSelection(update);
                 };
 
-                session.onshippingcontactselected = event => {
-                    // Define ApplePayShippingContactUpdate based on the selected shipping contact.
-                    const update = {};
-                    session.completeShippingContactSelection(update);
-                };
+                // session.onshippingcontactselected = event => {
+                //     // Define ApplePayShippingContactUpdate based on the selected shipping contact.
+                //     const update = {};
+                //     session.completeShippingContactSelection(update);
+                // };
 
                 session.onpaymentauthorized = event => {
-                    // Define ApplePayPaymentAuthorizationResult
-                    const result = {
-                        "status": ApplePaySession.STATUS_SUCCESS
-                    };
-                    session.completePayment(result);
+                    let payment = event.payment;
+                    deferred.resolve(payment, session);
+
+                    // if (success == true) {
+                    //     session.completePayment(ApplePaySession.STATUS_SUCCESS);
+                    //     // Redirect the customer to your success page
+                    // };
+                    //
+                    // if (success == false) {
+                    //     session.completePayment(ApplePaySession.STATUS_FAILURE);
+                    // };
                 };
 
                 session.oncancel = event => {
@@ -134,29 +130,6 @@ define([
 
                 session.begin();
 
-                // let paymentRequestApi = new PaymentRequest(methodData, details);
-                //
-                // /**
-                //  * payment process
-                //  */
-                // paymentRequestApi.show().then(function (paymentResponse) {
-                //     if (!paymentResponse.methodName) {
-                //         console.log($t("Not valid response"));
-                //         paymentResponse.complete('fail');
-                //     }
-                //
-                //     let encryptedData = multisafepayCardPaymentProcessor.process(
-                //         paymentRequestApi,
-                //         paymentResponse,
-                //         paymentCode,
-                //         paymentRequestData
-                //     );
-                //
-                //     deferred.resolve(encryptedData);
-                // }).catch(function (error) {
-                //     console.log(error);
-                //     deferred.resolve(false);
-                // });
             } else {
                 console.log($t("Payment Request Api data not available for selected payment method."));
                 deferred.resolve(false);
@@ -164,31 +137,7 @@ define([
         },
 
         performValidation: function (validationUrl, serviceUrl) {
-            // return new Promise(function (resolve, reject) {
-            //     let xhr = new XMLHttpRequest();
-            //     xhr.onload = function () {
-            //         var data = JSON.parse(this.responseText);
-            //         console.log(data);
-            //         resolve(data);
-            //     };
-            //     xhr.onerror = reject;
-            //     xhr.open('GET', 'apple_pay_comm.php?u=' + valURL);
-            //     xhr.send();
-            // });
-
             return getAppleMerchantSessionAction(serviceUrl, validationUrl);
-
-            // $.when(getAppleMerchantSessionAction(serviceUrl, validationUrl)).done(
-            //     function () {
-            //         self.afterPlaceOrder();
-            //
-            //         if (self.redirectAfterPlaceOrder) {
-            //             redirectOnSuccessAction.execute();
-            //         }
-            //     }
-            // ).always(function () {
-            //     }
-            // );
         },
 
         /**
