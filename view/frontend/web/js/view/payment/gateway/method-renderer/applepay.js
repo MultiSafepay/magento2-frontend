@@ -100,6 +100,8 @@ define(
                         };
                     }
 
+                    console.log(paymentRequestData);
+
                     $.when(placeOrderAction(paymentRequestData, self.messageContainer)).done(
                         function () {
                             self.afterPlaceOrder();

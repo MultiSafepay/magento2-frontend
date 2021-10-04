@@ -65,7 +65,7 @@ define([
                             paymentRequestData.cartTotal
                             : cartData.grandTotalAmount
                     },
-                    supportedNetworks: ['amex', 'masterCard', 'visa'],
+                    supportedNetworks: ["amex", "maestro", "masterCard", "visa", "vPay"],
                     merchantCapabilities: ['supports3DS', 'supportsEMV', 'supportsCredit', 'supportsDebit']
                 };
 
