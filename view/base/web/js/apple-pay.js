@@ -66,7 +66,7 @@ define([
                             : cartData.grandTotalAmount
                     },
                     supportedNetworks: ["amex", "maestro", "masterCard", "visa", "vPay"],
-                    merchantCapabilities: ['supports3DS', 'supportsEMV', 'supportsCredit', 'supportsDebit']
+                    merchantCapabilities: ['supports3DS', 'supportsCredit', 'supportsDebit']
                 };
 
                 console.log(window, details);
