@@ -80,13 +80,19 @@ class PaymentRequest implements SectionSourceInterface
     {
         try {
             $storeId = $this->paymentConfig->getStoreIdFromQuote();
-
             $result = [
                 "enabled" => false,
+                "environment" => $this->config->isLiveMode($storeId) ? 'live' : 'test',
+                "locale" => $this->localeResolver->getLocale(),
+                "cartItems" => $this->paymentConfig->getQuoteItems(),
+                "additionalTotalItems" => $this->paymentConfig->getAdditionalTotalItems(),
+                "cartTotal" => $this->paymentConfig->getQuoteTotal(),
+                "currency" => $this->paymentConfig->getCurrency(),
+                "quoteId" => $this->paymentConfig->getQuoteId(),
                 'applePayButton' => [
                     'isActive' => $this->applePayConfigProvider->isApplePayActive($storeId),
                     'applePayButtonId' => ApplePayConfigProvider::APPLE_PAY_BUTTON_ID,
-                    'getMerchantSessionUrl' => $this->applePayConfigProvider->getApplePayMerchantSessionUrl($storeId),
+                    'getMerchantSessionUrl' => $this->applePayConfigProvider->getApplePayMerchantSessionUrl($storeId)
                 ]
             ];
 
@@ -95,21 +101,8 @@ class PaymentRequest implements SectionSourceInterface
                     $result,
                     [
                         "enabled" => true,
-                        "environment" => $this->config->isLiveMode($storeId) ? 'live' : 'test',
-                        "locale" => $this->localeResolver->getLocale(),
                         "cardComponentContainerId" => self::CREDIT_CARD_COMPONENT_CONTAINER_ID,
                         "cardsConfig" => $cardsConfig,
-                        "cartItems" => $this->paymentConfig->getQuoteItems(),
-                        "additionalTotalItems" => $this->paymentConfig->getAdditionalTotalItems(),
-                        "cartTotal" => $this->paymentConfig->getQuoteTotal(),
-                        "currency" => $this->paymentConfig->getCurrency(),
-                        "quoteId" => $this->paymentConfig->getQuoteId()
-                    ]
-                );
-
-                $result = array_merge(
-                    $result,
-                    [
                         'apiToken' => $this->genericConfigProvider->getApiToken($storeId)
                     ]
                 );

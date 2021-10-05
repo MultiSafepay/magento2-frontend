@@ -47,60 +47,52 @@ define([
             if (paymentRequestData && applePayButtonData.isActive) {
                 if (!cartData.grandTotalAmount && !paymentRequestData.cartTotal) {
                     console.log($t("Quote data is not full."));
-                    deferred.resolve(false);
+                    deferred.resolve(false, false);
 
                     return;
                 }
 
-                let displayItems = this.getTotalItems(paymentRequestData);
+                let applePayVersion = this.getAvailableApplePayVersion();
+
+                if (!applePayVersion) {
+                    console.log($t("Apple Pay doesn't support this device."));
+                    deferred.resolve(false, false);
+                }
 
                 let details = {
-                    displayItems: displayItems,
-                    requiredShippingContactFields: ['postalAddress'],
+                    displayItems: this.getTotalItems(paymentRequestData),
+                    requiredShippingContactFields: ["postalAddress"],
                     currencyCode: paymentRequestData.currency,
                     countryCode: quote.billingAddress().countryId,
                     total: {
                         label: $t("Total"),
+                        type: "final",
                         amount: paymentRequestData.cartTotal ?
                             paymentRequestData.cartTotal
                             : cartData.grandTotalAmount
                     },
-                    supportedNetworks: ["amex", "maestro", "masterCard", "visa", "vPay"],
-                    merchantCapabilities: ['supports3DS', 'supportsCredit', 'supportsDebit']
+                    supportedNetworks: this.getPaymentMethods(),
+                    merchantCapabilities: ["supports3DS"]
                 };
 
-                console.log(window, details);
-                var session = new ApplePaySession(10, details);
-
-                console.log(session);
-
-                // Merchant Validation
+                let session = new ApplePaySession(applePayVersion, details);
                 session.onvalidatemerchant = function (event) {
-                    console.log(event);
                     var promise = self.performValidation(
                         event.validationURL,
                         applePayButtonData.getMerchantSessionUrl
                     );
 
                     promise.then(function (merchantSession) {
-                        console.log(merchantSession.session);
                         session.completeMerchantValidation(JSON.parse(merchantSession.session));
                     });
                 }
 
-                // session.onpaymentmethodselected = event => {
-                //     // Define ApplePayPaymentMethodUpdate based on the selected payment method.
+                // session.onshippingmethodselected = event => {
+                //     // Define ApplePayShippingMethodUpdate based on the selected shipping method.
                 //     // No updates or errors are needed, pass an empty object.
                 //     const update = {};
-                //     session.completePaymentMethodSelection(update);
+                //     session.completeShippingMethodSelection(update);
                 // };
-
-                session.onshippingmethodselected = event => {
-                    // Define ApplePayShippingMethodUpdate based on the selected shipping method.
-                    // No updates or errors are needed, pass an empty object.
-                    const update = {};
-                    session.completeShippingMethodSelection(update);
-                };
 
                 // session.onshippingcontactselected = event => {
                 //     // Define ApplePayShippingContactUpdate based on the selected shipping contact.
@@ -109,29 +101,18 @@ define([
                 // };
 
                 session.onpaymentauthorized = event => {
-                    let payment = event.payment;
-                    deferred.resolve(payment, session);
-
-                    // if (success == true) {
-                    //     session.completePayment(ApplePaySession.STATUS_SUCCESS);
-                    //     // Redirect the customer to your success page
-                    // };
-                    //
-                    // if (success == false) {
-                    //     session.completePayment(ApplePaySession.STATUS_FAILURE);
-                    // };
+                    deferred.resolve(event.payment, session);
                 };
 
                 session.oncancel = event => {
                     console.log('starting session.cancel');
-                    console.log(event);
+                    deferred.resolve(false, session);
                 };
 
                 session.begin();
-
             } else {
-                console.log($t("Payment Request Api data not available for selected payment method."));
-                deferred.resolve(false);
+                console.log($t("Apple Pay direct doesn't available. Please, try again."));
+                deferred.resolve(false, false);
             }
         },
 
@@ -178,25 +159,27 @@ define([
 
         /**
          *
-         * @param paymentData
-         * @returns {[]}
+         * @returns {[string, string, string, string, string]}
          */
-        getPaymentMethods: function (paymentData) {
-            let methodData = [];
+        getPaymentMethods: function () {
+            return ["amex", "maestro", "masterCard", "visa", "vPay"];
+        },
 
-            if (paymentData.prePaid) {
-                types.push("prepaid");
-            }
+        /**
+         *
+         * @returns {boolean}
+         */
+        getAvailableApplePayVersion: function () {
+            let availableVersions =  [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+            let result = false;
 
-            methodData.push({
-                supportedMethods: 'basic-card',
-                data: {
-                    supportedNetworks: paymentData.flags,
-                    supportedTypes: paymentData.types
+            availableVersions.forEach(function(version) {
+                if (window.ApplePaySession.supportsVersion(version)) {
+                    result = version;
                 }
             });
 
-            return methodData;
+            return result;
         }
     };
 });

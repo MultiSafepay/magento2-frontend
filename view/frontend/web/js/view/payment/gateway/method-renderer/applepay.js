@@ -23,7 +23,8 @@ define(
         'mage/url',
         'Magento_Customer/js/customer-data',
         'multisafepayApplePayButton',
-        'Magento_Checkout/js/action/place-order'
+        'Magento_Checkout/js/action/place-order',
+        'Magento_Checkout/js/model/full-screen-loader'
     ],
 
     /**
@@ -36,6 +37,7 @@ define(
      * @param customerData
      * @param multisafepayApplePayButton
      * @param placeOrderAction
+     * @param fullScreenLoader
      * @returns {*}
      */
     function (
@@ -46,7 +48,8 @@ define(
         url,
         customerData,
         multisafepayApplePayButton,
-        placeOrderAction
+        placeOrderAction,
+        fullScreenLoader
     ) {
         'use strict';
 
@@ -92,30 +95,35 @@ define(
                 multisafepayApplePayButton.init(this.getCode(), deferred);
 
                 $.when(deferred).then(function (paymentData, applePaySession) {
-                    console.log(paymentRequestData, paymentData);
-
                     if (paymentData) {
                         paymentRequestData['additional_data'] = {
                             token: JSON.stringify(paymentData.token)
                         };
-                    }
 
-                    console.log(paymentRequestData);
+                        $.when(placeOrderAction(paymentRequestData, self.messageContainer)).done(
+                            function () {
+                                self.afterPlaceOrder();
 
-                    $.when(placeOrderAction(paymentRequestData, self.messageContainer)).done(
-                        function () {
-                            self.afterPlaceOrder();
-
-                            if (self.redirectAfterPlaceOrder) {
-                                redirectOnSuccessAction.execute();
+                                if (self.redirectAfterPlaceOrder) {
+                                    redirectOnSuccessAction.execute();
+                                }
                             }
-                        }
-                    ).always(function () {
+                        ).always(function () {
+                                self.isPlaceOrderActionAllowed(true);
+                            }
+                        ).fail(function () {
                             self.isPlaceOrderActionAllowed(true);
-                        }
-                    );
+                            applePaySession.completePayment(
+                                ApplePaySession.STATUS_FAILURE,
+                                'Something went wrong. Please, try again.'
+                            );
+                        });
 
-                    applePaySession.completePayment(ApplePaySession.STATUS_SUCCESS);
+                        applePaySession.completePayment(ApplePaySession.STATUS_SUCCESS);
+                    } else {
+                        self.isPlaceOrderActionAllowed(true);
+                        fullScreenLoader.stopLoader();
+                    }
                 });
 
                 return true;
