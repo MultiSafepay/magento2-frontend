@@ -94,7 +94,7 @@ define(
                 this.isPlaceOrderActionAllowed(false);
                 multisafepayApplePayButton.init(this.getCode(), deferred);
 
-                $.when(deferred).then(function (paymentData, applePaySession) {
+                $.when(deferred).then(function (paymentData, applePaySession, sessionError) {
                     if (paymentData) {
                         paymentRequestData['additional_data'] = {
                             token: JSON.stringify(paymentData.token)
@@ -114,8 +114,12 @@ define(
                         ).fail(function () {
                             self.isPlaceOrderActionAllowed(true);
                             applePaySession.completePayment(
-                                ApplePaySession.STATUS_FAILURE,
-                                'Something went wrong. Please, try again.'
+                                {
+                                    status: ApplePaySession.STATUS_FAILURE,
+                                    errors: [
+                                        'Something went wrong. Please, try again.'
+                                    ]
+                                }
                             );
                         });
 
@@ -123,6 +127,12 @@ define(
                     } else {
                         self.isPlaceOrderActionAllowed(true);
                         fullScreenLoader.stopLoader();
+
+                        if (sessionError) {
+                            self.messageContainer.addErrorMessage({
+                                message: sessionError
+                            });
+                        }
                     }
                 });
 
