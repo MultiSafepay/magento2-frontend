@@ -38,7 +38,6 @@ define([
          */
         init: function (paymentCode, deferred) {
             deferred = deferred || $.Deferred();
-
             let paymentRequestData = customerData.get('multisafepay-payment-request')();
             let applePayButtonData = paymentRequestData.applePayButton;
             let cartData = customerData.get('cart')();
@@ -46,8 +45,7 @@ define([
 
             if (paymentRequestData && applePayButtonData.isActive) {
                 if (!cartData.grandTotalAmount && !paymentRequestData.cartTotal) {
-                    console.log($t("Quote data is not full."));
-                    deferred.resolve(false, false);
+                    deferred.resolve(false, false, $t("Quote data is not full."));
 
                     return;
                 }
@@ -55,64 +53,68 @@ define([
                 let applePayVersion = this.getAvailableApplePayVersion();
 
                 if (!applePayVersion) {
-                    console.log($t("Apple Pay doesn't support this device."));
-                    deferred.resolve(false, false);
+                    deferred.resolve(false, false, $t("Apple Pay doesn't support this device."));
                 }
+
+                let totalAmount = paymentRequestData.cartTotal ? paymentRequestData.cartTotal
+                    : cartData.grandTotalAmount;
 
                 let details = {
                     displayItems: this.getTotalItems(paymentRequestData),
-                    requiredShippingContactFields: ["postalAddress"],
                     currencyCode: paymentRequestData.currency,
                     countryCode: quote.billingAddress().countryId,
                     total: {
                         label: $t("Total"),
-                        type: "final",
-                        amount: paymentRequestData.cartTotal ?
-                            paymentRequestData.cartTotal
-                            : cartData.grandTotalAmount
+                        amount: totalAmount
                     },
                     supportedNetworks: this.getPaymentMethods(),
                     merchantCapabilities: ["supports3DS"]
                 };
 
                 let session = new ApplePaySession(applePayVersion, details);
-                session.onvalidatemerchant = function (event) {
+                session.onvalidatemerchant = event => {
                     var promise = self.performValidation(
                         event.validationURL,
                         applePayButtonData.getMerchantSessionUrl
                     );
 
                     promise.then(function (merchantSession) {
+                        console.log(merchantSession, session);
+
+                        if (merchantSession.status == 'error') {
+                            deferred.resolve(false, session, $t(merchantSession.message));
+                            session.abort();
+
+                            return;
+                        }
+
                         session.completeMerchantValidation(JSON.parse(merchantSession.session));
                     });
                 }
 
-                // session.onshippingmethodselected = event => {
-                //     // Define ApplePayShippingMethodUpdate based on the selected shipping method.
-                //     // No updates or errors are needed, pass an empty object.
-                //     const update = {};
-                //     session.completeShippingMethodSelection(update);
-                // };
-
-                // session.onshippingcontactselected = event => {
-                //     // Define ApplePayShippingContactUpdate based on the selected shipping contact.
-                //     const update = {};
-                //     session.completeShippingContactSelection(update);
-                // };
+                session.onpaymentmethodselected = event => {
+                    session.completePaymentMethodSelection(
+                        {
+                            label: $t("Total"),
+                            type: 'final',
+                            amount: totalAmount
+                        },
+                        []
+                    );
+                };
 
                 session.onpaymentauthorized = event => {
-                    deferred.resolve(event.payment, session);
+                    deferred.resolve(event.payment, session, false);
                 };
 
                 session.oncancel = event => {
                     console.log('starting session.cancel');
-                    deferred.resolve(false, session);
+                    deferred.resolve(false, session, $t("Apple Pay session was cancelled."));
                 };
 
                 session.begin();
             } else {
-                console.log($t("Apple Pay direct doesn't available. Please, try again."));
-                deferred.resolve(false, false);
+                deferred.resolve(false, false, $t("Apple Pay direct doesn't available. Please, try again."));
             }
         },
 
@@ -170,10 +172,10 @@ define([
          * @returns {boolean}
          */
         getAvailableApplePayVersion: function () {
-            let availableVersions =  [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+            let availableVersions = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
             let result = false;
 
-            availableVersions.forEach(function(version) {
+            availableVersions.forEach(function (version) {
                 if (window.ApplePaySession.supportsVersion(version)) {
                     result = version;
                 }
