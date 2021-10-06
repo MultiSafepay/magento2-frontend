@@ -19,7 +19,7 @@ let config = {
             multisafepayUtils: 'MultiSafepay_ConnectFrontend/js/lib/utils',
             multisafepayPaymentRequest: 'MultiSafepay_ConnectFrontend/js/payment-request',
             multisafepayCreditCardComponent: 'MultiSafepay_ConnectFrontend/js/credit-card-component',
-            multisafepayCreditCardComponentLib:  'https://pay.multisafepay.com/sdk/components/v1/components.js',
+            multisafepayCreditCardComponentLib:  'https://pay.multisafepay.com/sdk/components/v2/components.js',
             multisafepayCardPaymentProcessor: 'MultiSafepay_ConnectFrontend/js/payment-request/card-payment',
         }
     }
