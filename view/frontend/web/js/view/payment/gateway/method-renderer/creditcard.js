@@ -84,7 +84,7 @@ define(
              * @returns {Object}
              */
             getData: function () {
-                let data =  {
+                let data = {
                     'method': this.getCode(),
                     'additional_data': {}
                 };
@@ -124,6 +124,18 @@ define(
                 );
 
                 return this.paymentComponent;
+            },
+
+            /**
+             *
+             * @returns {*}
+             */
+            reloadCreditCardComponents: function () {
+                $(".multisafepay-credit-card-component").each(function () {
+                    $(this).empty();
+                });
+
+                return this;
             },
 
             /**
