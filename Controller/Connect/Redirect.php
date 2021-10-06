@@ -100,7 +100,10 @@ class Redirect extends Action
         $orderIncrementId = $order->getRealOrderId();
 
         try {
-            $paymentUrl = $this->paymentLink->getPaymentLinkByOrder($order);
+            if (!($paymentUrl = $this->paymentLink->getPaymentLinkByOrder($order))) {
+                throw new ApiException('Payment url wasn\'t retrieved. Please try again.');
+            }
+
             $this->logger->logPaymentRedirectInfo($orderIncrementId, $paymentUrl);
             $this->paymentLink->addPaymentLink($order, $paymentUrl);
             $this->removeAdditionalInformation->execute($order);
