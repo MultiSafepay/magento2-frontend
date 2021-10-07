@@ -227,9 +227,6 @@ define(
                         if (!this.paymentComponent.hasErrors()) {
                             this.isPlaceOrderActionAllowed(false);
                             let payload = this.paymentComponent.getOrderData().payment_data.payload;
-
-//                            todo need to do it right way
-//                             let cardBrand = this.paymentComponent.ref.paymentFormRef.state.brandsAllowed[0].id;
                             let cardBrand = '';
 
                             if (payload) {
