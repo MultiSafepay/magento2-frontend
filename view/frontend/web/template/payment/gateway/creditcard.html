@@ -31,7 +31,7 @@
         <!-- ko template: getTemplate() --><!-- /ko -->
         <!--/ko-->
 
-        <div data-bind="attr: {'id': getCreditCardComponentContainerId()}, afterRender: checkIfNeedPreRenderCreditCardComponent()"></div>
+        <div class="multisafepay-credit-card-component" data-bind="attr: {'id': getCreditCardComponentContainerId()}, afterRender: checkIfNeedPreRenderCreditCardComponent()"></div>
 
         <div class="payment-method-billing-address">
             <!-- ko foreach: $parent.getRegion(getBillingAddressFormName()) -->

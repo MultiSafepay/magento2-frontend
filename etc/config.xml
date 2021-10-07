@@ -5,7 +5,7 @@
         <dev>
             <js>
                 <minify_exclude>
-                    <multisafepay_component_js>pay.multisafepay.com/sdk/components/v1/components.js</multisafepay_component_js>
+                    <multisafepay_component_js>pay.multisafepay.com/sdk/components/v2/components.js</multisafepay_component_js>
                 </minify_exclude>
             </js>
         </dev>
