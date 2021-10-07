@@ -69,16 +69,16 @@ class PaymentRequest implements SectionSourceInterface
         Logger $logger,
         Config $config,
         ResolverInterface $localeResolver,
-        ApplePayConfigProvider $applePayConfigProvider,
-        GooglePayConfigProvider $googlePayConfigProvider
+        GooglePayConfigProvider $googlePayConfigProvider,
+        ApplePayConfigProvider $applePayConfigProvider
     ) {
         $this->paymentConfig = $paymentConfig;
         $this->genericConfigProvider = $genericConfigProvider;
         $this->logger = $logger;
         $this->config = $config;
         $this->localeResolver = $localeResolver;
-        $this->applePayConfigProvider = $applePayConfigProvider;
         $this->googlePayConfigProvider = $googlePayConfigProvider;
+        $this->applePayConfigProvider = $applePayConfigProvider;
     }
 
     /**
@@ -87,35 +87,43 @@ class PaymentRequest implements SectionSourceInterface
     public function getSectionData(): array
     {
         try {
-            if ($cardsConfig = $this->paymentConfig->getCardsConfig()) {
-                $storeId = $this->paymentConfig->getStoreIdFromQuote();
+            $storeId = $this->paymentConfig->getStoreIdFromQuote();
+            $result = [
+                "enabled" => false,
+                "environment" => $this->config->isLiveMode($storeId) ? 'live' : 'test',
+                "locale" => $this->localeResolver->getLocale(),
+                "cartItems" => $this->paymentConfig->getQuoteItems(),
+                "additionalTotalItems" => $this->paymentConfig->getAdditionalTotalItems(),
+                "cartTotal" => $this->paymentConfig->getQuoteTotal(),
+                "currency" => $this->paymentConfig->getCurrency(),
+                "quoteId" => $this->paymentConfig->getQuoteId(),
+                'applePayButton' => [
+                    'isActive' => $this->applePayConfigProvider->isApplePayActive($storeId),
+                    'applePayButtonId' => ApplePayConfigProvider::APPLE_PAY_BUTTON_ID,
+                    'getMerchantSessionUrl' => $this->applePayConfigProvider->getApplePayMerchantSessionUrl($storeId)
+                ],
+                'googlePayButton' => [
+                    'isActive' => $this->googlePayConfigProvider->isApplePayActive($storeId),
+                    'applePayButtonId' => GooglePayConfigProvider::GOOGLE_PAY_BUTTON_ID,
+                ]
+            ];
 
-                return [
-                    "enabled" => true,
-                    "environment" => $this->config->isLiveMode($storeId) ? 'live' : 'test',
-                    "locale" => $this->localeResolver->getLocale(),
-                    "cardComponentContainerId" => self::CREDIT_CARD_COMPONENT_CONTAINER_ID,
-                    "cardsConfig" => $cardsConfig,
-                    "cartItems" => $this->paymentConfig->getQuoteItems(),
-                    "additionalTotalItems" => $this->paymentConfig->getAdditionalTotalItems(),
-                    "cartTotal" => $this->paymentConfig->getQuoteTotal(),
-                    "currency" => $this->paymentConfig->getCurrency(),
-                    "quoteId" => $this->paymentConfig->getQuoteId(),
-                    'apiToken' => $this->genericConfigProvider->getApiToken($storeId),
-                    'applePayButton' => [
-                        'isActive' => $this->applePayConfigProvider->isApplePayActive($storeId),
-                        'applePayButtonId' => ApplePayConfigProvider::APPLE_PAY_BUTTON_ID
-                    ],
-                    'googlePayButton' => [
-                        'isActive' => $this->googlePayConfigProvider->isApplePayActive($storeId),
-                        'applePayButtonId' => GooglePayConfigProvider::GOOGLE_PAY_BUTTON_ID,
-                    ],
-                ];
+            if ($cardsConfig = $this->paymentConfig->getCardsConfig()) {
+                $result = array_merge(
+                    $result,
+                    [
+                        "enabled" => true,
+                        "cardComponentContainerId" => self::CREDIT_CARD_COMPONENT_CONTAINER_ID,
+                        "cardsConfig" => $cardsConfig,
+                        'apiToken' => $this->genericConfigProvider->getApiToken($storeId)
+                    ]
+                );
             }
         } catch (Exception $exception) {
             $this->logger->logPaymentRequestGetCustomerDataException($exception);
+            $result = $result ?? ["enabled" => false];
         }
 
-        return ["enabled" => false];
+        return $result;
     }
 }
