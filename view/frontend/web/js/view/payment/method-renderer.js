@@ -83,6 +83,7 @@ define(
             {type: 'multisafepay_sofort', component: baseRenderer},
             {type: 'multisafepay_trustly', component: baseRenderer},
             {type: 'multisafepay_trustpay', component: baseRenderer},
+            {type: 'multisafepay_wechatpay', component: baseRenderer},
             {type: 'multisafepay_visa', component: gatewayPath + 'creditcard'},
             {type: 'multisafepay_babygiftcard', component: baseRenderer},
             {type: 'multisafepay_beautyandwellness', component: baseRenderer},
