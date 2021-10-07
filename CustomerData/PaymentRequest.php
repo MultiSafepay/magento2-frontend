@@ -11,6 +11,7 @@ use MultiSafepay\ConnectCore\Config\Config;
 use MultiSafepay\ConnectCore\Logger\Logger;
 use MultiSafepay\ConnectCore\Model\Ui\GenericConfigProvider;
 use MultiSafepay\ConnectFrontend\ViewModel\PaymentConfig;
+use MultiSafepay\ConnectCore\Model\Ui\Gateway\GooglePayConfigProvider;
 
 class PaymentRequest implements SectionSourceInterface
 {
@@ -42,6 +43,11 @@ class PaymentRequest implements SectionSourceInterface
     private $localeResolver;
 
     /**
+     * @var GooglePayConfigProvider
+     */
+    private $googlePayConfigProvider;
+
+    /**
      * PaymentRequest constructor.
      *
      * @param PaymentConfig $paymentConfig
@@ -55,13 +61,15 @@ class PaymentRequest implements SectionSourceInterface
         GenericConfigProvider $genericConfigProvider,
         Logger $logger,
         Config $config,
-        ResolverInterface $localeResolver
+        ResolverInterface $localeResolver,
+        GooglePayConfigProvider $googlePayConfigProvider
     ) {
         $this->paymentConfig = $paymentConfig;
         $this->genericConfigProvider = $genericConfigProvider;
         $this->logger = $logger;
         $this->config = $config;
         $this->localeResolver = $localeResolver;
+        $this->googlePayConfigProvider = $googlePayConfigProvider;
     }
 
     /**
@@ -84,7 +92,11 @@ class PaymentRequest implements SectionSourceInterface
                     "cartTotal" => $this->paymentConfig->getQuoteTotal(),
                     "currency" => $this->paymentConfig->getCurrency(),
                     "quoteId" => $this->paymentConfig->getQuoteId(),
-                    'apiToken' => $this->genericConfigProvider->getApiToken($storeId)
+                    'apiToken' => $this->genericConfigProvider->getApiToken($storeId),
+                    'googlePayButton' => [
+                        'isActive' => $this->googlePayConfigProvider->isApplePayActive($storeId),
+                        'applePayButtonId' => GooglePayConfigProvider::GOOGLE_PAY_BUTTON_ID,
+                    ],
                 ];
             }
         } catch (Exception $exception) {
