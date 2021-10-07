@@ -275,6 +275,7 @@ define(
 
                 $.when(placeOrderAction(paymentRequestData, self.messageContainer)).done(
                     function () {
+                        customerData.set("multisafepay-payment-component", {});
                         self.afterPlaceOrder();
 
                         if (self.redirectAfterPlaceOrder) {

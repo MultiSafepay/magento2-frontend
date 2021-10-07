@@ -44,7 +44,9 @@ define([
 
                 let multisafepayPaymentComponent = customerData.get("multisafepay-payment-component")();
 
-                if ($.isEmptyObject(multisafepayPaymentComponent)) {
+                if ($.isEmptyObject(multisafepayPaymentComponent)
+                    || (typeof multisafepayPaymentComponent.init === "undefined")
+                ) {
                     multisafepayPaymentComponent =  new MultiSafepay({
                         env: paymentRequestData.environment,
                         apiToken: paymentRequestData.apiToken,
