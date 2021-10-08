@@ -21,6 +21,7 @@ let config = {
             multisafepayCreditCardComponent: 'MultiSafepay_ConnectFrontend/js/credit-card-component',
             multisafepayCreditCardComponentLib:  'https://pay.multisafepay.com/sdk/components/v2/components.js',
             multisafepayCardPaymentProcessor: 'MultiSafepay_ConnectFrontend/js/payment-request/card-payment',
+            multisafepayApplePayButton: 'MultiSafepay_ConnectFrontend/js/apple-pay',
         }
     }
 };
