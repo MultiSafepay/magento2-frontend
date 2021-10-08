@@ -43,12 +43,20 @@
             <!--/ko-->
         </div>
 
+        <button type="button"
+                data-bind="
+                attr: {'id': getGooglePayButtonId(), title: $t('Google Pay')},
+                click: initGooglePayButton,
+                visible: isGoogleButtonVisible()
+                "></button>
+
         <div class="actions-toolbar">
             <div class="primary">
                 <button class="action primary checkout"
                         type="submit"
                         data-bind="
                         click: placeOrder,
+                        visible: !isGoogleButtonVisible(),
                         attr: {title: $t('Place Order')}
                         ">
                     <span data-bind="i18n: 'Place Order'"></span>

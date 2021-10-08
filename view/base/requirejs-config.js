@@ -22,6 +22,7 @@ let config = {
             multisafepayCreditCardComponentLib:  'https://pay.multisafepay.com/sdk/components/v2/components.js',
             multisafepayCardPaymentProcessor: 'MultiSafepay_ConnectFrontend/js/payment-request/card-payment',
             multisafepayApplePayButton: 'MultiSafepay_ConnectFrontend/js/apple-pay',
+            multisafepayGooglePayButton: 'MultiSafepay_ConnectFrontend/js/google-pay'
         }
     }
 };

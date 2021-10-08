@@ -61,6 +61,7 @@ class PaymentRequest implements SectionSourceInterface
      * @param Logger $logger
      * @param Config $config
      * @param ResolverInterface $localeResolver
+     * @param GooglePayConfigProvider $googlePayConfigProvider
      * @param ApplePayConfigProvider $applePayConfigProvider
      */
     public function __construct(
@@ -104,7 +105,7 @@ class PaymentRequest implements SectionSourceInterface
                 ],
                 'googlePayButton' => [
                     'isActive' => $this->googlePayConfigProvider->isApplePayActive($storeId),
-                    'applePayButtonId' => GooglePayConfigProvider::GOOGLE_PAY_BUTTON_ID,
+                    'googlePayButtonId' => GooglePayConfigProvider::GOOGLE_PAY_BUTTON_ID,
                 ]
             ];
 
