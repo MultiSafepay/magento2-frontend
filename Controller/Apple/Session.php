@@ -105,7 +105,7 @@ class Session extends Action implements CsrfAwareActionInterface
     /**
      * @return Json
      */
-    public function execute()
+    public function execute(): Json
     {
         $resultJson = $this->resultJsonFactory->create();
         $response = [

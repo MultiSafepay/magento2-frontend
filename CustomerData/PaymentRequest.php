@@ -109,7 +109,7 @@ class PaymentRequest implements SectionSourceInterface
             }
         } catch (Exception $exception) {
             $this->logger->logPaymentRequestGetCustomerDataException($exception);
-            $result = !isset($result) ? ["enabled" => false] : $result;
+            $result = $result ?? ["enabled" => false];
         }
 
         return $result;
