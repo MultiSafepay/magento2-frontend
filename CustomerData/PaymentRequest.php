@@ -104,8 +104,11 @@ class PaymentRequest implements SectionSourceInterface
                     'getMerchantSessionUrl' => $this->applePayConfigProvider->getApplePayMerchantSessionUrl($storeId)
                 ],
                 'googlePayButton' => [
-                    'isActive' => $this->googlePayConfigProvider->isApplePayActive($storeId),
+                    'isActive' => $this->googlePayConfigProvider->isGooglePayActive($storeId),
                     'googlePayButtonId' => GooglePayConfigProvider::GOOGLE_PAY_BUTTON_ID,
+                    'mode' => $this->googlePayConfigProvider->getGooglePayMode($storeId),
+                    'accountId' => $this->googlePayConfigProvider->getMultisafepayAccountId($storeId),
+                    'accountId' => $this->googlePayConfigProvider->getMultisafepayAccountId($storeId),
                 ]
             ];
 

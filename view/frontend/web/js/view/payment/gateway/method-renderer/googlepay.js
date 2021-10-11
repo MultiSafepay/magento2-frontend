@@ -61,59 +61,21 @@ define(
             initialize: function () {
                 this._super();
                 this.paymentRequestConfig = customerData.get('multisafepay-payment-request')();
+                this.paymentsClient = false;
+
+                console.log(this.paymentRequestConfig);
 
                 if (this.isGooglePayButtonAvailable()) {
                     let self = this;
                     let googlePayButtonLibrary = document.createElement('script');
                     googlePayButtonLibrary.src = "https://pay.google.com/gp/p/js/pay.js";
+                    googlePayButtonLibrary.async = true;
                     googlePayButtonLibrary.type = "text/javascript";
                     document.head.appendChild(googlePayButtonLibrary);
 
-                    const baseRequest = {
-                        apiVersion: 2,
-                        apiVersionMinor: 0
-                    };
-
-                    const tokenizationSpecification = {
-                        type: 'PAYMENT_GATEWAY',
-                        parameters: {
-                            'gateway': 'multisafepay',
-                            'gatewayMerchantId': 'yourMultiSafepayAccountId'
-                        }
-                    };
-
-                    const allowedCardNetworks = ["AMEX", "MASTERCARD", "VISA", "MAESTRO"];
-                    const allowedCardAuthMethods = ["PAN_ONLY", "CRYPTOGRAM_3DS"];
-
-                    const baseCardPaymentMethod = {
-                        type: 'CARD',
-                        parameters: {
-                            allowedAuthMethods: allowedCardAuthMethods,
-                            allowedCardNetworks: allowedCardNetworks
-                        }
-                    };
-
-                    const cardPaymentMethod = Object.assign(
-                        {tokenizationSpecification: tokenizationSpecification},
-                        baseCardPaymentMethod
-                    );
-
-                    const paymentsClient =
-                        new google.payments.api.PaymentsClient({environment: 'TEST'});
-
-                    const isReadyToPayRequest = Object.assign({}, baseRequest);
-                    isReadyToPayRequest.allowedPaymentMethods = [baseCardPaymentMethod];
-
-                    paymentsClient.isReadyToPay(isReadyToPayRequest)
-                        .then(function(response) {
-                            if (response.result) {
-                                self.addGooglePayButton(paymentsClient);
-                            }
-                        })
-                        .catch(function(err) {
-                            // Show error in developer console for debugging
-                            console.error(err);
-                        });
+                    setTimeout(function () {
+                        self.initializeGooglePayButton();
+                    }, 1000);
                 }
 
                 return this;
@@ -139,33 +101,61 @@ define(
              *
              * @returns {*}
              */
-            addGooglePayButton: function (paymentsClient) {
-                const buttonContainer = document.getElementById(this.getGooglePayButtonId());
+            initializeGooglePayButton: function () {
+                var self = this;
+                this.paymentsClient = new google.payments.api.PaymentsClient({environment: 'TEST'});
+                const isReadyToPayRequest = Object.assign(
+                    {},
+                    multisafepayGooglePayButton.getGooglePayBaseRequest()
+                );
 
-                const button = paymentsClient.createButton({
-                    buttonType: 'plain',
-                    onClick: this.initGooglePayButton
-                });
+                isReadyToPayRequest.allowedPaymentMethods =
+                    [multisafepayGooglePayButton.getGooglePayCardPaymentMethodData().baseCardPaymentMethod];
 
-                buttonContainer.appendChild(button);
+                this.paymentsClient.isReadyToPay(isReadyToPayRequest)
+                    .then(function (response) {
+                        if (response.result) {
+                            self.addGooglePayButton(self.paymentsClient);
+                        }
+                    })
+                    .catch(function (err) {
+                        console.error(err);
+                    });
             },
 
             /**
-             * Check if Apple Pay is allowed to be used
+             *
+             * @returns {*}
+             */
+            addGooglePayButton: function (paymentsClient) {
+                document.getElementById(this.getGooglePayButtonId()).appendChild(
+                    paymentsClient.createButton({
+                        buttonType: 'plain',
+                        onClick: this.payWithGooglePay
+                    })
+                );
+            },
+
+            /**
              *
              * @returns {boolean|*}
              */
-            initGooglePayButton: function () {
+            payWithGooglePay: function () {
                 var self = this;
+
+                if (!this.paymentsClient) {
+                    return true;
+                }
+
                 let paymentRequestData = this.getData();
                 let deferred = $.Deferred();
                 this.isPlaceOrderActionAllowed(false);
-                multisafepayGooglePayButton.init(this.getCode(), deferred);
+                multisafepayGooglePayButton.init(deferred, this.paymentsClient);
 
-                $.when(deferred).then(function (paymentData, applePaySession, sessionError) {
-                    if (paymentData) {
+                $.when(deferred).then(function (paymentToken, sessionError) {
+                    if (paymentToken) {
                         paymentRequestData['additional_data'] = {
-                            token: JSON.stringify(paymentData.token)
+                            token: paymentToken
                         };
 
                         $.when(placeOrderAction(paymentRequestData, self.messageContainer)).done(
@@ -177,21 +167,8 @@ define(
                                 }
                             }
                         ).always(function () {
-                                self.isPlaceOrderActionAllowed(true);
-                            }
-                        ).fail(function () {
                             self.isPlaceOrderActionAllowed(true);
-                            applePaySession.completePayment(
-                                {
-                                    status: ApplePaySession.STATUS_FAILURE,
-                                    errors: [
-                                        'Something went wrong. Please, try again.'
-                                    ]
-                                }
-                            );
                         });
-
-                        applePaySession.completePayment(ApplePaySession.STATUS_SUCCESS);
                     } else {
                         self.isPlaceOrderActionAllowed(true);
                         fullScreenLoader.stopLoader();
@@ -207,14 +184,17 @@ define(
                 return true;
             },
 
+            /**
+             *
+             * @returns {*}
+             */
             isGoogleButtonVisible: function () {
                 return this.isGooglePayButtonAvailable();
             },
 
             /**
-             * Check if Apple Pay is allowed to be used
              *
-             * @returns {boolean|*}
+             * @returns {boolean}
              */
             isAllowed: function () {
                 return true;

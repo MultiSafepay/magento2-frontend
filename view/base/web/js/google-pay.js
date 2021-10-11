@@ -17,105 +17,74 @@ define([
     'Magento_Customer/js/customer-data',
     'multisafepayCardPaymentProcessor',
     'multisafepayUtils',
-    'Magento_Checkout/js/model/quote',
-    'MultiSafepay_ConnectFrontend/js/action/get-apple-merchant-session'
+    'Magento_Checkout/js/model/quote'
 ], function (
     $,
     $t,
     customerData,
     multisafepayCardPaymentProcessor,
     multisafepayUtils,
-    quote,
-    getAppleMerchantSessionAction
+    quote
 ) {
     'use strict';
 
     return {
         /**
          *
-         * @param paymentCode
          * @param deferred
+         * @param paymentsClient
          */
-        init: function (paymentCode, deferred) {
+        init: function (deferred, paymentsClient) {
             deferred = deferred || $.Deferred();
             let paymentRequestData = customerData.get('multisafepay-payment-request')();
-            let applePayButtonData = paymentRequestData.applePayButton;
+            let googlePayButtonData = paymentRequestData.googlePayButton;
             let cartData = customerData.get('cart')();
-            let self = this;
 
-            if (paymentRequestData && applePayButtonData.isActive) {
+            if (paymentRequestData && googlePayButtonData.isActive) {
                 if (!cartData.grandTotalAmount && !paymentRequestData.cartTotal) {
-                    deferred.resolve(false, false, $t("Quote data is not full."));
+                    deferred.resolve(false, $t("Quote data is not full."));
 
                     return;
                 }
 
-                let applePayVersion = this.getAvailableApplePayVersion();
+                console.log(paymentsClient);
 
-                if (!applePayVersion) {
-                    deferred.resolve(false, false, $t("Apple Pay doesn't support this device."));
-                }
+                const paymentDataRequest = Object.assign({}, this.getGooglePayBaseRequest());
+                paymentDataRequest.allowedPaymentMethods = [
+                    this.getGooglePayCardPaymentMethodData().cardPaymentMethod
+                ];
 
                 let totalAmount = paymentRequestData.cartTotal ? paymentRequestData.cartTotal
                     : cartData.grandTotalAmount;
 
-                let details = {
-                    displayItems: this.getTotalItems(paymentRequestData),
+                paymentDataRequest.transactionInfo = {
+                    totalPriceStatus: 'FINAL',
+                    totalPrice: totalAmount.toString(),
                     currencyCode: paymentRequestData.currency,
-                    countryCode: quote.billingAddress().countryId,
-                    total: {
-                        label: $t("Total"),
-                        amount: totalAmount
-                    },
-                    supportedNetworks: this.getPaymentMethods(),
-                    merchantCapabilities: ["supports3DS"]
+                    countryCode: quote.billingAddress().countryId
                 };
 
-                let session = new ApplePaySession(applePayVersion, details);
-                session.onvalidatemerchant = event => {
-                    var promise = self.performValidation(
-                        event.validationURL,
-                        applePayButtonData.getMerchantSessionUrl
-                    );
+                paymentDataRequest.merchantInfo = this.getMerchantInfo();
 
-                    promise.then(function (merchantSession) {
-                        console.log(merchantSession, session);
-
-                        if (merchantSession.status == 'error') {
-                            deferred.resolve(false, session, $t(merchantSession.message));
-                            session.abort();
-
-                            return;
-                        }
-
-                        session.completeMerchantValidation(JSON.parse(merchantSession.session));
-                    });
-                }
-
-                session.onpaymentmethodselected = event => {
-                    session.completePaymentMethodSelection(
-                        {
-                            label: $t("Total"),
-                            type: 'final',
-                            amount: totalAmount
-                        },
-                        []
-                    );
-                };
-
-                session.onpaymentauthorized = event => {
-                    deferred.resolve(event.payment, session, false);
-                };
-
-                session.oncancel = event => {
-                    console.log('starting session.cancel');
-                    deferred.resolve(false, session, $t("Apple Pay session was cancelled."));
-                };
-
-                session.begin();
+                paymentsClient.loadPaymentData(paymentDataRequest).then(function(paymentData) {
+                    deferred.resolve(paymentData.paymentMethodData.tokenizationData.token, false);
+                }).catch(function(err){
+                    deferred.resolve(false, err);
+                });
             } else {
-                deferred.resolve(false, false, $t("Apple Pay direct doesn't available. Please, try again."));
+                deferred.resolve(false,  $t("Google Pay direct doesn't available. Please, try again."));
             }
+        },
+
+        /**
+         *
+         * @returns {{merchantId: string, merchantName: string}}
+         */
+        getMerchantInfo: function () {
+            return {
+                merchantName: 'Example Merchant',
+                merchantId: '12345678901234567890'
+            };
         },
 
         performValidation: function (validationUrl, serviceUrl) {
@@ -124,64 +93,61 @@ define([
 
         /**
          *
-         * @param paymentRequest
-         * @returns {[]}
-         */
-        getTotalItems: function (paymentRequest) {
-            let displayItems = [];
-            let values = Object.values(paymentRequest.cartItems);
-
-            for (let sku in values) {
-                let cartItem = values[sku];
-
-                displayItems.push({
-                    label: cartItem.label,
-                    amount: {
-                        currency: paymentRequest.currency,
-                        value: cartItem.price
-                    }
-                });
-            }
-
-            let additionalItems = paymentRequest.additionalTotalItems;
-
-            if (additionalItems.length) {
-                $(additionalItems).each(function (index, value) {
-                    if (value.amount) {
-                        displayItems.push({
-                            label: value.label,
-                            amount: value.amount
-                        });
-                    }
-                });
-            }
-
-            return displayItems;
-        },
-
-        /**
-         *
          * @returns {[string, string, string, string, string]}
          */
         getPaymentMethods: function () {
-            return ["amex", "maestro", "masterCard", "visa", "vPay"];
+            let countryCode = quote.billingAddress().countryId,
+                availableCountries = ["AMEX", "MASTERCARD", "VISA"];
+
+            if (countryCode === 'BR') {
+                availableCountries.push('MAESTRO');
+            }
+
+            return availableCountries;
         },
 
         /**
          *
-         * @returns {boolean}
+         * @returns {{apiVersionMinor: number, apiVersion: number}}
          */
-        getAvailableApplePayVersion: function () {
-            let availableVersions = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-            let result = false;
-
-            availableVersions.forEach(function (version) {
-                if (window.ApplePaySession.supportsVersion(version)) {
-                    result = version;
+        getGooglePayCardPaymentMethodData: function () {
+            const tokenizationSpecification = {
+                type: 'PAYMENT_GATEWAY',
+                parameters: {
+                    'gateway': 'multisafepay',
+                    'gatewayMerchantId': '90258312'
                 }
-            });
+            };
 
-            return result;
+            const allowedCardNetworks = this.getPaymentMethods();
+            const allowedCardAuthMethods = ["PAN_ONLY", "CRYPTOGRAM_3DS"];
+
+            const baseCardPaymentMethod = {
+                type: 'CARD',
+                parameters: {
+                    allowedAuthMethods: allowedCardAuthMethods,
+                    allowedCardNetworks: allowedCardNetworks
+                }
+            };
+
+            return {
+                baseCardPaymentMethod: baseCardPaymentMethod,
+                cardPaymentMethod: Object.assign(
+                    {tokenizationSpecification: tokenizationSpecification},
+                    baseCardPaymentMethod
+                )
+            }
+        },
+
+        /**
+         *
+         * @returns {{apiVersionMinor: number, apiVersion: number}}
+         */
+        getGooglePayBaseRequest: function () {
+            return {
+                apiVersion: 2,
+                apiVersionMinor: 0
+            };
         }
     };
 });
