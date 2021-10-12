@@ -108,7 +108,7 @@ class PaymentRequest implements SectionSourceInterface
                     'googlePayButtonId' => GooglePayConfigProvider::GOOGLE_PAY_BUTTON_ID,
                     'mode' => $this->googlePayConfigProvider->getGooglePayMode($storeId),
                     'accountId' => $this->googlePayConfigProvider->getMultisafepayAccountId($storeId),
-                    'accountId' => $this->googlePayConfigProvider->getMultisafepayAccountId($storeId),
+                    'merchantInfo' => $this->googlePayConfigProvider->getGooglePayMerchantInfo($storeId),
                 ]
             ];
 

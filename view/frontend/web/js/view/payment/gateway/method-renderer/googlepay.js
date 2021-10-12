@@ -24,7 +24,8 @@ define(
         'Magento_Customer/js/customer-data',
         'multisafepayGooglePayButton',
         'Magento_Checkout/js/action/place-order',
-        'Magento_Checkout/js/model/full-screen-loader'
+        'Magento_Checkout/js/model/full-screen-loader',
+        'googlePayButtonLibrary'
     ],
 
     /**
@@ -38,6 +39,7 @@ define(
      * @param multisafepayGooglePayButton
      * @param placeOrderAction
      * @param fullScreenLoader
+     * @param googlePayButtonLibrary
      * @returns {*}
      */
     function (
@@ -49,7 +51,8 @@ define(
         customerData,
         multisafepayGooglePayButton,
         placeOrderAction,
-        fullScreenLoader
+        fullScreenLoader,
+        googlePayButtonLibrary
     ) {
         'use strict';
 
@@ -63,19 +66,16 @@ define(
                 this.paymentRequestConfig = customerData.get('multisafepay-payment-request')();
                 this.paymentsClient = false;
 
-                console.log(this.paymentRequestConfig);
+                return this;
+            },
 
+            /**
+             *
+             * @returns {*}
+             */
+            checkIfNeedRenderGooglePayButton: function () {
                 if (this.isGooglePayButtonAvailable()) {
-                    let self = this;
-                    let googlePayButtonLibrary = document.createElement('script');
-                    googlePayButtonLibrary.src = "https://pay.google.com/gp/p/js/pay.js";
-                    googlePayButtonLibrary.async = true;
-                    googlePayButtonLibrary.type = "text/javascript";
-                    document.head.appendChild(googlePayButtonLibrary);
-
-                    setTimeout(function () {
-                        self.initializeGooglePayButton();
-                    }, 1000);
+                    this.initializeGooglePayButton();
                 }
 
                 return this;
@@ -102,8 +102,13 @@ define(
              * @returns {*}
              */
             initializeGooglePayButton: function () {
-                var self = this;
-                this.paymentsClient = new google.payments.api.PaymentsClient({environment: 'TEST'});
+                let self = this;
+                this.paymentsClient = new google.payments.api.PaymentsClient(
+                    {
+                        environment: this.paymentRequestConfig.googlePayButton.mode
+                    }
+                );
+
                 const isReadyToPayRequest = Object.assign(
                     {},
                     multisafepayGooglePayButton.getGooglePayBaseRequest()
@@ -130,7 +135,8 @@ define(
             addGooglePayButton: function (paymentsClient) {
                 document.getElementById(this.getGooglePayButtonId()).appendChild(
                     paymentsClient.createButton({
-                        buttonType: 'plain',
+                        buttonColor: 'default',
+                        buttonType: 'pay',
                         onClick: this.payWithGooglePay
                     })
                 );

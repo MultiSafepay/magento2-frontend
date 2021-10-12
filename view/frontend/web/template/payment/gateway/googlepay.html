@@ -47,7 +47,8 @@
                 data-bind="
                 attr: {'id': getGooglePayButtonId(), title: $t('Google Pay')},
                 click: payWithGooglePay,
-                visible: isGoogleButtonVisible()
+                visible: isGoogleButtonVisible(),
+                afterRender: checkIfNeedRenderGooglePayButton()
                 "></button>
 
         <div class="actions-toolbar">

@@ -47,8 +47,6 @@ define([
                     return;
                 }
 
-                console.log(paymentsClient);
-
                 const paymentDataRequest = Object.assign({}, this.getGooglePayBaseRequest());
                 paymentDataRequest.allowedPaymentMethods = [
                     this.getGooglePayCardPaymentMethodData().cardPaymentMethod
@@ -66,13 +64,13 @@ define([
 
                 paymentDataRequest.merchantInfo = this.getMerchantInfo();
 
-                paymentsClient.loadPaymentData(paymentDataRequest).then(function(paymentData) {
+                paymentsClient.loadPaymentData(paymentDataRequest).then(function (paymentData) {
                     deferred.resolve(paymentData.paymentMethodData.tokenizationData.token, false);
-                }).catch(function(err){
+                }).catch(function (err) {
                     deferred.resolve(false, err);
                 });
             } else {
-                deferred.resolve(false,  $t("Google Pay direct doesn't available. Please, try again."));
+                deferred.resolve(false, $t("Google Pay direct doesn't available. Please, try again."));
             }
         },
 
@@ -81,10 +79,19 @@ define([
          * @returns {{merchantId: string, merchantName: string}}
          */
         getMerchantInfo: function () {
-            return {
-                merchantName: 'Example Merchant',
-                merchantId: '12345678901234567890'
-            };
+            let googlePayButtonData = customerData.get('multisafepay-payment-request')().googlePayButton;
+
+            if (googlePayButtonData.mode === 'TEST') {
+                return {
+                    merchantName: 'Example Merchant',
+                    merchantId: '12345678901234567890'
+                };
+            } else {
+                return {
+                    merchantName: googlePayButtonData.merchantInfo.merchantName,
+                    merchantId: googlePayButtonData.merchantInfo.merchantId
+                };
+            }
         },
 
         performValidation: function (validationUrl, serviceUrl) {
@@ -111,11 +118,13 @@ define([
          * @returns {{apiVersionMinor: number, apiVersion: number}}
          */
         getGooglePayCardPaymentMethodData: function () {
+            let googlePayButtonData = customerData.get('multisafepay-payment-request')().googlePayButton;
+
             const tokenizationSpecification = {
                 type: 'PAYMENT_GATEWAY',
                 parameters: {
                     'gateway': 'multisafepay',
-                    'gatewayMerchantId': '90258312'
+                    'gatewayMerchantId': googlePayButtonData.accountId
                 }
             };
 
