@@ -124,7 +124,7 @@ class Success extends Action
         if ($customReturnUrl) {
             $redirectUrl = $this->resultRedirectFactory->create()->setUrl($customReturnUrl);
         } else {
-            $redirectUrl = $this->_redirect('checkout/onepage/success?utm_nooverride=1');
+            $redirectUrl = $this->_redirect('checkout/onepage/success', ['_query' => 'utm_nooverride=1']);
         }
 
         $order->addCommentToStatusHistory('User redirected to the success page.');
