@@ -42,13 +42,21 @@ define([
                     return;
                 }
 
-                const MultiSafepayCreditCardComponent = new MultiSafepay({
-                    env : paymentRequestData.environment,
-                    apiToken : paymentRequestData.apiToken,
-                    order : this.getOrderData(paymentRequestData)
-                });
+                let multisafepayPaymentComponent = customerData.get("multisafepay-payment-component")();
 
-                MultiSafepayCreditCardComponent.init('payment', {
+                if ($.isEmptyObject(multisafepayPaymentComponent)
+                    || (typeof multisafepayPaymentComponent.init === "undefined")
+                ) {
+                    multisafepayPaymentComponent =  new MultiSafepay({
+                        env: paymentRequestData.environment,
+                        apiToken: paymentRequestData.apiToken,
+                        order: this.getOrderData(paymentRequestData)
+                    });
+
+                    customerData.set("multisafepay-payment-component", multisafepayPaymentComponent);
+                }
+
+                multisafepayPaymentComponent.init('payment', {
                     container: '#' + paymentRequestData.cardComponentContainerId + '-' + paymentCode,
                     gateway: cardConfig.gatewayCode,
                     onLoad: state => {
@@ -56,7 +64,7 @@ define([
                     }
                 });
 
-                return MultiSafepayCreditCardComponent;
+                return multisafepayPaymentComponent;
             } else {
                 console.log($t("Credit Card component data not available for selected payment method."));
             }
