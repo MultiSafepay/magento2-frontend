@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.10.2] - 2021-10-07
+### Changed
+- Updated the MultiSafepay credit card component javascript library from V1 to V2.
+
 ## [1.10.1] - 2021-09-07
 ### Fixed
 - Fixed an issue where there were duplicate controllers with the legacy plugin, causing an error on transaction placement.

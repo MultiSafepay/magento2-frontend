@@ -84,7 +84,7 @@ define(
              * @returns {Object}
              */
             getData: function () {
-                let data =  {
+                let data = {
                     'method': this.getCode(),
                     'additional_data': {}
                 };
@@ -124,6 +124,18 @@ define(
                 );
 
                 return this.paymentComponent;
+            },
+
+            /**
+             *
+             * @returns {*}
+             */
+            reloadCreditCardComponents: function () {
+                $(".multisafepay-credit-card-component").each(function () {
+                    $(this).empty();
+                });
+
+                return this;
             },
 
             /**
@@ -214,10 +226,8 @@ define(
                     if (this.isCreditCardComponentEnabled() && this.paymentComponent) {
                         if (!this.paymentComponent.hasErrors()) {
                             this.isPlaceOrderActionAllowed(false);
-                            let payload = this.paymentComponent.getPaymentData().payment_data.payload;
-
-//                            todo need to do it right way
-                            let cardBrand = this.paymentComponent.ref.paymentFormRef.state.brandsAllowed[0].id;
+                            let payload = this.paymentComponent.getOrderData().payment_data.payload;
+                            let cardBrand = '';
 
                             if (payload) {
                                 this.paymentPayload = payload;
@@ -265,6 +275,7 @@ define(
 
                 $.when(placeOrderAction(paymentRequestData, self.messageContainer)).done(
                     function () {
+                        customerData.set("multisafepay-payment-component", {});
                         self.afterPlaceOrder();
 
                         if (self.redirectAfterPlaceOrder) {
