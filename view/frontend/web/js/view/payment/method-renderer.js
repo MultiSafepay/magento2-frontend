@@ -67,6 +67,7 @@ define(
             {type: 'multisafepay_einvoicing', component: gatewayPath + 'einvoicing'},
             {type: 'multisafepay_eps', component: baseRenderer},
             {type: 'multisafepay_giropay', component: baseRenderer},
+            {type: 'multisafepay_googlepay', component: gatewayPath + 'googlepay'},
             {type: 'multisafepay_ideal', component: gatewayPath + 'ideal'},
             {type: 'multisafepay_idealqr', component: baseRenderer},
             {type: 'multisafepay_in3', component: gatewayPath + 'in3'},
