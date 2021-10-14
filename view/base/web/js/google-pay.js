@@ -94,10 +94,6 @@ define([
             }
         },
 
-        performValidation: function (validationUrl, serviceUrl) {
-            return getAppleMerchantSessionAction(serviceUrl, validationUrl);
-        },
-
         /**
          *
          * @returns {[string, string, string, string, string]}
@@ -115,7 +111,7 @@ define([
 
         /**
          *
-         * @returns {{apiVersionMinor: number, apiVersion: number}}
+         * @returns {{cardPaymentMethod: {tokenizationSpecification: {type: string, parameters: {gatewayMerchantId: string|*, gateway: string}}} & {type: string, parameters: {allowedAuthMethods: [string, string], allowedCardNetworks: string[]}}, baseCardPaymentMethod: {type: string, parameters: {allowedAuthMethods: [string, string], allowedCardNetworks: string[]}}}}
          */
         getGooglePayCardPaymentMethodData: function () {
             let googlePayButtonData = customerData.get('multisafepay-payment-request')().googlePayButton;
