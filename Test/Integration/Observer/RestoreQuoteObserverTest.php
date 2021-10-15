@@ -25,6 +25,7 @@ use Magento\Framework\App\State;
 use Magento\Framework\Event\ManagerInterface;
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\HTTP\PhpEnvironment\RemoteAddress;
 use Magento\Framework\Session\Config\ConfigInterface;
 use Magento\Framework\Session\SaveHandlerInterface;
@@ -48,6 +49,9 @@ use MultiSafepay\ConnectFrontend\Observer\RestoreQuoteObserver;
 use PHPUnit\Framework\MockObject\MockObject;
 use Psr\Log\LoggerInterface;
 
+/**
+ * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
+ */
 class RestoreQuoteObserverTest extends AbstractTestCase
 {
     /**
@@ -82,6 +86,7 @@ class RestoreQuoteObserverTest extends AbstractTestCase
      * @magentoConfigFixture default_store multisafepay/general/mode 0
      *
      * @throws LocalizedException
+     * @throws NoSuchEntityException
      */
     public function testRestoreQuoteWithNotEmptyOrder(): void
     {
