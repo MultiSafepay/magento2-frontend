@@ -20,7 +20,8 @@ define(
         'MultiSafepay_ConnectFrontend/js/view/payment/method-renderer/base-renderer',
         'Magento_Checkout/js/checkout-data',
         'Magento_Checkout/js/action/redirect-on-success',
-        'mage/url'
+        'mage/url',
+        'Magento_Vault/js/view/payment/vault-enabler'
     ],
 
     /**
@@ -30,6 +31,7 @@ define(
      * @param checkoutData
      * @param redirectOnSuccessAction
      * @param url
+     * @param VaultEnabler
      * @returns {*}
      */
     function (
@@ -37,7 +39,8 @@ define(
         Component,
         checkoutData,
         redirectOnSuccessAction,
-        url
+        url,
+        VaultEnabler
     ) {
         'use strict';
 
@@ -45,6 +48,14 @@ define(
             defaults: {
                 template: 'MultiSafepay_ConnectFrontend/payment/gateway/ideal',
                 issuerId: '',
+            },
+
+            initialize: function () {
+                this.vaultEnabler = new VaultEnabler();
+                this._super();
+                this.vaultEnabler.setPaymentCode(this.getVaultCode());
+
+                return this;
             },
 
             initObservable: function () {
@@ -64,17 +75,37 @@ define(
             },
 
             /**
+             * Returns vault code.
+             *
+             * @returns {String}
+             */
+            getVaultCode: function () {
+                return window.checkoutConfig.payment[this.getCode()].vaultCode;
+            },
+
+            /**
+             * @returns {Boolean}
+             */
+            isVaultEnabled: function () {
+                return this.vaultEnabler.isVaultEnabled();
+            },
+
+            /**
              * Add issuer_id to additional data
              *
              * @returns {{additional_data: {issuerid: *}, method: *}}
              */
             getData: function () {
-                return {
+                let data = {
                     "method": this.item.method,
                     "additional_data": {
                         'issuer_id': this.issuerId(),
                     }
                 };
+
+                this.vaultEnabler.visitAdditionalData(data);
+
+                return data;
             },
         });
     }
