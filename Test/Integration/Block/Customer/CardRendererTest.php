@@ -32,20 +32,6 @@ use PHPUnit\Framework\MockObject\MockObject;
  */
 class CardRendererTest extends AbstractTestCase
 {
-    /**
-     * @var PaymentRequest
-     */
-    private $paymentRequest;
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $this->paymentRequest = $this->getObjectManager()->create(PaymentRequest::class);
-    }
-
     public function testGetSectionDataWithCardsConfigData(): void
     {
         $paymentToken = $this->getObjectManager()->create(PaymentTokenInterface::class);
