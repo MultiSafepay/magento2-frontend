@@ -32,8 +32,6 @@ use PHPUnit\Framework\MockObject\MockObject;
  */
 class CardRendererTest extends AbstractTestCase
 {
-    const TEST_API_TOKEN_NAME = 'test_api_token';
-
     /**
      * @var PaymentRequest
      */
