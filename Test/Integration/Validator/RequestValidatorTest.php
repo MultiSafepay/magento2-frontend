@@ -51,7 +51,7 @@ class RequestValidatorTest extends AbstractTestCase
      * @magentoConfigFixture default_store multisafepay/general/mode 0
      *
      */
-    public function testRestoreQuoteWithEmptyOrder(): void
+    public function testValidateSecureToken(): void
     {
         $order = $this->getOrder();
         $requestParams = [];
