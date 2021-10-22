@@ -16,7 +16,7 @@
                 <item name="multisafepay_visa_recurring" xsi:type="object">MultiSafepay\ConnectCore\Model\Ui\VisaTokenUiComponentProvider</item>
                 <item name="multisafepay_mastercard_recurring" xsi:type="object">MultiSafepay\ConnectCore\Model\Ui\MastercardTokenUiComponentProvider</item>
                 <item name="multisafepay_amex_recurring" xsi:type="object">MultiSafepay\ConnectCore\Model\Ui\AmexTokenUiComponentProvider</item>
-                <item name="multisafepay_ideal_recurring" xsi:type="object">MultiSafepay\ConnectCore\Model\Ui\Ideal</item>
+                <item name="multisafepay_ideal_recurring" xsi:type="object">MultiSafepay\ConnectCore\Model\Ui\IdealTokenUiComponentProvider</item>
             </argument>
         </arguments>
     </type>
