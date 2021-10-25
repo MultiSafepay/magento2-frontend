@@ -92,7 +92,7 @@ define(
                 if (!this.accountHolderName() && !this.accountHolderIban()) {
                     let data = {
                         "method": this.item.method,
-                        "additional_data": []
+                        "additional_data": {}
                     };
 
                     this.vaultEnabler.visitAdditionalData(data);
