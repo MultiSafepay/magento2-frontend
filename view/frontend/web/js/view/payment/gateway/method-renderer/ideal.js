@@ -80,7 +80,6 @@ define(
              * @returns {String}
              */
             getVaultCode: function () {
-                console.log(window.checkoutConfig.payment[this.getCode()].vaultCode);
                 return window.checkoutConfig.payment[this.getCode()].vaultCode;
             },
 
@@ -88,7 +87,6 @@ define(
              * @returns {Boolean}
              */
             isVaultEnabled: function () {
-                console.log(this.vaultEnabler.isVaultEnabled());
                 return this.vaultEnabler.isVaultEnabled();
             },
 

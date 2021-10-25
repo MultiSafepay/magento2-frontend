@@ -20,7 +20,8 @@ define(
         'MultiSafepay_ConnectFrontend/js/view/payment/method-renderer/base-renderer',
         'Magento_Checkout/js/checkout-data',
         'Magento_Checkout/js/action/redirect-on-success',
-        'mage/url'
+        'mage/url',
+        'Magento_Vault/js/view/payment/vault-enabler'
     ],
 
     /**
@@ -30,6 +31,7 @@ define(
      * @param checkoutData
      * @param redirectOnSuccessAction
      * @param url
+     * @param VaultEnabler
      * @returns {*}
      */
     function (
@@ -37,7 +39,8 @@ define(
         Component,
         checkoutData,
         redirectOnSuccessAction,
-        url
+        url,
+        VaultEnabler
     ) {
         'use strict';
 
@@ -46,6 +49,14 @@ define(
                 template: 'MultiSafepay_ConnectFrontend/payment/gateway/directdebit',
                 accountHolderName: '',
                 accountHolderIban: '',
+            },
+
+            initialize: function () {
+                this.vaultEnabler = new VaultEnabler();
+                this._super();
+                this.vaultEnabler.setPaymentCode(this.getVaultCode());
+
+                return this;
             },
 
             initObservable: function () {
@@ -57,25 +68,49 @@ define(
             },
 
             /**
+             * Returns vault code.
+             *
+             * @returns {String}
+             */
+            getVaultCode: function () {
+                return window.checkoutConfig.payment[this.getCode()].vaultCode;
+            },
+
+            /**
+             * @returns {Boolean}
+             */
+            isVaultEnabled: function () {
+                return this.vaultEnabler.isVaultEnabled();
+            },
+
+            /**
              * Add payment method specific data to additional data
              *
              * @returns {{additional_data: *, method: *}}
              */
             getData: function () {
                 if (!this.accountHolderName() && !this.accountHolderIban()) {
-                    return {
+                    let data = {
                         "method": this.item.method,
-                        "additional_data": null
+                        "additional_data": []
                     };
+
+                    this.vaultEnabler.visitAdditionalData(data);
+
+                    return data;
                 }
 
-                return {
+                let data = {
                     "method": this.item.method,
                     "additional_data": {
                         'account_holder_name': this.accountHolderName(),
                         'account_holder_iban': this.accountHolderIban(),
                     }
                 };
+
+                this.vaultEnabler.visitAdditionalData(data);
+
+                return data;
             },
         });
     }
