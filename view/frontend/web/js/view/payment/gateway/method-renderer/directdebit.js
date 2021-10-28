@@ -21,7 +21,7 @@ define(
         'Magento_Checkout/js/checkout-data',
         'Magento_Checkout/js/action/redirect-on-success',
         'mage/url',
-        'Magento_Vault/js/view/payment/vault-enabler'
+        'MultiSafepay_ConnectFrontend/js/view/payment/vault-enabler'
     ],
 
     /**
