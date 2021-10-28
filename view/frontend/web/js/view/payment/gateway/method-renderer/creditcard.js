@@ -20,7 +20,7 @@ define(
         'MultiSafepay_ConnectFrontend/js/view/payment/method-renderer/base-renderer',
         'Magento_Checkout/js/checkout-data',
         'Magento_Checkout/js/action/redirect-on-success',
-        'Magento_Vault/js/view/payment/vault-enabler',
+        'MultiSafepay_ConnectFrontend/js/view/payment/vault-enabler',
         'mage/url',
         'multisafepayPaymentRequest',
         'Magento_Checkout/js/action/select-payment-method',
