@@ -87,7 +87,11 @@ class PaymentConfig implements ArgumentInterface
                 (int)$this->getQuote()->getStoreId()
             );
 
-            if ($paymentConfig && isset($paymentConfig['payment_type']) && $paymentConfig['active']) {
+            if ($paymentConfig
+                && isset($paymentConfig['payment_type'])
+                && isset($paymentConfig['active'])
+                && (bool)$paymentConfig['active']
+            ) {
                 $result[$methodCode] = [
                     "types" => self::DEFAULT_CARD_TYPES,
                     "flags" => $this->getCardFlagByMethodCode($methodCode),
