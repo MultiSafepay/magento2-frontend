@@ -126,8 +126,8 @@ class PaymentRequestTest extends AbstractTestCase
     {
         $result = $this->getPaymentRequestMockWithQuote($this->getQuote('test01'))->getSectionData();
 
-        self::isFalse($result['enabled']);
-        self::isTrue(!isset($result['cardsConfig']));
+        self::assertFalse($result['enabled']);
+        self::assertTrue(!isset($result['cardsConfig']));
     }
 
     /**

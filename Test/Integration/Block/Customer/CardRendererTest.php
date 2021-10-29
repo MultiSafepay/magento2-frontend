@@ -42,7 +42,7 @@ class CardRendererTest extends AbstractTestCase
 
         self::assertEquals('1111', $cardRenderer->getNumberLast4Digits());
         self::assertEquals('12/2024', $cardRenderer->getExpDate());
-        self::isEmpty($cardRenderer->getIconUrl());
+        self::assertFalse((bool)$cardRenderer->getIconUrl());
         self::assertEquals(0, $cardRenderer->getIconHeight());
         self::assertEquals(0, $cardRenderer->getIconWidth());
         self::assertEquals(
@@ -53,7 +53,6 @@ class CardRendererTest extends AbstractTestCase
             ],
             $cardRenderer->getIcon()
         );
-        self::isTrue($cardRenderer->canRender($paymentToken));
     }
 
     /**

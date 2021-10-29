@@ -76,7 +76,7 @@ class RestoreQuoteObserverTest extends AbstractTestCase
 
     public function testRestoreQuoteWithEmptyOrder(): void
     {
-        self::isNull($this->restoreQuoteObserver->execute($this->getObserverObject()));
+        self::assertNull($this->restoreQuoteObserver->execute($this->getObserverObject()));
     }
 
     /**
@@ -96,7 +96,7 @@ class RestoreQuoteObserverTest extends AbstractTestCase
             $this->getObjectManager()->get(PaymentMethodUtil::class),
         ])->setMethodsExcept(['execute'])->getMock();
 
-        self::isNull($restoreQuoteObserverMock->execute($observerObject));
+        self::assertNull($restoreQuoteObserverMock->execute($observerObject));
 
         $order = $this->getOrderWithVisaPaymentMethod();
         $payment = $order->getPayment();
@@ -107,7 +107,7 @@ class RestoreQuoteObserverTest extends AbstractTestCase
             $this->getObjectManager()->get(PaymentMethodUtil::class),
         ])->setMethodsExcept(['execute'])->getMock();
 
-        self::isNull($restoreQuoteObserverMock->execute($observerObject));
+        self::assertNull($restoreQuoteObserverMock->execute($observerObject));
 
         $payment->setMethod(VisaConfigProvider::CODE);
 
@@ -116,7 +116,7 @@ class RestoreQuoteObserverTest extends AbstractTestCase
             $this->getObjectManager()->get(PaymentMethodUtil::class),
         ])->setMethodsExcept(['execute'])->getMock();
 
-        self::isNull($restoreQuoteObserverMock->execute($observerObject));
+        self::assertNull($restoreQuoteObserverMock->execute($observerObject));
 
         $order->setState(Order::STATE_PENDING_PAYMENT);
         $quote = $this->getQuote('test01');
@@ -133,8 +133,8 @@ class RestoreQuoteObserverTest extends AbstractTestCase
         $restoreQuoteObserverMock->execute($observerObject);
         $updatedQuote = $this->cartRepositoryInterface->get($quoteId);
 
-        self::isTrue((bool)$updatedQuote->getIsActive());
-        self::isNull((bool)$updatedQuote->getReservedOrderId());
+        self::assertTrue((bool)$updatedQuote->getIsActive());
+        self::assertFalse((bool)$updatedQuote->getReservedOrderId());
     }
 
     /**

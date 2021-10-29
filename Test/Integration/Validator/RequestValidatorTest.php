@@ -56,18 +56,18 @@ class RequestValidatorTest extends AbstractTestCase
         $order = $this->getOrder();
         $requestParams = [];
 
-        self::isFalse($this->requestValidator->validateSecureToken($requestParams));
+        self::assertFalse($this->requestValidator->validateSecureToken($requestParams));
 
         $requestParams['transactionid'] = $order->getIncrementId();
 
-        self::isFalse($this->requestValidator->validateSecureToken($requestParams));
+        self::assertFalse($this->requestValidator->validateSecureToken($requestParams));
 
         $requestParams['secureToken'] = $this->secureToken->generate($order->getIncrementId());
 
-        self::isTrue($this->requestValidator->validateSecureToken($requestParams));
+        self::assertTrue($this->requestValidator->validateSecureToken($requestParams));
 
         $requestParams['secureToken'] = 'wrongSecureToken';
 
-        self::isFalse($this->requestValidator->validateSecureToken($requestParams));
+        self::assertFalse($this->requestValidator->validateSecureToken($requestParams));
     }
 }

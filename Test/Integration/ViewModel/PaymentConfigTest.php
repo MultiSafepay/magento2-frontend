@@ -92,7 +92,7 @@ class PaymentConfigTest extends AbstractTestCase
      */
     public function testGetCardsConfigForDisabledPaymentMethods(): void
     {
-        self::isEmpty($this->paymentConfig->getCardsConfig());
+        self::assertEmpty($this->paymentConfig->getCardsConfig());
     }
 
     /**
