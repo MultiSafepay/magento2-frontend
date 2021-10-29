@@ -122,7 +122,7 @@ class Notification extends Action implements CsrfAwareActionInterface
         $params = $this->getRequest()->getParams();
 
         if (!isset($params['transactionid'], $params['timestamp'])) {
-            return $this->getResponse()->setContent('ng');
+            return $this->getResponse()->setContent('ng: Missing transaction id or timestamp');
         }
 
         $orderIncrementId = $params['transactionid'];
@@ -133,7 +133,12 @@ class Notification extends Action implements CsrfAwareActionInterface
         } catch (NoSuchEntityException $noSuchEntityException) {
             $this->logger->logExceptionForOrder($orderIncrementId, $noSuchEntityException);
 
-            return $this->getResponse()->setContent('ng');
+            return $this->getResponse()->setContent(
+                sprintf(
+                    'ng: %1$s',
+                    $noSuchEntityException->getMessage()
+                )
+            );
         }
 
         try {
@@ -156,19 +161,33 @@ class Notification extends Action implements CsrfAwareActionInterface
         } catch (InvalidApiKeyException $invalidApiKeyException) {
             $this->logger->logInvalidApiKeyException($invalidApiKeyException);
 
-            return $this->getResponse()->setContent('ng');
-        } catch (ApiException $e) {
-            $this->logger->logGetRequestApiException($orderIncrementId, $e);
+            return $this->getResponse()->setContent(
+                sprintf('ng: %1$s', $invalidApiKeyException->getMessage())
+            );
+        } catch (ApiException $apiException) {
+            $this->logger->logGetRequestApiException($orderIncrementId, $apiException);
 
-            return $this->getResponse()->setContent('ng');
+            return $this->getResponse()->setContent(
+                sprintf(
+                    'ng: (%1$s) %2$s. Please check 
+                    https://docs.multisafepay.com/developer/errors-explained/understanding-and-resolving-errors/ 
+                    for a detailed explanation',
+                    $apiException->getCode(),
+                    $apiException->getMessage()
+                )
+            );
         } catch (ClientExceptionInterface $clientException) {
             $this->logger->logClientException($orderIncrementId, $clientException);
 
-            return $this->getResponse()->setContent('ng');
+            return $this->getResponse()->setContent(
+                sprintf('ng: ClientException occured. %1$s', $clientException->getMessage())
+            );
         } catch (Exception $exception) {
             $this->logger->logExceptionForOrder($orderIncrementId, $exception);
 
-            return $this->getResponse()->setContent('ng');
+            return $this->getResponse()->setContent(
+                sprintf('ng: Exception occured when trying to process the order: %1$s', $exception->getMessage())
+            );
         }
 
         return $this->getResponse()->setContent('ok');
