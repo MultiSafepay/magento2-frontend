@@ -93,6 +93,8 @@ class PaymentConfigTest extends AbstractTestCase
      * @magentoConfigFixture default_store payment/multisafepay_creditcard/active 0
      * @magentoConfigFixture default_store payment/multisafepay_ideal/active 0
      *
+     * @throws LocalizedException
+     * @throws NoSuchEntityException
      */
     public function testGetCardsConfigForDisabledPaymentMethods(): void
     {

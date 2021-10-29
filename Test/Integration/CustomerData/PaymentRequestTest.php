@@ -42,11 +42,6 @@ class PaymentRequestTest extends AbstractTestCase
     private const TEST_API_TOKEN_NAME = 'test_api_token';
 
     /**
-     * @var PaymentRequest
-     */
-    private $paymentRequest;
-
-    /**
      * @var ResolverInterface
      */
     private $localeResolver;
@@ -67,7 +62,6 @@ class PaymentRequestTest extends AbstractTestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->paymentRequest = $this->getObjectManager()->create(PaymentRequest::class);
         $this->localeResolver = $this->getObjectManager()->create(ResolverInterface::class);
         $this->googlePayConfigProvider = $this->getObjectManager()->create(GooglePayConfigProvider::class);
         $this->applePayConfigProvider = $this->getObjectManager()->create(ApplePayConfigProvider::class);

@@ -18,7 +18,6 @@ declare(strict_types=1);
 namespace MultiSafepay\ConnectFrontend\Test\Integration\Observer;
 
 use Magento\Framework\Exception\LocalizedException;
-use Magento\Framework\Exception\NoSuchEntityException;
 use MultiSafepay\ConnectFrontend\Validator\RequestValidator;
 use MultiSafepay\ConnectCore\Test\Integration\AbstractTestCase;
 use MultiSafepay\ConnectCore\Model\SecureToken;
