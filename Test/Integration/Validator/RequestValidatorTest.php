@@ -50,6 +50,7 @@ class RequestValidatorTest extends AbstractTestCase
      * @magentoConfigFixture default_store multisafepay/general/test_api_key testkey
      * @magentoConfigFixture default_store multisafepay/general/mode 0
      *
+     * @throws LocalizedException
      */
     public function testValidateSecureToken(): void
     {

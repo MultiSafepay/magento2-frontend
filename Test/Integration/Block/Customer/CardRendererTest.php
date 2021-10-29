@@ -37,6 +37,7 @@ class CardRendererTest extends AbstractTestCase
         $paymentToken = $this->getObjectManager()->create(PaymentTokenInterface::class);
         $paymentToken->setTokenDetails('{"type":"VISA","maskedCC":1111,"expirationDate":"12\/2024"}');
         $paymentToken->setPaymentCode(CreditCardRecurringConfigProvider::CODE);
+        /** @var CardRenderer $cardRenderer */
         $cardRenderer = $this->getCardRendererMock($paymentToken);
         $cardRenderer->render($paymentToken);
 
@@ -81,8 +82,7 @@ class CardRendererTest extends AbstractTestCase
             ])
             ->getMock();
 
-        $cardRenderer->expects(self::any())
-            ->method('getToken')
+        $cardRenderer->method('getToken')
             ->willReturn($paymentToken);
 
         return $cardRenderer;

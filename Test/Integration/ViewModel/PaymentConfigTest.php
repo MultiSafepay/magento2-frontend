@@ -18,6 +18,8 @@ declare(strict_types=1);
 namespace MultiSafepay\ConnectFrontend\Test\Integration\ViewModel;
 
 use Magento\Checkout\Model\Session;
+use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\UrlInterface;
 use Magento\Quote\Api\Data\CartInterface;
 use MultiSafepay\ConnectCore\Model\Ui\ConfigProviderPool;
@@ -49,6 +51,8 @@ class PaymentConfigTest extends AbstractTestCase
      * @magentoConfigFixture default_store payment/multisafepay_creditcard/active 1
      * @magentoConfigFixture default_store payment/multisafepay_maestro/active 1
      *
+     * @throws LocalizedException
+     * @throws NoSuchEntityException
      */
     public function testGetCardsConfigForEnabledPaymentMethods(): void
     {
@@ -101,6 +105,9 @@ class PaymentConfigTest extends AbstractTestCase
      */
     public function testGenerateProductLabel(): void
     {
+        /** @var CartInterface $paymentConfigMockWithQuote */
+        $paymentConfigMockWithQuote = $this->getPaymentConfigMockWithQuote($this->getQuote('test01'));
+
         self::assertEquals(
             [
                 'simple' => [
@@ -108,7 +115,7 @@ class PaymentConfigTest extends AbstractTestCase
                     'price' => 10.0,
                 ],
             ],
-            $this->getPaymentConfigMockWithQuote($this->getQuote('test01'))->getQuoteItems()
+            $paymentConfigMockWithQuote->getQuoteItems()
         );
     }
 

@@ -18,6 +18,7 @@ declare(strict_types=1);
 namespace MultiSafepay\ConnectFrontend\Test\Integration\ViewModel;
 
 use Magento\Checkout\Model\Session;
+use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Locale\ResolverInterface;
 use Magento\Framework\UrlInterface;
@@ -38,7 +39,7 @@ use PHPUnit\Framework\MockObject\MockObject;
  */
 class PaymentRequestTest extends AbstractTestCase
 {
-    const TEST_API_TOKEN_NAME = 'test_api_token';
+    private const TEST_API_TOKEN_NAME = 'test_api_token';
 
     /**
      * @var PaymentRequest
@@ -79,10 +80,12 @@ class PaymentRequestTest extends AbstractTestCase
      * @magentoConfigFixture default_store multisafepay/general/mode 0
      *
      * @throws NoSuchEntityException
+     * @throws LocalizedException
      */
     public function testGetSectionDataWithCardsConfigData(): void
     {
         $quote = $this->getQuote('test01');
+        /** @var PaymentConfig $paymentConfigMock */
         $paymentConfigMock = $this->getPaymentConfigMockWithQuote($quote);
         $storeId = $paymentConfigMock->getStoreIdFromQuote();
         $result = [
