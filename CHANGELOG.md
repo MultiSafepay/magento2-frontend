@@ -6,6 +6,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.12.0] - 2021-10-29
+### Added
+- Added iDEAL and Direct Debit Vault
+- Added Edenred
+
+### Changed
+- Changed the Vault 'Save for later use' checkbox to be default unchecked instead of checked for MultiSafepay payment methods
+- Changed the module to not only return an 'ng' on notification failure and show more information about why the notification process failed
+
 ## [1.11.0] - 2021-10-15
 ### Added
 - Added Apple Pay Direct
