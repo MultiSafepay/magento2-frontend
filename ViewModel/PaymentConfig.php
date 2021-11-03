@@ -11,6 +11,7 @@ use Magento\Framework\UrlInterface;
 use Magento\Framework\View\Element\Block\ArgumentInterface;
 use Magento\Quote\Api\Data\CartInterface;
 use Magento\Quote\Api\Data\CartItemInterface;
+use MultiSafepay\ConnectAdminhtml\Model\Config\Source\CardPaymentTypes;
 use MultiSafepay\ConnectCore\Model\Ui\ConfigProviderPool;
 use MultiSafepay\ConnectCore\Model\Ui\Gateway\AmexConfigProvider;
 use MultiSafepay\ConnectCore\Model\Ui\Gateway\CreditCardConfigProvider;
@@ -87,11 +88,7 @@ class PaymentConfig implements ArgumentInterface
                 (int)$this->getQuote()->getStoreId()
             );
 
-            if ($paymentConfig
-                && isset($paymentConfig['payment_type'])
-                && isset($paymentConfig['active'])
-                && (bool)$paymentConfig['active']
-            ) {
+            if ($paymentConfig && $this->isCreditCardComponentAvailable($paymentConfig)) {
                 $result[$methodCode] = [
                     "types" => self::DEFAULT_CARD_TYPES,
                     "flags" => $this->getCardFlagByMethodCode($methodCode),
@@ -105,6 +102,17 @@ class PaymentConfig implements ArgumentInterface
         }
 
         return $result;
+    }
+
+    /**
+     * @param array $paymentConfig
+     * @return bool
+     */
+    private function isCreditCardComponentAvailable(array $paymentConfig): bool
+    {
+        return isset($paymentConfig['payment_type'], $paymentConfig['active'])
+               && $paymentConfig['payment_type'] === CardPaymentTypes::CREDIT_CARD_COMPONENT_PAYMENT_TYPE
+               && (bool)$paymentConfig['active'];
     }
 
     /**
