@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Fixed an issue where frontend fetches API tokens for CC component, while payment type is configured as redirect (Thanks to @thlassche)
 
+### Changed
+- Changed the Google Pay button background to be transparent instead of white.
+
 ## [1.12.1] - 2021-11-03
 ### Fixed
 - Fixed an issue with AfterPay Date of Birth date picker field
