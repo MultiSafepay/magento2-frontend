@@ -67,6 +67,9 @@ define([
                         label: $t("Total"),
                         amount: totalAmount
                     },
+                    "requiredBillingContactFields":[
+                        "postalAddress"
+                    ],
                     supportedNetworks: this.getPaymentMethods(),
                     merchantCapabilities: ["supports3DS"]
                 };
