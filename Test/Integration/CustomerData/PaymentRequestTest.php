@@ -70,6 +70,7 @@ class PaymentRequestTest extends AbstractTestCase
     /**
      * @magentoDataFixture   Magento/Sales/_files/quote.php
      * @magentoConfigFixture default_store payment/multisafepay_maestro/active 1
+     * @magentoConfigFixture default_store payment/multisafepay_maestro/payment_type credit_card
      * @magentoConfigFixture default_store multisafepay/general/test_api_key testkey
      * @magentoConfigFixture default_store multisafepay/general/mode 0
      *

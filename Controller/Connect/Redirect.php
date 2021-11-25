@@ -100,9 +100,8 @@ class Redirect extends Action
         $orderIncrementId = $order->getRealOrderId();
 
         try {
-            $paymentUrl = $this->paymentLink->getPaymentLinkByOrder($order);
+            $paymentUrl = $this->paymentLink->getPaymentLinkFromOrder($order);
             $this->logger->logPaymentRedirectInfo($orderIncrementId, $paymentUrl);
-            $this->paymentLink->addPaymentLink($order, $paymentUrl);
             $this->removeAdditionalInformation->execute($order);
         } catch (InvalidApiKeyException $invalidApiKeyException) {
             $this->logger->logInvalidApiKeyException($invalidApiKeyException);

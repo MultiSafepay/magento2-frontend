@@ -48,8 +48,11 @@ class PaymentConfigTest extends AbstractTestCase
 
     /**
      * @magentoConfigFixture default_store payment/multisafepay_amex/active 1
+     * @magentoConfigFixture default_store payment/multisafepay_amex/payment_type credit_card
      * @magentoConfigFixture default_store payment/multisafepay_creditcard/active 1
+     * @magentoConfigFixture default_store payment/multisafepay_creditcard/payment_type credit_card
      * @magentoConfigFixture default_store payment/multisafepay_maestro/active 1
+     * @magentoConfigFixture default_store payment/multisafepay_maestro/payment_type credit_card
      *
      * @throws LocalizedException
      * @throws NoSuchEntityException
@@ -62,7 +65,7 @@ class PaymentConfigTest extends AbstractTestCase
                 'flags' => ['amex'],
                 'paymentMethod' => 'multisafepay_amex',
                 'gatewayCode' => 'CREDITCARD',
-                'paymentType' => 'redirect',
+                'paymentType' => 'credit_card',
                 'additionalInfo' => $this->getObjectManager()->create(AmexConfigProvider::class)
                                         ->getConfig()['payment'][AmexConfigProvider::CODE],
             ],
@@ -71,7 +74,7 @@ class PaymentConfigTest extends AbstractTestCase
                 'flags' => ['visa', 'maestro', 'mastercard'],
                 'paymentMethod' => 'multisafepay_maestro',
                 'gatewayCode' => 'CREDITCARD',
-                'paymentType' => 'redirect',
+                'paymentType' => 'credit_card',
                 'additionalInfo' => $this->getObjectManager()->create(MaestroConfigProvider::class)
                                         ->getConfig()['payment'][MaestroConfigProvider::CODE],
             ],
@@ -80,7 +83,7 @@ class PaymentConfigTest extends AbstractTestCase
                 'flags' => ['amex', 'visa', 'maestro', 'mastercard'],
                 'paymentMethod' => 'multisafepay_creditcard',
                 'gatewayCode' => 'CREDITCARD',
-                'paymentType' => 'redirect',
+                'paymentType' => 'credit_card',
                 'additionalInfo' => $this->getObjectManager()->create(CreditCardConfigProvider::class)
                                         ->getConfig()['payment'][CreditCardConfigProvider::CODE],
             ],
