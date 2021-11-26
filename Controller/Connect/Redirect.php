@@ -17,7 +17,6 @@ declare(strict_types=1);
 
 namespace MultiSafepay\ConnectFrontend\Controller\Connect;
 
-use Exception;
 use Magento\Checkout\Model\Session;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
@@ -27,9 +26,6 @@ use Magento\Sales\Api\OrderRepositoryInterface;
 use MultiSafepay\ConnectCore\Logger\Logger;
 use MultiSafepay\ConnectCore\Service\Payment\RemoveAdditionalInformation;
 use MultiSafepay\ConnectCore\Service\PaymentLink;
-use MultiSafepay\Exception\ApiException;
-use MultiSafepay\Exception\InvalidApiKeyException;
-use Psr\Http\Client\ClientExceptionInterface;
 
 class Redirect extends Action
 {
@@ -86,7 +82,6 @@ class Redirect extends Action
 
     /**
      * @return ResponseInterface|ResultInterface
-     * @throws ClientExceptionInterface
      */
     public function execute()
     {
@@ -99,23 +94,17 @@ class Redirect extends Action
         $order = $this->orderRepository->get($orderId);
         $orderIncrementId = $order->getRealOrderId();
 
-        try {
-            $paymentUrl = $this->paymentLink->getPaymentLinkFromOrder($order);
-            $this->logger->logPaymentRedirectInfo($orderIncrementId, $paymentUrl);
-            $this->removeAdditionalInformation->execute($order);
-        } catch (InvalidApiKeyException $invalidApiKeyException) {
-            $this->logger->logInvalidApiKeyException($invalidApiKeyException);
-
-            return $this->redirectToCheckout();
-        } catch (ApiException $apiException) {
-            $this->logger->logPaymentLinkError($orderIncrementId, $apiException);
-
-            return $this->redirectToCheckout();
-        } catch (Exception $exception) {
-            $this->logger->logExceptionForOrder($orderIncrementId, $exception);
+        if (!($paymentUrl = $this->paymentLink->getPaymentLinkFromOrder($order))) {
+            $this->logger->logPaymentRedirectInfo(
+                $orderIncrementId,
+                'Payment link was not fount.'
+            );
 
             return $this->redirectToCheckout();
         }
+
+        $this->logger->logPaymentRedirectInfo($orderIncrementId, $paymentUrl);
+        $this->removeAdditionalInformation->execute($order);
 
         return $this->_redirect($paymentUrl);
     }
