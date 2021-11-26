@@ -97,7 +97,7 @@ class Redirect extends Action
         if (!($paymentUrl = $this->paymentLink->getPaymentLinkFromOrder($order))) {
             $this->logger->logPaymentRedirectInfo(
                 $orderIncrementId,
-                'Payment link was not fount.'
+                'Payment link was not found.'
             );
 
             return $this->redirectToCheckout();
