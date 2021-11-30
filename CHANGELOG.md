@@ -5,11 +5,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [1.13.0] - 2021-11-30
 ### Fixed
 - Fixed an issue where frontend fetches API tokens for CC component, while payment type is configured as redirect (Thanks to @thlassche)
 
 ### Changed
 - Changed the Google Pay button background to be transparent instead of white.
+- Made changes in the way the payment link is retrieved from the order.
+- Extended direct ApplePay with requiredBillingContactFields
 
 ## [1.12.1] - 2021-11-03
 ### Fixed
