@@ -115,10 +115,10 @@ class Redirect extends Action
     public function redirectToCheckout(): ResponseInterface
     {
         $this->checkoutSession->restoreQuote();
-        $this->messageManager->addErrorMessage(
+        $this->messageManager->addError(
             __('Something went wrong with the order. Please try again later.')
         );
 
-        return $this->_redirect('checkout/cart');
+        return $this->_redirect('checkout/cart', ['_current' => true]);
     }
 }
