@@ -116,6 +116,8 @@ class Notification extends Action implements CsrfAwareActionInterface
     /**
      * @inheritDoc
      * @throws Exception
+     *
+     * * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      */
     public function execute()
     {
@@ -169,8 +171,8 @@ class Notification extends Action implements CsrfAwareActionInterface
 
             return $this->getResponse()->setContent(
                 sprintf(
-                    'ng: (%1$s) %2$s. Please check 
-                    https://docs.multisafepay.com/developer/errors-explained/understanding-and-resolving-errors/ 
+                    'ng: (%1$s) %2$s. Please check
+                    https://docs.multisafepay.com/developer/errors-explained/understanding-and-resolving-errors/
                     for a detailed explanation',
                     $apiException->getCode(),
                     $apiException->getMessage()
@@ -187,6 +189,15 @@ class Notification extends Action implements CsrfAwareActionInterface
 
             return $this->getResponse()->setContent(
                 sprintf('ng: Exception occured when trying to process the order: %1$s', $exception->getMessage())
+            );
+        }
+
+        if ($order->getState() !== Order::STATE_PROCESSING) {
+            $stateErrorMessage = 'Order state wasn\'t changed to processing. Please check the order.';
+            $this->logger->logInfoForOrder($orderIncrementId, $stateErrorMessage, Logger::ERROR);
+
+            return $this->getResponse()->setContent(
+                sprintf('ng: %1$s', $stateErrorMessage)
             );
         }
 
