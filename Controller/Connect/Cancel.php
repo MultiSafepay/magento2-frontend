@@ -21,6 +21,8 @@ use Magento\Checkout\Model\Session;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Sales\Api\OrderRepositoryInterface;
+use MultiSafepay\ConnectCore\Config\Config;
+use MultiSafepay\ConnectCore\Service\Order\CancelMultisafepayOrderPaymentLink;
 use MultiSafepay\ConnectCore\Util\CustomReturnUrlUtil;
 use MultiSafepay\ConnectFrontend\Validator\RequestValidator;
 
@@ -47,6 +49,16 @@ class Cancel extends Action
     private $customReturnUrlUtil;
 
     /**
+     * @var Config
+     */
+    private $config;
+
+    /**
+     * @var CancelMultisafepayOrderPaymentLink
+     */
+    private $cancelMultisafepayOrderPaymentLink;
+
+    /**
      * Cancel constructor.
      *
      * @param OrderRepositoryInterface $orderRepository
@@ -54,18 +66,24 @@ class Cancel extends Action
      * @param Session $checkoutSession
      * @param Context $context
      * @param CustomReturnUrlUtil $customReturnUrlUtil
+     * @param Config $config
+     * @param CancelMultisafepayOrderPaymentLink $cancelMultisafepayOrderPaymentLink
      */
     public function __construct(
         OrderRepositoryInterface $orderRepository,
         RequestValidator $requestValidator,
         Session $checkoutSession,
         Context $context,
-        CustomReturnUrlUtil $customReturnUrlUtil
+        CustomReturnUrlUtil $customReturnUrlUtil,
+        Config $config,
+        CancelMultisafepayOrderPaymentLink $cancelMultisafepayOrderPaymentLink
     ) {
         $this->orderRepository = $orderRepository;
         $this->checkoutSession = $checkoutSession;
         $this->requestValidator = $requestValidator;
         $this->customReturnUrlUtil = $customReturnUrlUtil;
+        $this->config = $config;
+        $this->cancelMultisafepayOrderPaymentLink = $cancelMultisafepayOrderPaymentLink;
         parent::__construct($context);
     }
 
@@ -94,6 +112,12 @@ class Cancel extends Action
         $this->checkoutSession->restoreQuote();
 
         $order = $this->checkoutSession->getLastRealOrder()->loadByIncrementId($orderId);
+
+        if ($this->config->getCancelPaymentLinkOption($order->getStoreId())
+            === CancelMultisafepayOrderPaymentLink::CANCEL_BACK_BUTTON_PRETRANSACTION_OPTION
+        ) {
+            $this->cancelMultisafepayOrderPaymentLink->execute($order);
+        }
 
         $order->cancel();
         $order->addCommentToStatusHistory(__('The order has been canceled'));
