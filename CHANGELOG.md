@@ -5,7 +5,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-## [1.14.0] - 2021-01-11
+## [1.14.0] - 2022-01-11
 ### Added
 - Added checker if order is actually processing before returning 'ok' for notification requests
 - Added options for selecting separate behaviours of cancelling MutliSafepay order payment link
