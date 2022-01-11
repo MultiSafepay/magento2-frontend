@@ -4,7 +4,7 @@
     "version": "1.14.0",
     "require": {
         "multisafepay/magento2-core": "^2.14",
-        "multisafepay/magento2-adminhtml": "^1.15",
+        "multisafepay/magento2-adminhtml": "^1.16",
         "magento/framework": "^102.0|^103.0",
         "magento/module-checkout": "^100.0",
         "magento/module-quote": "^101.0",
