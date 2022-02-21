@@ -192,15 +192,6 @@ class Notification extends Action implements CsrfAwareActionInterface
             );
         }
 
-        if ($order->getState() !== Order::STATE_PROCESSING) {
-            $stateErrorMessage = 'Order state wasn\'t changed to processing. Please check the order.';
-            $this->logger->logInfoForOrder($orderIncrementId, $stateErrorMessage, Logger::ERROR);
-
-            return $this->getResponse()->setContent(
-                sprintf('ng: %1$s', $stateErrorMessage)
-            );
-        }
-
         return $this->getResponse()->setContent('ok');
     }
 }
