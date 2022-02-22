@@ -1,7 +1,7 @@
 {
     "name": "multisafepay/magento2-frontend",
     "description": "MultiSafepay module for Magento 2 (regular frontend)",
-    "version": "1.14.0",
+    "version": "1.14.1",
     "require": {
         "multisafepay/magento2-core": "^2.14",
         "multisafepay/magento2-adminhtml": "^1.16",
