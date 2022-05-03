@@ -88,6 +88,23 @@
                                required="true"/>
                     </div>
                 </div>
+
+                <div class="field choice required">
+                    <input type="checkbox"
+                           name="afterpay-terms"
+                           id="afterpay-terms"
+                           class="checkbox"
+                           data-bind="checked: afterpayTerms"
+                           required="true"/>
+                    <label class="label" for="afterpay-terms">
+                        <span>
+                            <a data-bind="attr: { href: getAfterpayTermsUrl() }" target="_blank">
+                            <!-- ko i18n: 'I have read and agree to the Afterpay payment terms'-->
+                            <!-- /ko -->
+                            </a>
+                        </span>
+                    </label>
+                </div>
             </fieldset>
         </div>
         <!--/ko-->

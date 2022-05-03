@@ -59,13 +59,15 @@ define(
                 template: 'MultiSafepay_ConnectFrontend/payment/gateway/afterpay',
                 dateOfBirth: '',
                 genderId: '',
-                phoneNumber: getTelephoneFromBillingAddress()
+                phoneNumber: getTelephoneFromBillingAddress(),
+                afterpayTerms: false,
             },
 
             initObservable: function () {
                 this.observe('dateOfBirth')
                     .observe('genderId')
                     .observe('phoneNumber')
+                    .observe('afterpayTerms')
                     ._super();
 
                 return this;
@@ -94,12 +96,22 @@ define(
             },
 
             /**
+             * Return the link of Afterpay terms and conditions
+             * according country id defined in billing address
+             *
+             * @returns {string}
+             */
+            getAfterpayTermsUrl: function () {
+                return this.paymentConfig.afterpay_terms_url;
+            },
+
+            /**
              * Add payment method specific data to additional data
              *
              * @returns {{additional_data: *, method: *}}
              */
             getData: function () {
-                if (!this.dateOfBirth() && !this.genderId() && !this.phoneNumber()) {
+                if (!this.dateOfBirth() && !this.genderId() && !this.phoneNumber() && !this.afterpayTerms()) {
                     return {
                         "method": this.item.method,
                         "additional_data": null
@@ -111,7 +123,8 @@ define(
                     "additional_data": {
                         'date_of_birth': this.dateOfBirth(),
                         'gender': this.genderId(),
-                        'phone_number': this.phoneNumber()
+                        'phone_number': this.phoneNumber(),
+                        'afterpay_terms': this.afterpayTerms()
                     }
                 };
             },
