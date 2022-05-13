@@ -1,5 +1,13 @@
-name: ExtDN Actions
-on: [pull_request]
+name: Integration Tests
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    types: [opened]
+    branches:
+      - 'master'
+      - 'release/**'
 
 jobs:
   integration-tests:
