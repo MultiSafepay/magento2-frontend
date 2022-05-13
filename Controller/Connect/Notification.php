@@ -25,6 +25,7 @@ use Magento\Framework\App\RequestInterface;
 use Magento\Framework\App\Request\InvalidRequestException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Sales\Model\Order;
+use MultiSafepay\Api\Transactions\Transaction;
 use MultiSafepay\Client\Client;
 use MultiSafepay\ConnectCore\Logger\Logger;
 use MultiSafepay\ConnectCore\Service\OrderService;
@@ -117,7 +118,8 @@ class Notification extends Action implements CsrfAwareActionInterface
      * @inheritDoc
      * @throws Exception
      *
-     * * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
      */
     public function execute()
     {
@@ -130,25 +132,57 @@ class Notification extends Action implements CsrfAwareActionInterface
         $orderIncrementId = $params['transactionid'];
 
         try {
-            /** @var Order $order */
-            $order = $this->orderUtil->getOrderByIncrementId($orderIncrementId);
-        } catch (NoSuchEntityException $noSuchEntityException) {
-            $this->logger->logExceptionForOrder($orderIncrementId, $noSuchEntityException);
-
-            return $this->getResponse()->setContent(
-                sprintf(
-                    'ng: %1$s',
-                    $noSuchEntityException->getMessage()
-                )
-            );
-        }
-
-        try {
+            // Handles all notifications except POSTS
             if ($this->getRequest()->getMethod() !== Client::METHOD_POST) {
+
+                // We need to sleep before fetching the order, if not the order will remain in memory
+                //phpcs:ignore
+                sleep(7);
+
+                try {
+                    /** @var Order $order */
+                    $order = $this->orderUtil->getOrderByIncrementId($orderIncrementId);
+                } catch (NoSuchEntityException $noSuchEntityException) {
+                    $this->logger->logExceptionForOrder($orderIncrementId, $noSuchEntityException);
+
+                    return $this->getResponse()->setContent(
+                        sprintf(
+                            'ng: %1$s',
+                            $noSuchEntityException->getMessage()
+                        )
+                    );
+                }
+
+                // Processing the MultiSafepay GET notification
                 $this->orderService->processOrderTransaction($order);
             } else {
                 $transaction = $this->getRequest()->getContent();
 
+                if (in_array(
+                    $this->jsonHandler->ReadJson($transaction)['status'] ?? '',
+                    [Transaction::CANCELLED, Transaction::DECLINED, Transaction::VOID],
+                    true
+                )) {
+                    // We need to sleep before fetching the order, if not the order will remain in memory
+                    //phpcs:ignore
+                    sleep(7);
+                }
+
+                try {
+                    /** @var Order $order */
+                    $order = $this->orderUtil->getOrderByIncrementId($orderIncrementId);
+                } catch (NoSuchEntityException $noSuchEntityException) {
+                    $this->logger->logExceptionForOrder($orderIncrementId, $noSuchEntityException);
+
+                    return $this->getResponse()->setContent(
+                        sprintf(
+                            'ng: %1$s',
+                            $noSuchEntityException->getMessage()
+                        )
+                    );
+                }
+
+                // Validating the POST notification
                 if (!$this->requestValidator->validatePostNotification(
                     $this->getRequest()->getHeader('Auth'),
                     $transaction,
