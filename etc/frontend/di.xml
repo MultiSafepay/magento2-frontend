@@ -9,6 +9,10 @@
         <plugin name="add_multisafepay_generic_on_checkout" type="MultiSafepay\ConnectFrontend\Plugin\Checkout\Block\Checkout\LayoutProcessorPlugin"/>
     </type>
 
+    <type name="Magento\Vault\Controller\Cards\DeleteAction">
+        <plugin name="delete_multisafepay_token" type="MultiSafepay\ConnectFrontend\Plugin\Customer\Controller\Cards\DeleteActionPlugin"/>
+    </type>
+
     <type name="Magento\Vault\Model\Ui\TokensConfigProvider">
         <arguments>
             <argument name="tokenUiComponentProviders" xsi:type="array">
@@ -18,6 +22,7 @@
                 <item name="multisafepay_amex_recurring" xsi:type="object">MultiSafepay\ConnectCore\Model\Ui\AmexTokenUiComponentProvider</item>
                 <item name="multisafepay_ideal_recurring" xsi:type="object">MultiSafepay\ConnectCore\Model\Ui\IdealTokenUiComponentProvider</item>
                 <item name="multisafepay_directdebit_recurring" xsi:type="object">MultiSafepay\ConnectCore\Model\Ui\DirectDebitTokenUiComponentProvider</item>
+                <item name="multisafepay_maestro_recurring" xsi:type="object">MultiSafepay\ConnectCore\Model\Ui\MaestroTokenUiComponentProvider</item>
             </argument>
         </arguments>
     </type>

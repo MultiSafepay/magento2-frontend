@@ -93,11 +93,15 @@ class PaymentConfig implements ArgumentInterface
                     "types" => self::DEFAULT_CARD_TYPES,
                     "flags" => $this->getCardFlagByMethodCode($methodCode),
                     "paymentMethod" => $methodCode,
-                    "gatewayCode" => self::CREDITCARD_GATEWAY_CODE,
+                    "gatewayCode" => $paymentConfig['gateway_code'],
                     "paymentType" => $paymentConfig['payment_type'],
                     "additionalInfo" => $additionalDataConfig && isset($additionalDataConfig['payment'][$methodCode])
                         ? $additionalDataConfig['payment'][$methodCode] : [],
                 ];
+
+                if ((bool)($paymentConfig['tokenization'] ?? null) === true) {
+                    $result[$methodCode]['customerReference'] = $this->getCustomerReference($paymentConfig);
+                }
             }
         }
 
@@ -257,5 +261,32 @@ class PaymentConfig implements ArgumentInterface
         }
 
         return $result;
+    }
+
+    /**
+     * Get the customer reference which is needed for tokenization inside component
+     *
+     * @param array $paymentConfig
+     * @return int|null
+     * @throws LocalizedException
+     * @throws NoSuchEntityException
+     */
+    public function getCustomerReference(array $paymentConfig): ?int
+    {
+        $quote = $this->getQuote();
+
+        if ($quote->getCustomerIsGuest()) {
+            return null;
+        }
+        
+        if (!array_key_exists('tokenization', $paymentConfig)) {
+            return null;
+        }
+
+        if (!$paymentConfig['tokenization']) {
+            return null;
+        }
+        
+        return (int)$quote->getCustomer()->getId();
     }
 }

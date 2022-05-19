@@ -42,19 +42,11 @@ define([
                     return;
                 }
 
-                let multisafepayPaymentComponent = customerData.get("multisafepay-payment-component")();
-
-                if ($.isEmptyObject(multisafepayPaymentComponent)
-                    || (typeof multisafepayPaymentComponent.init === "undefined")
-                ) {
-                    multisafepayPaymentComponent =  new MultiSafepay({
-                        env: paymentRequestData.environment,
-                        apiToken: paymentRequestData.apiToken,
-                        order: this.getOrderData(paymentRequestData)
-                    });
-
-                    customerData.set("multisafepay-payment-component", multisafepayPaymentComponent);
-                }
+                let multisafepayPaymentComponent =  new MultiSafepay({
+                    env: paymentRequestData.environment,
+                    apiToken: paymentRequestData.apiToken,
+                    order: this.getOrderData(paymentRequestData, paymentCode)
+                });
 
                 multisafepayPaymentComponent.init('payment', {
                     container: '#' + paymentRequestData.cardComponentContainerId + '-' + paymentCode,
@@ -75,13 +67,14 @@ define([
         /**
          *
          * @param paymentRequestData
+         * @param paymentCode
          * @returns {{template: {settings: {embed_mode: boolean}}, amount: number, currency, customer: {country, locale}}}
          */
-        getOrderData: function (paymentRequestData) {
-            return {
+        getOrderData: function (paymentRequestData, paymentCode) {
+            let orderData = {
                 customer: {
                     locale: paymentRequestData.locale,
-                    country: quote.billingAddress().countryId
+                    country: quote.billingAddress().countryId,
                 },
                 currency: paymentRequestData.currency,
                 amount: paymentRequestData.cartTotal * 100,
@@ -89,8 +82,17 @@ define([
                     settings: {
                         embed_mode: true
                     }
-                }
+                },
+            };
+            
+            if (paymentRequestData.cardsConfig[paymentCode].customerReference) {
+                orderData.customer.reference = paymentRequestData.cardsConfig[paymentCode].customerReference
+                orderData.recurring = {
+                    model: 'cardOnFile'
+                };
             }
+            
+            return orderData
         }
     };
 });

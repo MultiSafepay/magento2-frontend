@@ -66,6 +66,7 @@ class PaymentConfigTest extends AbstractTestCase
                 'paymentMethod' => 'multisafepay_amex',
                 'gatewayCode' => 'CREDITCARD',
                 'paymentType' => 'credit_card',
+                "customerReference" => null,
                 'additionalInfo' => $this->getObjectManager()->create(AmexConfigProvider::class)
                                         ->getConfig()['payment'][AmexConfigProvider::CODE],
             ],
@@ -75,6 +76,7 @@ class PaymentConfigTest extends AbstractTestCase
                 'paymentMethod' => 'multisafepay_maestro',
                 'gatewayCode' => 'CREDITCARD',
                 'paymentType' => 'credit_card',
+                "customerReference" => null,
                 'additionalInfo' => $this->getObjectManager()->create(MaestroConfigProvider::class)
                                         ->getConfig()['payment'][MaestroConfigProvider::CODE],
             ],
@@ -84,6 +86,7 @@ class PaymentConfigTest extends AbstractTestCase
                 'paymentMethod' => 'multisafepay_creditcard',
                 'gatewayCode' => 'CREDITCARD',
                 'paymentType' => 'credit_card',
+                "customerReference" => null,
                 'additionalInfo' => $this->getObjectManager()->create(CreditCardConfigProvider::class)
                                         ->getConfig()['payment'][CreditCardConfigProvider::CODE],
             ],
