@@ -145,12 +145,11 @@ class Notification extends Action implements CsrfAwareActionInterface
                 } catch (NoSuchEntityException $noSuchEntityException) {
                     $this->logger->logExceptionForOrder($orderIncrementId, $noSuchEntityException);
 
-                    return $this->getResponse()->setContent(
-                        sprintf(
-                            'ng: %1$s',
-                            $noSuchEntityException->getMessage()
-                        )
-                    );
+                    $response = sprintf('ng: %1$s', $noSuchEntityException->getMessage());
+
+                    $this->logger->logInfoForOrder($orderIncrementId, 'Webhook response set: ' . $response);
+
+                    return $this->getResponse()->setContent($response);
                 }
 
                 // Processing the MultiSafepay GET notification
@@ -174,12 +173,11 @@ class Notification extends Action implements CsrfAwareActionInterface
                 } catch (NoSuchEntityException $noSuchEntityException) {
                     $this->logger->logExceptionForOrder($orderIncrementId, $noSuchEntityException);
 
-                    return $this->getResponse()->setContent(
-                        sprintf(
-                            'ng: %1$s',
-                            $noSuchEntityException->getMessage()
-                        )
-                    );
+                    $response = sprintf('ng: %1$s', $noSuchEntityException->getMessage());
+
+                    $this->logger->logInfoForOrder($orderIncrementId, 'Webhook response set: ' . $response);
+
+                    return $this->getResponse()->setContent($response);
                 }
 
                 // Validating the POST notification
@@ -197,35 +195,50 @@ class Notification extends Action implements CsrfAwareActionInterface
         } catch (InvalidApiKeyException $invalidApiKeyException) {
             $this->logger->logInvalidApiKeyException($invalidApiKeyException);
 
-            return $this->getResponse()->setContent(
-                sprintf('ng: %1$s', $invalidApiKeyException->getMessage())
-            );
+            $response = sprintf('ng: %1$s', $invalidApiKeyException->getMessage());
+
+            $this->logger->logInfoForOrder($orderIncrementId, 'Webhook response set: ' . $response);
+
+            return $this->getResponse()->setContent($response);
         } catch (ApiException $apiException) {
             $this->logger->logGetRequestApiException($orderIncrementId, $apiException);
 
-            return $this->getResponse()->setContent(
-                sprintf(
-                    'ng: (%1$s) %2$s. Please check
-                    https://docs.multisafepay.com/developer/errors-explained/understanding-and-resolving-errors/
+            $response = sprintf(
+                'ng: (%1$s) %2$s. Please check
+                    https://docs.multisafepay.com/developers/errors/
                     for a detailed explanation',
-                    $apiException->getCode(),
-                    $apiException->getMessage()
-                )
+                $apiException->getCode(),
+                $apiException->getMessage()
             );
+
+            $this->logger->logInfoForOrder($orderIncrementId, 'Webhook response set: ' . $response);
+
+            return $this->getResponse()->setContent($response);
         } catch (ClientExceptionInterface $clientException) {
             $this->logger->logClientException($orderIncrementId, $clientException);
 
-            return $this->getResponse()->setContent(
-                sprintf('ng: ClientException occured. %1$s', $clientException->getMessage())
-            );
+            $response = sprintf('ng: ClientException occured. %1$s', $clientException->getMessage());
+
+            $this->logger->logInfoForOrder($orderIncrementId, 'Webhook response set: ' . $response);
+
+            return $this->getResponse()->setContent($response);
         } catch (Exception $exception) {
             $this->logger->logExceptionForOrder($orderIncrementId, $exception);
 
-            return $this->getResponse()->setContent(
-                sprintf('ng: Exception occured when trying to process the order: %1$s', $exception->getMessage())
+            $response = sprintf(
+                'ng: Exception occured when trying to process the order: %1$s',
+                $exception->getMessage()
             );
+
+            $this->logger->logInfoForOrder($orderIncrementId, 'Webhook response set: ' . $response);
+
+            return $this->getResponse()->setContent($response);
         }
 
-        return $this->getResponse()->setContent('ok');
+        $response = 'ok';
+        
+        $this->logger->logInfoForOrder($orderIncrementId, 'Webhook response set: ' . $response);
+        
+        return $this->getResponse()->setContent($response);
     }
 }
