@@ -76,6 +76,7 @@ define(
             {type: 'multisafepay_klarna', component: baseRenderer},
             {type: 'multisafepay_maestro', component: gatewayPath + 'creditcard'},
             {type: 'multisafepay_mastercard', component: gatewayPath + 'creditcard'},
+            {type: 'multisafepay_mybank', component: gatewayPath + 'mybank'},
             {type: 'multisafepay', component: baseRenderer},
             {type: 'multisafepay_payafter', component: gatewayPath + 'payafter'},
             {type: 'multisafepay_paypal', component: baseRenderer},

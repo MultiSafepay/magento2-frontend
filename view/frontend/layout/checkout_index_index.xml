@@ -1,8 +1,9 @@
 <?xml version="1.0"?>
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <head>
-        <css src="MultiSafepay_ConnectFrontend::css/styles.css"/>
-        <css src="https://pay.multisafepay.com/sdk/components/v2/components.css"  src_type="url" rel="stylesheet" type="text/css"  />
+        <css src="MultiSafepay_ConnectFrontend::css/styles.css" />
+        <css src="https://pay.multisafepay.com/sdk/components/v2/components.css"  src_type="url" rel="stylesheet" type="text/css" />
+        <css src="MultiSafepay_ConnectFrontend::css/select2.min.css" />
     </head>
     <body>
         <referenceBlock name="checkout.root">
@@ -73,6 +74,9 @@
                                                                             <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
                                                                         </item>
                                                                         <item name="multisafepay_mastercard" xsi:type="array">
+                                                                            <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
+                                                                        </item>
+                                                                        <item name="multisafepay_mybank" xsi:type="array">
                                                                             <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
                                                                         </item>
                                                                         <item name="multisafepay_paysafecard" xsi:type="array">

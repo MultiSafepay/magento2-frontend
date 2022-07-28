@@ -23,7 +23,8 @@ let config = {
             multisafepayCardPaymentProcessor: 'MultiSafepay_ConnectFrontend/js/payment-request/card-payment',
             multisafepayApplePayButton: 'MultiSafepay_ConnectFrontend/js/apple-pay',
             multisafepayGooglePayButton: 'MultiSafepay_ConnectFrontend/js/google-pay',
-            googlePayButtonLibrary: 'https://pay.google.com/gp/p/js/pay.js'
+            googlePayButtonLibrary: 'https://pay.google.com/gp/p/js/pay.js',
+            select2: 'MultiSafepay_ConnectFrontend/js/lib/select2.min',
         }
     }
 };
