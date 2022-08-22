@@ -188,9 +188,9 @@ class Notification extends Action implements CsrfAwareActionInterface
                 )) {
                     $this->logger->logInfoForOrder($orderIncrementId, 'Validating POST Notification failed');
                     $this->orderService->processOrderTransaction($order);
+                } else {
+                    $this->orderService->processOrderTransaction($order, $this->jsonHandler->ReadJson($transaction));
                 }
-
-                $this->orderService->processOrderTransaction($order, $this->jsonHandler->ReadJson($transaction));
             }
         } catch (InvalidApiKeyException $invalidApiKeyException) {
             $this->logger->logInvalidApiKeyException($invalidApiKeyException);
@@ -236,9 +236,9 @@ class Notification extends Action implements CsrfAwareActionInterface
         }
 
         $response = 'ok';
-        
+
         $this->logger->logInfoForOrder($orderIncrementId, 'Webhook response set: ' . $response);
-        
+
         return $this->getResponse()->setContent($response);
     }
 }
