@@ -187,6 +187,10 @@ class Notification extends Action implements CsrfAwareActionInterface
                     (int)$order->getStoreId()
                 )) {
                     $this->logger->logInfoForOrder($orderIncrementId, 'Validating POST Notification failed');
+                    $this->logger->logFailedPOSTNotification(
+                        $this->getRequest()->getHeaders()->toString(),
+                        $transaction
+                    );
                     $this->orderService->processOrderTransaction($order);
                 } else {
                     $this->orderService->processOrderTransaction($order, $this->jsonHandler->ReadJson($transaction));
