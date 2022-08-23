@@ -5,8 +5,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [1.17.0] - 2022-08-23
 ### Added
 - Added support for keeping the cart alive when using FireCheckout (Thanks to @mlaurense)
+- Added the MyBank payment method
+- Improved logging for failed POST notifications
+
+### Fixed
+- Prevented double execution of order transaction processing when the POST notification fails
 
 ## [1.16.1] - 2022-07-11
 ### Changed
