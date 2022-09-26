@@ -20,6 +20,7 @@ define(
         'MultiSafepay_ConnectFrontend/js/view/payment/method-renderer/base-renderer',
         'Magento_Checkout/js/checkout-data',
         'Magento_Checkout/js/action/redirect-on-success',
+        'Magento_Checkout/js/model/quote',
         'mage/url'
     ],
 
@@ -29,6 +30,7 @@ define(
      * @param Component
      * @param checkoutData
      * @param redirectOnSuccessAction
+     * @param quote
      * @param url
      * @returns {*}
      */
@@ -37,45 +39,81 @@ define(
         Component,
         checkoutData,
         redirectOnSuccessAction,
+        quote,
         url
     ) {
         'use strict';
+
+        /**
+         * @returns {string}
+         */
+        function getEmailAddress()
+        {
+            return window.checkoutConfig.customerData.email ?? quote.guestEmail ?? '';
+        }
 
         return Component.extend({
             defaults: {
                 template: 'MultiSafepay_ConnectFrontend/payment/gateway/einvoicing',
                 dateOfBirth: '',
                 accountNumber: '',
+                emailAddress: getEmailAddress(),
             },
 
             initObservable: function () {
                 this.observe('dateOfBirth')
                     .observe('accountNumber')
+                    .observe('emailAddress')
                     ._super();
 
                 return this;
             },
 
+            isCheckoutFieldAvailable: function (currentField) {
+                for (let checkoutField of this.paymentConfig.checkout_fields) {
+                    if (checkoutField === currentField) {
+
+                        return true;
+                    }
+                }
+                
+                return false;
+            },
+
             /**
              * Add payment method specific data to additional data
              *
-             * @returns {{additional_data: *, method: *}}
+             * @returns {{additional_data: {}, method}|{additional_data: null, method}}
              */
             getData: function () {
-                if (!this.dateOfBirth() && !this.accountNumber()) {
-                    return {
-                        "method": this.item.method,
-                        "additional_data": null
-                    };
+                let paymentData = {
+                    "method": this.item.method,
+                    "additional_data": {}
+                };
+
+                let dateOfBirth = this.dateOfBirth();
+                let accountNumber = this.accountNumber();
+                let emailAddress = this.emailAddress();
+
+                if (!dateOfBirth && !accountNumber && !emailAddress) {
+                    return paymentData;
                 }
 
-                return {
-                    "method": this.item.method,
-                    "additional_data": {
-                        'date_of_birth': this.dateOfBirth(),
-                        'account_number': this.accountNumber()
+                this.paymentConfig.checkout_fields.forEach(function (checkoutField) {
+                    if (checkoutField === 'date_of_birth') {
+                        paymentData.additional_data.date_of_birth = dateOfBirth;
                     }
-                };
+
+                    if (checkoutField === 'bank_account') {
+                        paymentData.additional_data.account_number = accountNumber;
+                    }
+
+                    if (checkoutField === 'email_address') {
+                        paymentData.additional_data.email_address = emailAddress;
+                    }
+                });
+
+                return paymentData;
             },
         });
     }

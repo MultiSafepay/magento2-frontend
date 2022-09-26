@@ -39,7 +39,7 @@ define(
         let gatewayPath = 'MultiSafepay_ConnectFrontend/js/view/payment/gateway/method-renderer/';
         let baseRenderer = 'MultiSafepay_ConnectFrontend/js/view/payment/method-renderer/base-renderer';
 
-        $.each(currentPaymentsList, function(key, value) {
+        $.each(currentPaymentsList, function (key, value) {
             if (key.indexOf("multisafepay_genericgateway") !== -1) {
                 rendererList.push(
                     {

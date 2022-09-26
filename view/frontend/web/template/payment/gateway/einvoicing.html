@@ -34,6 +34,8 @@
         <!-- ko if: isDirect() -->
         <div class="payment-method-einvoicing" style="margin: 0 0 20px;">
             <fieldset class="fieldset">
+
+                <!-- ko if: isCheckoutFieldAvailable('date_of_birth') -->
                 <div class="field required">
                     <label class="label" for="einvoicing-date-of-birth">
                         <span>
@@ -51,7 +53,9 @@
                                required="true"/>
                     </div>
                 </div>
+                <!-- /ko -->
 
+                <!-- ko if: isCheckoutFieldAvailable('bank_account') -->
                 <div class="field required">
                     <label class="label" for="einvoicing-account-number">
                         <span>
@@ -70,9 +74,37 @@
                                required="true"/>
                     </div>
                 </div>
+                <!-- /ko -->
+
+                <!-- ko if: isCheckoutFieldAvailable('email_address') -->
+                <div class="field required">
+                    <label class="label" for="einvoicing-email-address">
+                        <span>
+                            <!-- ko i18n: 'E-mail Address'-->
+                            <!-- /ko -->
+                        </span>
+                    </label>
+                    <div class="control">
+                        <input name="invoicing-email-address"
+                               placeholder="E-mail address"
+                               id="einvoicing-email-address"
+                               title="E-mail Address"
+                               data-bind="value: emailAddress"
+                               class="input-text"
+                               type="text"
+                               required="true"/>
+                    </div>
+                </div>
+                <!-- /ko -->
             </fieldset>
         </div>
         <!--/ko-->
+
+        <div class="payment-method-billing-address">
+            <!-- ko foreach: $parent.getRegion(getBillingAddressFormName()) -->
+            <!-- ko template: getTemplate() --><!-- /ko -->
+            <!--/ko-->
+        </div>
 
         <div class="checkout-agreements-block">
             <!-- ko foreach: $parent.getRegion('before-place-order') -->
