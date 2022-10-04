@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.18.0] - 2022-10-04
+### Added
+- Added Amazon Pay.
+- Added an option for E-invoicing to assign collecting flow ids to specific customer groups.
+- Added an option for E-invoicing to turn on and off certain checkout fields.
+
 ## [1.17.0] - 2022-08-23
 ### Added
 - Added support for keeping the cart alive when using FireCheckout (Thanks to @mlaurense)
