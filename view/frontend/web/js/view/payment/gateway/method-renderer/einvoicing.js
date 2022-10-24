@@ -76,7 +76,7 @@ define(
                         return true;
                     }
                 }
-                
+
                 return false;
             },
 
@@ -104,7 +104,7 @@ define(
                         paymentData.additional_data.date_of_birth = dateOfBirth;
                     }
 
-                    if (checkoutField === 'bank_account') {
+                    if (checkoutField === 'account_number') {
                         paymentData.additional_data.account_number = accountNumber;
                     }
 
