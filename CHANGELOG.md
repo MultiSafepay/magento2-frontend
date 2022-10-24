@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.18.1] - 2022-10-24
+### Fixed
+- Fixed references related to the E-Invoicing configurable 'account_number' field
+
 ## [1.18.0] - 2022-10-04
 ### Added
 - Added Amazon Pay.
