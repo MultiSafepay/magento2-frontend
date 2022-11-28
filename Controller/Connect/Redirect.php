@@ -88,19 +88,15 @@ class Redirect extends Action
         $orderId = $this->checkoutSession->getLastRealOrder()->getId();
 
         if (!$orderId) {
-            return $this->redirectToCheckout();
+            return $this->redirectToCheckout('Something went wrong with the order. Please try again.');
         }
 
         $order = $this->orderRepository->get($orderId);
         $orderIncrementId = $order->getRealOrderId();
 
         if (!($paymentUrl = $this->paymentLink->getPaymentLinkFromOrder($order))) {
-            $this->logger->logPaymentRedirectInfo(
-                $orderIncrementId,
-                'Payment link was not found.'
-            );
-
-            return $this->redirectToCheckout();
+            return $this->redirectToCheckout('There was a problem processing your payment. Possible reasons could be:
+                 "insufficient funds", or "verification failed".');
         }
 
         $this->logger->logPaymentRedirectInfo($orderIncrementId, $paymentUrl);
@@ -110,13 +106,16 @@ class Redirect extends Action
     }
 
     /**
+     * Redirect the customer to the checkout and show an error message
+     *
+     * @param string $message
      * @return ResponseInterface
      */
-    public function redirectToCheckout(): ResponseInterface
+    public function redirectToCheckout(string $message): ResponseInterface
     {
         $this->checkoutSession->restoreQuote();
-        $this->messageManager->addError(
-            __('Something went wrong with the order. Please try again later.')
+        $this->messageManager->addErrorMessage(
+            __($message)
         );
 
         return $this->_redirect('checkout/cart', ['_current' => true]);

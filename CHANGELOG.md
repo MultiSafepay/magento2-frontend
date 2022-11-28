@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Changed
+- Improved the error message that is shown to the customer whenever the payment fails.
 - Checking for recurring tokens will only occur now when Magento Vault is enabled.
 
 ## [1.18.1] - 2022-10-24
