@@ -17,7 +17,9 @@ declare(strict_types=1);
 
 namespace MultiSafepay\ConnectFrontend\Observer;
 
+use Exception;
 use Magento\Customer\Model\Customer;
+use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
 use Magento\Framework\Exception\NoSuchEntityException;
@@ -52,29 +54,38 @@ class CustomerLoginObserver implements ObserverInterface
     private $logger;
 
     /**
+     * @var ScopeConfigInterface
+     */
+    private $scopeConfig;
+
+    /**
      * CustomerLoginObserver constructor.
      *
      * @param StoreManagerInterface $storeManager
      * @param TokenRequestBuilder $tokenRequestBuilder
      * @param Vault $vault
      * @param Logger $logger
+     * @param ScopeConfigInterface $scopeConfig
      */
     public function __construct(
         StoreManagerInterface $storeManager,
         TokenRequestBuilder $tokenRequestBuilder,
         Vault $vault,
-        Logger $logger
+        Logger $logger,
+        ScopeConfigInterface $scopeConfig
     ) {
         $this->storeManager = $storeManager;
         $this->tokenRequestBuilder = $tokenRequestBuilder;
         $this->vault = $vault;
         $this->logger = $logger;
+        $this->scopeConfig = $scopeConfig;
     }
 
     /**
-     * Check if MultiSafepay Vault tokens are still up to date
+     * Check if MultiSafepay Vault tokens are still up-to-date
      *
      * @param Observer $observer
+     * @throws Exception
      */
     public function execute(Observer $observer): void
     {
@@ -99,15 +110,18 @@ class CustomerLoginObserver implements ObserverInterface
             return;
         }
 
+        // Early return when vault methods are not enabled
+        if (!$this->isVaultEnabled()) {
+            return;
+        }
+
         try {
             $tokens = $this->tokenRequestBuilder->getTokensByCustomerReference($customerId, (int)$storeId);
         } catch (ClientExceptionInterface $clientException) {
-            $this->logger->logException($clientException);
+            $this->logger->info($clientException->getMessage());
 
             return;
         } catch (ApiException $apiException) {
-            $this->logger->logException($apiException);
-
             if ($apiException->getCode() === 1000 && $apiException->getMessage() === 'Not found') {
                 $this->vault->removePaymentTokensByList([], $customerId);
             }
@@ -116,5 +130,21 @@ class CustomerLoginObserver implements ObserverInterface
         }
 
         $this->vault->removePaymentTokensByList($tokens, $customerId);
+    }
+
+    /**
+     * Check if any vault methods are enabled
+     *
+     * @return bool
+     */
+    private function isVaultEnabled(): bool
+    {
+        foreach (array_keys(Vault::VAULT_GATEWAYS) as $method) {
+            if ($this->scopeConfig->getValue('payment/' . $method . '_vault/active')) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

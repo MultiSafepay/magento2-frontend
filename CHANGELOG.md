@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Changed
+- Checking for recurring tokens will only occur now when Magento Vault is enabled.
 
 ## [1.18.1] - 2022-10-24
 ### Fixed
