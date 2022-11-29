@@ -24,32 +24,24 @@ use Magento\Framework\App\CsrfAwareActionInterface;
 use Magento\Framework\App\RequestInterface;
 use Magento\Framework\App\Request\InvalidRequestException;
 use Magento\Framework\Exception\NoSuchEntityException;
-use Magento\Sales\Model\Order;
-use MultiSafepay\Api\Transactions\Transaction;
 use MultiSafepay\Client\Client;
 use MultiSafepay\ConnectCore\Logger\Logger;
-use MultiSafepay\ConnectCore\Service\OrderService;
-use MultiSafepay\ConnectCore\Util\JsonHandler;
 use MultiSafepay\ConnectCore\Util\OrderUtil;
-use MultiSafepay\ConnectFrontend\Validator\RequestValidator;
-use MultiSafepay\Exception\ApiException;
-use MultiSafepay\Exception\InvalidApiKeyException;
-use Psr\Http\Client\ClientExceptionInterface;
+use MultiSafepay\ConnectFrontend\Service\GetNotification;
+use MultiSafepay\ConnectFrontend\Service\PostNotification;
 
-/**
- * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
- */
 class Notification extends Action implements CsrfAwareActionInterface
 {
-    /**
-     * @var Logger
-     */
-    private $logger;
 
     /**
-     * @var OrderService
+     * @var PostNotification
      */
-    private $orderService;
+    private $postNotification;
+
+    /**
+     * @var GetNotification
+     */
+    private $getNotification;
 
     /**
      * @var OrderUtil
@@ -57,39 +49,31 @@ class Notification extends Action implements CsrfAwareActionInterface
     private $orderUtil;
 
     /**
-     * @var RequestValidator
+     * @var Logger
      */
-    private $requestValidator;
-
-    /**
-     * @var JsonHandler
-     */
-    private $jsonHandler;
+    private $logger;
 
     /**
      * Notification constructor.
      *
-     * @param Context $context
-     * @param JsonHandler $jsonHandler
-     * @param Logger $logger
-     * @param OrderService $orderService
+     * @param PostNotification $postNotification
+     * @param GetNotification $getNotification
      * @param OrderUtil $orderUtil
-     * @param RequestValidator $requestValidator
+     * @param Logger $logger
+     * @param Context $context
      */
     public function __construct(
-        Context $context,
-        JsonHandler $jsonHandler,
-        Logger $logger,
-        OrderService $orderService,
+        PostNotification $postNotification,
+        GetNotification $getNotification,
         OrderUtil $orderUtil,
-        RequestValidator $requestValidator
+        Logger $logger,
+        Context $context
     ) {
-        parent::__construct($context);
-        $this->jsonHandler = $jsonHandler;
-        $this->logger = $logger;
-        $this->orderService = $orderService;
+        $this->postNotification = $postNotification;
+        $this->getNotification = $getNotification;
         $this->orderUtil = $orderUtil;
-        $this->requestValidator = $requestValidator;
+        $this->logger = $logger;
+        parent::__construct($context);
     }
 
     /**
@@ -116,10 +100,8 @@ class Notification extends Action implements CsrfAwareActionInterface
 
     /**
      * @inheritDoc
-     * @throws Exception
      *
-     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
-     * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
+     * @throws Exception
      */
     public function execute()
     {
@@ -132,117 +114,71 @@ class Notification extends Action implements CsrfAwareActionInterface
         $orderIncrementId = $params['transactionid'];
 
         try {
-            // Handles all notifications except POSTS
-            if ($this->getRequest()->getMethod() !== Client::METHOD_POST) {
+            // Try to retrieve store id from order if it is not in request parameters
+            $storeId = $this->getStoreId($params);
+        } catch (NoSuchEntityException $noSuchEntityException) {
+            $this->logger->logExceptionForOrder($orderIncrementId, $noSuchEntityException);
 
-                // We need to sleep before fetching the order, if not the order will remain in memory
-                //phpcs:ignore
-                sleep(7);
+            $message = $noSuchEntityException->getMessage();
 
-                try {
-                    /** @var Order $order */
-                    $order = $this->orderUtil->getOrderByIncrementId($orderIncrementId);
-                } catch (NoSuchEntityException $noSuchEntityException) {
-                    $this->logger->logExceptionForOrder($orderIncrementId, $noSuchEntityException);
+            $this->logger->logInfoForOrder($orderIncrementId, 'Webhook response set: ' . $message);
 
-                    $response = sprintf('ng: %1$s', $noSuchEntityException->getMessage());
-
-                    $this->logger->logInfoForOrder($orderIncrementId, 'Webhook response set: ' . $response);
-
-                    return $this->getResponse()->setContent($response);
-                }
-
-                // Processing the MultiSafepay GET notification
-                $this->orderService->processOrderTransaction($order);
-            } else {
-                $transaction = $this->getRequest()->getContent();
-
-                if (in_array(
-                    $this->jsonHandler->ReadJson($transaction)['status'] ?? '',
-                    [Transaction::CANCELLED, Transaction::DECLINED, Transaction::VOID],
-                    true
-                )) {
-                    // We need to sleep before fetching the order, if not the order will remain in memory
-                    //phpcs:ignore
-                    sleep(7);
-                }
-
-                try {
-                    /** @var Order $order */
-                    $order = $this->orderUtil->getOrderByIncrementId($orderIncrementId);
-                } catch (NoSuchEntityException $noSuchEntityException) {
-                    $this->logger->logExceptionForOrder($orderIncrementId, $noSuchEntityException);
-
-                    $response = sprintf('ng: %1$s', $noSuchEntityException->getMessage());
-
-                    $this->logger->logInfoForOrder($orderIncrementId, 'Webhook response set: ' . $response);
-
-                    return $this->getResponse()->setContent($response);
-                }
-
-                // Validating the POST notification
-                if (!$this->requestValidator->validatePostNotification(
-                    $this->getRequest()->getHeader('Auth'),
-                    $transaction,
-                    (int)$order->getStoreId()
-                )) {
-                    $this->logger->logInfoForOrder($orderIncrementId, 'Validating POST Notification failed');
-                    $this->logger->logFailedPOSTNotification(
-                        $this->getRequest()->getHeaders()->toString(),
-                        $transaction
-                    );
-                    $this->orderService->processOrderTransaction($order);
-                } else {
-                    $this->orderService->processOrderTransaction($order, $this->jsonHandler->ReadJson($transaction));
-                }
-            }
-        } catch (InvalidApiKeyException $invalidApiKeyException) {
-            $this->logger->logInvalidApiKeyException($invalidApiKeyException);
-
-            $response = sprintf('ng: %1$s', $invalidApiKeyException->getMessage());
-
-            $this->logger->logInfoForOrder($orderIncrementId, 'Webhook response set: ' . $response);
-
-            return $this->getResponse()->setContent($response);
-        } catch (ApiException $apiException) {
-            $this->logger->logGetRequestApiException($orderIncrementId, $apiException);
-
-            $response = sprintf(
-                'ng: (%1$s) %2$s. Please check
-                    https://docs.multisafepay.com/developers/errors/
-                    for a detailed explanation',
-                $apiException->getCode(),
-                $apiException->getMessage()
-            );
-
-            $this->logger->logInfoForOrder($orderIncrementId, 'Webhook response set: ' . $response);
-
-            return $this->getResponse()->setContent($response);
-        } catch (ClientExceptionInterface $clientException) {
-            $this->logger->logClientException($orderIncrementId, $clientException);
-
-            $response = sprintf('ng: ClientException occured. %1$s', $clientException->getMessage());
-
-            $this->logger->logInfoForOrder($orderIncrementId, 'Webhook response set: ' . $response);
-
-            return $this->getResponse()->setContent($response);
-        } catch (Exception $exception) {
-            $this->logger->logExceptionForOrder($orderIncrementId, $exception);
-
-            $response = sprintf(
-                'ng: Exception occured when trying to process the order: %1$s',
-                $exception->getMessage()
-            );
-
-            $this->logger->logInfoForOrder($orderIncrementId, 'Webhook response set: ' . $response);
-
-            return $this->getResponse()->setContent($response);
+            return $this->getResponse()->setContent($message);
         }
 
-        $response = 'ok';
+        $response = ['success' => false, 'message' => 'ng: no incoming POST or GET notification detected'];
 
-        $this->logger->logInfoForOrder($orderIncrementId, 'Webhook response set: ' . $response);
+        if ($this->getRequest()->getMethod() === Client::METHOD_POST) {
+            $response = $this->postNotification->execute(
+                $this->getRequest(),
+                $storeId
+            );
+        }
 
-        return $this->getResponse()->setContent($response);
+        // Process GET notification when POST notification failed
+        if ($response['success'] === false && isset($response['message'])) {
+            if ($response['message'] === 'Unable to verify POST notification' ||
+                $response['message'] === 'Exception occurred when verifying POST notification') {
+                $response = $this->getNotification->execute($orderIncrementId, $storeId);
+            }
+        }
+
+        if ($this->getRequest()->getMethod() === Client::METHOD_GET) {
+            $response = $this->getNotification->execute($orderIncrementId, $storeId);
+        }
+
+        return $this->getResponse()->setContent($this->processResponse($response));
+    }
+
+    /**
+     * Process the response retrieved from the GET/POST execution processes
+     *
+     * @param array $response
+     * @return string
+     */
+    private function processResponse(array $response): string
+    {
+        if ($response['success']) {
+            return 'ok';
+        }
+
+        return 'ng: ' . ($response['message'] ?? 'reason unknown');
+    }
+
+    /**
+     * Get the store id which is to be used for the transaction requests
+     *
+     * @param array $params
+     * @return int
+     * @throws NoSuchEntityException
+     */
+    private function getStoreId(array $params): int
+    {
+        if (isset($params['store_id'])) {
+            return (int)$params['store_id'];
+        }
+
+        $order = $this->orderUtil->getOrderByIncrementId($params['transactionid']);
+        return (int)$order->getStoreId();
     }
 }
