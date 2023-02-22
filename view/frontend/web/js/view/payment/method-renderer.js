@@ -80,6 +80,7 @@ define(
             {type: 'multisafepay_mybank', component: gatewayPath + 'mybank'},
             {type: 'multisafepay', component: baseRenderer},
             {type: 'multisafepay_payafter', component: gatewayPath + 'payafter'},
+            {type: 'multisafepay_bnplinstm', component: baseRenderer},
             {type: 'multisafepay_paypal', component: baseRenderer},
             {type: 'multisafepay_paysafecard', component: baseRenderer},
             {type: 'multisafepay_santander', component: baseRenderer},
