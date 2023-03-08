@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.19.0] - 2023-03-07
+### Added
+- Added Pay After Delivery installments payment method
+
+### Removed
+- Copyright mention has been removed from the files and is only mentioned from now on in the disclaimer. Please read it if you haven't already
+
 ## [1.18.2] - 2022-12-07
 ### Changed
 - Improved the POST notification process by validating the request, before retrieving the order
