@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.0] - 2023-04-03
+### Removed
+- Refactored notification webhook process. Notification webhooks are now processed in the core module and not in the frontend module.
+
 ## [1.19.0] - 2023-03-07
 ### Added
 - Added Pay After Delivery installments payment method
