@@ -12,7 +12,7 @@ define([
     'jquery',
     'mage/translate',
     'Magento_Customer/js/customer-data',
-    'multisafepayCardPaymentProcessor',
+    'multisafepayPaymentProcessor',
     'multisafepayUtils',
     'Magento_Checkout/js/model/quote',
     'MultiSafepay_ConnectFrontend/js/action/get-apple-merchant-session'
@@ -20,7 +20,7 @@ define([
     $,
     $t,
     customerData,
-    multisafepayCardPaymentProcessor,
+    multisafepayPaymentProcessor,
     multisafepayUtils,
     quote,
     getAppleMerchantSessionAction
@@ -114,7 +114,7 @@ define([
 
                 session.begin();
             } else {
-                deferred.resolve(false, false, $t("Apple Pay direct doesn't available. Please, try again."));
+                deferred.resolve(false, false, $t("Apple Pay direct isn't available. Please, try again."));
             }
         },
 
@@ -129,7 +129,7 @@ define([
          */
         getTotalItems: function (paymentRequest) {
             let displayItems = [];
-            let values = Object.values(paymentRequest.cartItems);
+            let values = Object.values(paymentRequest.applePayButton.cartItems);
 
             for (let sku in values) {
                 let cartItem = values[sku];
@@ -143,7 +143,7 @@ define([
                 });
             }
 
-            let additionalItems = paymentRequest.additionalTotalItems;
+            let additionalItems = paymentRequest.applePayButton.additionalTotalItems;
 
             if (additionalItems.length) {
                 $(additionalItems).each(function (index, value) {

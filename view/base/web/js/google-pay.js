@@ -12,14 +12,14 @@ define([
     'jquery',
     'mage/translate',
     'Magento_Customer/js/customer-data',
-    'multisafepayCardPaymentProcessor',
+    'multisafepayPaymentProcessor',
     'multisafepayUtils',
     'Magento_Checkout/js/model/quote'
 ], function (
     $,
     $t,
     customerData,
-    multisafepayCardPaymentProcessor,
+    multisafepayPaymentProcessor,
     multisafepayUtils,
     quote
 ) {

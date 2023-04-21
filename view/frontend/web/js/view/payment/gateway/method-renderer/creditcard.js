@@ -19,12 +19,11 @@ define(
         'Magento_Checkout/js/action/redirect-on-success',
         'MultiSafepay_ConnectFrontend/js/view/payment/vault-enabler',
         'mage/url',
-        'multisafepayPaymentRequest',
         'Magento_Checkout/js/action/select-payment-method',
         'Magento_Checkout/js/model/payment/additional-validators',
         'Magento_Checkout/js/action/place-order',
         'Magento_Customer/js/customer-data',
-        'multisafepayCreditCardComponent'
+        'multisafepayPaymentComponent'
     ],
 
     /**
@@ -35,12 +34,11 @@ define(
      * @param redirectOnSuccessAction
      * @param VaultEnabler
      * @param url
-     * @param paymentRequest
      * @param selectPaymentMethodAction
      * @param additionalValidators
      * @param placeOrderAction
      * @param customerData
-     * @param multisafepayCreditCardComponent
+     * @param multisafepayPaymentComponent
      * @returns {*}
      */
     function (
@@ -50,20 +48,18 @@ define(
         redirectOnSuccessAction,
         VaultEnabler,
         url,
-        paymentRequest,
         selectPaymentMethodAction,
         additionalValidators,
         placeOrderAction,
         customerData,
-        multisafepayCreditCardComponent
+        multisafepayPaymentComponent
     ) {
         'use strict';
 
         return Component.extend({
             defaults: {
                 template: 'MultiSafepay_ConnectFrontend/payment/gateway/creditcard',
-                creditCardPaymentType: 'credit_card',
-                paymentRequestPaymentType: 'payment_request'
+                creditCardPaymentType: 'payment_component',
             },
 
             initialize: function () {
@@ -102,8 +98,8 @@ define(
                 selectPaymentMethodAction(this.getData());
                 checkoutData.setSelectedPaymentMethod(this.item.method);
 
-                if (this.isCreditCardComponentEnabled() && !this.paymentComponent) {
-                    this.initializeCreditCardComponent();
+                if (this.isPaymentComponentEnabled() && !this.paymentComponent) {
+                    this.initializePaymentComponent();
                 }
 
                 return true;
@@ -113,8 +109,8 @@ define(
              *
              * @returns {boolean|*}
              */
-            initializeCreditCardComponent: function () {
-                this.paymentComponent = multisafepayCreditCardComponent.init(
+            initializePaymentComponent: function () {
+                this.paymentComponent = multisafepayPaymentComponent.init(
                     this.getCode(),
                     this.paymentRequestConfig,
                     this.getPaymentData()
@@ -127,21 +123,9 @@ define(
              *
              * @returns {*}
              */
-            reloadCreditCardComponents: function () {
-                $(".multisafepay-credit-card-component").each(function () {
-                    $(this).empty();
-                });
-
-                return this;
-            },
-
-            /**
-             *
-             * @returns {*}
-             */
-            checkIfNeedPreRenderCreditCardComponent: function () {
-                if (checkoutData.getSelectedPaymentMethod() === this.getCode() && this.isCreditCardComponentEnabled()) {
-                    this.initializeCreditCardComponent();
+            PreRenderPaymentComponent: function () {
+                if (checkoutData.getSelectedPaymentMethod() === this.getCode() && this.isPaymentComponentEnabled()) {
+                    this.initializePaymentComponent();
                 }
 
                 return this;
@@ -158,18 +142,9 @@ define(
              *
              * @returns {*|{}|boolean}
              */
-            isCreditCardComponentEnabled: function () {
+            isPaymentComponentEnabled: function () {
                 return this.paymentRequestConfig && this.getPaymentData()
                     && this.getPaymentData().paymentType === this.creditCardPaymentType;
-            },
-
-            /**
-             *
-             * @returns {*|{}|boolean}
-             */
-            isPaymentRequestApiEnabled: function () {
-                return this.paymentRequestConfig && this.getPaymentData()
-                    && this.getPaymentData().paymentType === this.paymentRequestPaymentType;
             },
 
             /**
@@ -178,10 +153,10 @@ define(
              */
             getPaymentData: function () {
                 if (this.paymentRequestConfig
-                    && this.paymentRequestConfig.cardsConfig
-                    && this.paymentRequestConfig.cardsConfig.hasOwnProperty(this.getCode())
+                    && this.paymentRequestConfig.paymentComponentConfig
+                    && this.paymentRequestConfig.paymentComponentConfig.hasOwnProperty(this.getCode())
                 ) {
-                    return this.paymentRequestConfig.cardsConfig[this.getCode()];
+                    return this.paymentRequestConfig.paymentComponentConfig[this.getCode()];
                 }
 
                 return {};
@@ -191,8 +166,8 @@ define(
              *
              * @returns {string|*}
              */
-            getCreditCardComponentContainerId: function () {
-                return this.paymentRequestConfig.cardComponentContainerId + "-" + this.getCode();
+            getPaymentComponentId: function () {
+                return this.paymentRequestConfig.paymentComponentContainerId + "-" + this.getCode();
             },
 
             /**
@@ -211,8 +186,6 @@ define(
              * @returns {boolean}
              */
             placeOrder: function (data, event) {
-                var self = this;
-
                 if (event) {
                     event.preventDefault();
                 }
@@ -220,7 +193,7 @@ define(
                 if (this.validate() && additionalValidators.validate() && this.isPlaceOrderActionAllowed() === true) {
                     let paymentRequestData = this.getData();
 
-                    if (this.isCreditCardComponentEnabled() && this.paymentComponent) {
+                    if (this.isPaymentComponentEnabled() && this.paymentComponent) {
                         if (!this.paymentComponent.hasErrors()) {
                             this.isPlaceOrderActionAllowed(false);
                             let payload = this.paymentComponent.getOrderData().payment_data.payload;
@@ -236,21 +209,6 @@ define(
 
                             return true;
                         }
-                    } else if (this.isPaymentRequestApiEnabled()) {
-                        let deferred = $.Deferred();
-                        this.isPlaceOrderActionAllowed(false);
-                        paymentRequest.init(this.getCode(), deferred);
-
-                        $.when(deferred).then(function (paymentData) {
-                            if (paymentData) {
-                                self.paymentPayload = paymentData;
-                                paymentRequestData['additional_data']['payload'] = paymentData;
-                            }
-
-                            self.placeOderDefault(paymentRequestData);
-                        });
-
-                        return true;
                     } else {
                         this.isPlaceOrderActionAllowed(false);
                         this.placeOderDefault(paymentRequestData);
@@ -267,7 +225,7 @@ define(
              * @param paymentRequestData
              */
             placeOderDefault: function (paymentRequestData) {
-                var self = this;
+                let self = this;
                 this.vaultEnabler.visitAdditionalData(paymentRequestData);
 
                 $.when(placeOrderAction(paymentRequestData, self.messageContainer)).done(

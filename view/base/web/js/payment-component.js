@@ -13,13 +13,13 @@ define([
     'mage/translate',
     'Magento_Customer/js/customer-data',
     'Magento_Checkout/js/model/quote',
-    'multisafepayCreditCardComponentLib'
+    'multisafepayPaymentComponentLib'
 ], function (
     $,
     $t,
     customerData,
     quote,
-    multisafepayCreditCardComponentLib
+    multisafepayPaymentComponentLib
 ) {
     'use strict';
 
@@ -46,7 +46,7 @@ define([
                 });
 
                 multisafepayPaymentComponent.init('payment', {
-                    container: '#' + paymentRequestData.cardComponentContainerId + '-' + paymentCode,
+                    container: '#' + paymentRequestData.paymentComponentContainerId + '-' + paymentCode,
                     gateway: cardConfig.gatewayCode,
                     onLoad: function(state) {
                         console.log('onLoad', state);
@@ -81,14 +81,14 @@ define([
                     }
                 },
             };
-            
-            if (paymentRequestData.cardsConfig[paymentCode].customerReference) {
-                orderData.customer.reference = paymentRequestData.cardsConfig[paymentCode].customerReference
+
+            if (paymentRequestData.paymentComponentConfig[paymentCode].customerReference) {
+                orderData.customer.reference = paymentRequestData.paymentComponentConfig[paymentCode].customerReference
                 orderData.recurring = {
                     model: 'cardOnFile'
                 };
             }
-            
+
             return orderData
         }
     };

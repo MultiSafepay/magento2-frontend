@@ -14,10 +14,9 @@ let config = {
         '*': {
             mspCrypt: 'MultiSafepay_ConnectFrontend/js/lib/msp-crypt',
             multisafepayUtils: 'MultiSafepay_ConnectFrontend/js/lib/utils',
-            multisafepayPaymentRequest: 'MultiSafepay_ConnectFrontend/js/payment-request',
-            multisafepayCreditCardComponent: 'MultiSafepay_ConnectFrontend/js/credit-card-component',
-            multisafepayCreditCardComponentLib:  'https://pay.multisafepay.com/sdk/components/v2/components.js',
-            multisafepayCardPaymentProcessor: 'MultiSafepay_ConnectFrontend/js/payment-request/card-payment',
+            multisafepayPaymentComponent: 'MultiSafepay_ConnectFrontend/js/payment-component',
+            multisafepayPaymentComponentLib:  'https://pay.multisafepay.com/sdk/components/v2/components.js',
+            multisafepayPaymentProcessor: 'MultiSafepay_ConnectFrontend/js/payment-request/payment',
             multisafepayApplePayButton: 'MultiSafepay_ConnectFrontend/js/apple-pay',
             multisafepayGooglePayButton: 'MultiSafepay_ConnectFrontend/js/google-pay',
             googlePayButtonLibrary: 'https://pay.google.com/gp/p/js/pay.js',
