@@ -45,10 +45,17 @@ define(
         'use strict';
 
         /**
+         * Try to retrieve the phone number from the billing address if available to be used as default
+         *
          * @returns {string}
          */
-        function getTelephoneFromBillingAddress() {
-            return quote.billingAddress().telephone
+        function getIn3Telephone() {
+            // If the billing address is empty, then there is no phone number to take from it
+            if (!quote.billingAddress()) {
+                return '';
+            }
+
+            return quote.billingAddress().telephone ?? '';
         }
 
         return Component.extend({
@@ -56,7 +63,7 @@ define(
                 template: 'MultiSafepay_ConnectFrontend/payment/gateway/in3',
                 dateOfBirth: '',
                 genderId: '',
-                phoneNumber: getTelephoneFromBillingAddress()
+                phoneNumber: getIn3Telephone()
             },
 
             initObservable: function () {
