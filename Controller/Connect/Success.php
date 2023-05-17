@@ -25,6 +25,7 @@ use MultiSafepay\ConnectCore\Logger\Logger;
 use MultiSafepay\ConnectCore\Util\CustomReturnUrlUtil;
 use MultiSafepay\ConnectCore\Util\OrderUtil;
 use MultiSafepay\ConnectFrontend\Validator\RequestValidator;
+use MultiSafepay\ConnectCore\Config\Config;
 
 class Success extends Action
 {
@@ -59,6 +60,11 @@ class Success extends Action
     private $customReturnUrlUtil;
 
     /**
+     * @var Config
+     */
+    private $config;
+
+    /**
      * Success constructor.
      *
      * @param Context $context
@@ -68,6 +74,7 @@ class Success extends Action
      * @param Logger $logger
      * @param CartRepositoryInterface $cartRepository
      * @param CustomReturnUrlUtil $customReturnUrlUtil
+     * @param Config $config
      */
     public function __construct(
         Context $context,
@@ -76,7 +83,8 @@ class Success extends Action
         Session $checkoutSession,
         Logger $logger,
         CartRepositoryInterface $cartRepository,
-        CustomReturnUrlUtil $customReturnUrlUtil
+        CustomReturnUrlUtil $customReturnUrlUtil,
+        Config $config
     ) {
         parent::__construct($context);
         $this->requestValidator = $requestValidator;
@@ -85,6 +93,7 @@ class Success extends Action
         $this->cartRepository = $cartRepository;
         $this->customReturnUrlUtil = $customReturnUrlUtil;
         $this->orderUtil = $orderUtil;
+        $this->config = $config;
     }
 
     /**
@@ -121,7 +130,10 @@ class Success extends Action
         if ($customReturnUrl) {
             $redirectUrl = $this->resultRedirectFactory->create()->setUrl($customReturnUrl);
         } else {
-            $redirectUrl = $this->_redirect('checkout/onepage/success', ['_query' => 'utm_nooverride=1']);
+            $redirectUrl = $this->_redirect(
+                'checkout/onepage/success',
+                ($this->config->isUtmNoOverrideDisabled($order->getStoreId()) ? [] : ['_query' => 'utm_nooverride=1'])
+            );
         }
 
         $order->addCommentToStatusHistory('User redirected to the success page.');
