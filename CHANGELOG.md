@@ -10,18 +10,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [2.1.0] - 2023-05-17
 ### Added
-- Add payment component for Pay After Delivery installments
-- Add a setting field to exclude utm_nooverride from the redirect_url
+- PLGMAG2V2-661: Add payment component for Pay After Delivery installments
+- PLGMAG2V2-667: Add a setting field to exclude utm_nooverride from the redirect_url
 
 ### Changed
-- Refactor Credit Card Payment Components
+- PLGMAG2V2-632: Refactor Credit Card Payment Components
 
 ### Fixed
-- Fix Riverty and in3 component rendering, failing in some third party checkouts
+- PLGMAG2V2-665: Fixed Riverty and in3 component rendering, failing in some third party checkouts
 
 ## [2.0.0] - 2023-04-03
 ### Removed
-- Refactored notification webhook process. Notification webhooks are now processed in the core module and not in the frontend module.
+- PLGMAG2V2-617: Refactored notification webhook process. Notification webhooks are now processed in the core module and not in the frontend module.
 
 ## [1.19.0] - 2023-03-07
 ### Added
