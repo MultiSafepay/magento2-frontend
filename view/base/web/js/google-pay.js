@@ -49,12 +49,13 @@ define([
                     this.getGooglePayCardPaymentMethodData().cardPaymentMethod
                 ];
 
-                let totalAmount = paymentRequestData.cartTotal ? paymentRequestData.cartTotal
-                    : cartData.grandTotalAmount;
+                let totalAmount = paymentRequestData.cartTotal ?
+                    parseFloat(paymentRequestData.cartTotal).toFixed(2) :
+                    parseFloat(cartData.grandTotalAmount).toFixed(2);
 
                 paymentDataRequest.transactionInfo = {
                     totalPriceStatus: 'FINAL',
-                    totalPrice: totalAmount.toString(),
+                    totalPrice: totalAmount,
                     currencyCode: paymentRequestData.currency,
                     countryCode: quote.billingAddress().countryId
                 };

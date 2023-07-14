@@ -40,27 +40,30 @@
             <!--/ko-->
         </div>
 
+        <!-- ko if: isGoogleButtonVisible() -->
         <button type="button"
                 data-bind="
                 attr: {'id': getGooglePayButtonId(), title: $t('Google Pay')},
                 click: payWithGooglePay,
-                visible: isGoogleButtonVisible(),
                 afterRender: checkIfNeedRenderGooglePayButton()
                 "></button>
+        <!--/ko-->
 
+        <!-- ko if: !isGoogleButtonVisible() -->
         <div class="actions-toolbar">
             <div class="primary">
                 <button class="action primary checkout"
                         type="submit"
                         data-bind="
                         click: placeOrder,
-                        visible: !isGoogleButtonVisible(),
                         attr: {title: $t('Place Order')}
                         ">
                     <span data-bind="i18n: 'Place Order'"></span>
                 </button>
             </div>
         </div>
+        <!--/ko-->
+
     </div>
 </div>
 <!--/ko-->

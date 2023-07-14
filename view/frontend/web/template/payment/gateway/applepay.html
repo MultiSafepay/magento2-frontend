@@ -40,26 +40,29 @@
             <!--/ko-->
         </div>
 
+        <!-- ko if: isAppleButtonVisible() -->
         <button type="button"
                 data-bind="
                 attr: {'id': getApplePayButtonId(), title: $t('Apple Pay')},
-                click: initApplePayButton,
-                visible: isAppleButtonVisible()
+                click: initApplePayButton
                 "></button>
+        <!--/ko-->
 
+        <!-- ko if: !isAppleButtonVisible() -->
             <div class="actions-toolbar">
                 <div class="primary">
                     <button class="action primary checkout"
                             type="submit"
                             data-bind="
                         click: placeOrder,
-                        visible: !isAppleButtonVisible(),
                         attr: {title: $t('Place Order')}
                         ">
                         <span data-bind="i18n: 'Place Order'"></span>
                     </button>
                 </div>
             </div>
+        <!--/ko-->
+
     </div>
 </div>
 <!--/ko-->

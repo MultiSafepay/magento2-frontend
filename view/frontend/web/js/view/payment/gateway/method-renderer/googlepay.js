@@ -83,6 +83,10 @@ define(
              * @returns {string|*}
              */
             getGooglePayButtonId: function () {
+                if (typeof this.paymentRequestConfig.googlePayButton === 'undefined') {
+                    return '';
+                }
+
                 return this.paymentRequestConfig.googlePayButton.googlePayButtonId;
             },
 
@@ -91,6 +95,10 @@ define(
              * @returns {*}
              */
             isGooglePayButtonAvailable: function () {
+                if (typeof this.paymentRequestConfig.googlePayButton === 'undefined') {
+                    return false;
+                }
+
                 return this.paymentRequestConfig && this.paymentRequestConfig.googlePayButton.isActive;
             },
 

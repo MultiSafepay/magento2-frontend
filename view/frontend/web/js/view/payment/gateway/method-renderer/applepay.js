@@ -68,6 +68,10 @@ define(
              * @returns {string|*}
              */
             getApplePayButtonId: function () {
+                if (typeof this.paymentRequestConfig.applePayButton === 'undefined') {
+                    return '';
+                }
+
                 return this.paymentRequestConfig.applePayButton.applePayButtonId;
             },
 
@@ -76,6 +80,10 @@ define(
              * @returns {*}
              */
             isApplePayButtonAvailable: function () {
+                if (typeof this.paymentRequestConfig.applePayButton === 'undefined') {
+                    return false;
+                }
+
                 return this.paymentRequestConfig && this.paymentRequestConfig.applePayButton.isActive;
             },
 
