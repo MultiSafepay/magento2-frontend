@@ -62,4 +62,5 @@ jobs:
             module_name: MultiSafepay_ConnectFrontend
             composer_name: multisafepay/magento2-frontend
             ce_version: '${{ matrix.magento_version }}'
+            phpunit_file: './phpunit.xml'
             magento_pre_install_script: .github/workflows/magento-integration-tests-pre-phpunit.sh
