@@ -41,8 +41,7 @@
                     <div class="control">
                         <input name="afterpay-date-of-birth"
                                id="afterpay-date-of-birth"
-                               title="Date of Birth"
-                               data-bind="value: dateOfBirth"
+                               data-bind="value: dateOfBirth, attr:{title: $t('Date of Birth')}"
                                class="input-date"
                                type="date"
                                required="true"/>
@@ -63,6 +62,7 @@
                         optionsValue: 'code',
                         optionsText: 'label',
                         optionsCaption: $t('Choose your gender...'),
+                        attr:{title: $t('Gender')},
                         value: genderId">
                         </select>
                     </div>
@@ -79,7 +79,7 @@
                         <input name="afterpay-telephone"
                                id="afterpay-telephone"
                                title="Telephone"
-                               data-bind="value: phoneNumber"
+                               data-bind="value: phoneNumber, attr:{title: $t('Phone Number')}"
                                class="input-text"
                                type="tel"
                                required="true"/>

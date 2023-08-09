@@ -43,8 +43,7 @@
                     <div class="control">
                         <input name="einvoicing-date-of-birth"
                                id="einvoicing-date-of-birth"
-                               title="Date of Birth"
-                               data-bind="value: dateOfBirth"
+                               data-bind="value: dateOfBirth, attr:{title: $t('Date of Birth')}"
                                class="input-date"
                                type="date"
                                required="true"/>
@@ -62,10 +61,11 @@
                     </label>
                     <div class="control">
                         <input name="einvoicing-account-number"
-                               placeholder="Bank account number e.g NL02ABNA0123456789"
                                id="einvoicing-account-number"
-                               title="Bank account number"
-                               data-bind="value: accountNumber"
+                               data-bind="value: accountNumber, attr:{
+                                title: $t('Bank account number'),
+                                placeholder: $t('Bank account number e.g NL02ABNA0123456789')
+                               }"
                                class="input-text"
                                type="text"
                                required="true"/>

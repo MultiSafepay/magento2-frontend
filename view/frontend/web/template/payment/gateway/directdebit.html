@@ -41,8 +41,7 @@
                     <div class="control">
                         <input name="directdebit-account-name"
                                id="directdebit-account-name"
-                               title="Account holder name"
-                               data-bind="value: accountHolderName"
+                               data-bind="value: accountHolderName, attr:{title: $t('Account holder name')}"
                                class="input-text"
                                type="text"
                                required="true"/>
@@ -58,10 +57,11 @@
                     </label>
                     <div class="control">
                         <input name="directdebit-account-number"
-                               placeholder="Bank account number e.g NL02ABNA0123456789"
                                id="directdebit-account-number"
-                               title="Bank account number"
-                               data-bind="value: accountHolderIban"
+                               data-bind="value: accountHolderIban, attr:{
+                                title: $t('Bank account number'),
+                                placeholder: $t('Bank account number e.g NL02ABNA0123456789')
+                               }"
                                class="input-text"
                                type="text"
                                required="true"/>

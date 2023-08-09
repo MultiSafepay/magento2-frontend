@@ -41,8 +41,7 @@
                     <div class="control">
                         <input name="directbanktransfer-account-id"
                                id="directbanktransfer-account-id"
-                               title="Account ID"
-                               data-bind="value: accountId"
+                               data-bind="value: accountId, attr:{title: $t('Account ID')}"
                                class="input-text"
                                type="text"
                                required="true"/>
@@ -59,8 +58,7 @@
                     <div class="control">
                         <input name="directbanktransfer-account-name"
                                id="directbanktransfer-account-name"
-                               title="Account holder name"
-                               data-bind="value: accountHolderName"
+                               data-bind="value: accountHolderName, attr:{title: $t('Account holder name')}"
                                class="input-text"
                                type="text"
                                required="true"/>
@@ -77,8 +75,7 @@
                     <div class="control">
                         <input name="directbanktransfer-account-city"
                                id="directbanktransfer-account-city"
-                               title="Account holder city"
-                               data-bind="value: accountHolderCity"
+                               data-bind="value: accountHolderCity, attr:{title: $t('Account holder city')}"
                                class="input-text"
                                type="text"
                                required="true"/>
@@ -95,8 +92,7 @@
                     <div class="control">
                         <input name="directbanktransfer-account-country"
                                id="directbanktransfer-account-country"
-                               title="Account holder country"
-                               data-bind="value: accountHolderCountry"
+                               data-bind="value: accountHolderCountry, attr:{title: $t('Account holder country')}"
                                class="input-text"
                                type="text"
                                required="true"/>
@@ -112,10 +108,11 @@
                     </label>
                     <div class="control">
                         <input name="directbanktransfer-account-number"
-                               placeholder="Bank account number e.g NL02ABNA0123456789"
                                id="directbanktransfer-account-number"
-                               title="Bank account number"
-                               data-bind="value: accountHolderIban"
+                               data-bind="value: accountHolderIban, attr:{
+                                title: $t('Bank account number'),
+                                placeholder: $t('Bank account number e.g NL02ABNA0123456789')
+                               }"
                                class="input-text"
                                type="text"
                                required="true"/>
@@ -132,8 +129,7 @@
                     <div class="control">
                         <input name="directbanktransfer-account-bic"
                                id="directbanktransfer-account-bic"
-                               title="Account holder BIC"
-                               data-bind="value: accountHolderBic"
+                               data-bind="value: accountHolderBic, attr:{title: $t('Account holder BIC')}"
                                class="input-text"
                                type="text"
                                required="true"/>

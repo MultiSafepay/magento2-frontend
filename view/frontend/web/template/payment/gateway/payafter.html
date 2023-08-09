@@ -42,7 +42,7 @@
                         <input name="payafter-date-of-birth"
                                id="payafter-date-of-birth"
                                title="Date of Birth"
-                               data-bind="value: dateOfBirth"
+                               data-bind="value: dateOfBirth, attr:{title: $t('Date of Birth')}"
                                class="input-date"
                                type="date"
                                required="true"/>
@@ -58,10 +58,11 @@
                     </label>
                     <div class="control">
                         <input name="payafter-account-number"
-                               placeholder="Bank account number e.g NL02ABNA0123456789"
                                id="payafter-account-number"
-                               title="Bank account number"
-                               data-bind="value: accountNumber"
+                               data-bind="value: accountNumber, attr:{
+                                title: $t('Bank account number'),
+                                placeholder: $t('Bank account number e.g NL02ABNA0123456789')
+                               }"
                                class="input-text"
                                type="text"
                                required="true"/>
