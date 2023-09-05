@@ -12,7 +12,7 @@ jobs:
   integration-tests:
     strategy:
       matrix:
-        magento_version: [2.3.7-p3, 2.4.2]
+        magento_version: [2.3.7-p3, 2.4.2-p2]
     name: Magento 2 Integration Tests
     runs-on: ubuntu-latest
     services:
@@ -50,7 +50,7 @@ jobs:
             ce_version: '${{ matrix.magento_version }}'
             magento_pre_install_script: .github/workflows/magento-integration-tests-pre-phpunit.sh
 
-      - if: matrix.magento_version == '2.4.2'
+      - if: matrix.magento_version == '2.4.2-p2'
         name: M2 Integration Tests on Magento ${{ matrix.magento_version }}
         uses: MultiSafepay/github-actions-m2/magento-integration-tests/7.4@with-coverage-support
         env:
@@ -64,3 +64,5 @@ jobs:
             ce_version: '${{ matrix.magento_version }}'
             phpunit_file: './phpunit.xml'
             magento_pre_install_script: .github/workflows/magento-integration-tests-pre-phpunit.sh
+      - name: Send clover to codecov
+        run: bash <(curl -s https://codecov.io/bash) -t ${{ secrets.CODECOV_TOKEN }} -R .
