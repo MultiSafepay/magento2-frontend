@@ -39,11 +39,19 @@ define([
                     return;
                 }
 
-                let multisafepayPaymentComponent =  new MultiSafepay({
+                let paymentComponentData = {
                     env: paymentRequestData.environment,
                     apiToken: paymentRequestData.apiToken,
-                    order: this.getOrderData(paymentRequestData, paymentCode)
-                });
+                    order: this.getOrderData(paymentRequestData, cardConfig.gatewayCode)
+                }
+
+                let recurringData = this.getRecurringData(cardConfig);
+
+                if (recurringData) {
+                    paymentComponentData.recurring = recurringData;
+                }
+
+                let multisafepayPaymentComponent =  new MultiSafepay(paymentComponentData);
 
                 multisafepayPaymentComponent.init('payment', {
                     container: '#' + paymentRequestData.paymentComponentContainerId + '-' + paymentCode,
@@ -62,13 +70,14 @@ define([
         },
 
         /**
+         * Get the order data
          *
          * @param paymentRequestData
          * @param paymentCode
          * @returns {{template: {settings: {embed_mode: boolean}}, amount: number, currency, customer: {country, locale}}}
          */
         getOrderData: function (paymentRequestData, paymentCode) {
-            let orderData = {
+            return {
                 customer: {
                     locale: paymentRequestData.locale,
                     country: quote.billingAddress().countryId,
@@ -81,15 +90,23 @@ define([
                     }
                 },
             };
+        },
 
-            if (paymentRequestData.paymentComponentConfig[paymentCode].customerReference) {
-                orderData.customer.reference = paymentRequestData.paymentComponentConfig[paymentCode].customerReference
-                orderData.recurring = {
-                    model: 'cardOnFile'
-                };
+        /**
+         * Get the recurring data
+         *
+         * @param paymentRequestData
+         * @returns {{model: string, tokens: ([]|*)}|null}
+         */
+        getRecurringData: function (cardConfig) {
+            if (cardConfig.tokens) {
+                return {
+                    model: 'cardOnFile',
+                    tokens: cardConfig.tokens
+                }
             }
 
-            return orderData
+            return null;
         }
     };
 });

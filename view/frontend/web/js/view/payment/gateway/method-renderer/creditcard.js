@@ -196,13 +196,21 @@ define(
                     if (this.isPaymentComponentEnabled() && this.paymentComponent) {
                         if (!this.paymentComponent.hasErrors()) {
                             this.isPlaceOrderActionAllowed(false);
-                            let payload = this.paymentComponent.getOrderData().payment_data.payload;
+
+                            let paymentData = this.paymentComponent.getOrderData().payment_data;
+
+                            let payload = paymentData.payload;
+                            let tokenize = paymentData.tokenize;
                             let cardBrand = '';
 
                             if (payload) {
                                 this.paymentPayload = payload;
                                 paymentRequestData['additional_data']['payload'] = payload;
                                 paymentRequestData['additional_data']['card_brand'] = cardBrand;
+                            }
+
+                            if (tokenize) {
+                                paymentRequestData['additional_data']['tokenize'] = tokenize;
                             }
 
                             this.placeOderDefault(paymentRequestData);
