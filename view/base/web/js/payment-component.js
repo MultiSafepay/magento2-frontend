@@ -77,7 +77,7 @@ define([
          * @returns {{template: {settings: {embed_mode: boolean}}, amount: number, currency, customer: {country, locale}}}
          */
         getOrderData: function (paymentRequestData, paymentCode) {
-            return {
+            let orderData = {
                 customer: {
                     locale: paymentRequestData.locale,
                     country: quote.billingAddress().countryId,
@@ -90,6 +90,13 @@ define([
                     }
                 },
             };
+
+            if (paymentRequestData.payment_component_template_id) {
+                orderData.payment_options = {};
+                orderData.payment_options.template_id = paymentRequestData.payment_component_template_id;
+            }
+
+            return orderData;
         },
 
         /**
