@@ -19,7 +19,9 @@ use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use MultiSafepay\ConnectCore\Config\Config;
+use MultiSafepay\ConnectCore\Logger\Logger;
 use MultiSafepay\ConnectCore\Service\Order\CancelMultisafepayOrderPaymentLink;
+use MultiSafepay\ConnectCore\Util\CouponUtil;
 use MultiSafepay\ConnectCore\Util\CustomReturnUrlUtil;
 use MultiSafepay\ConnectFrontend\Validator\RequestValidator;
 
@@ -56,6 +58,16 @@ class Cancel extends Action
     private $cancelMultisafepayOrderPaymentLink;
 
     /**
+     * @var CouponUtil
+     */
+    private $couponUtil;
+
+    /**
+     * @var Logger
+     */
+    private $logger;
+
+    /**
      * Cancel constructor.
      *
      * @param OrderRepositoryInterface $orderRepository
@@ -65,6 +77,8 @@ class Cancel extends Action
      * @param CustomReturnUrlUtil $customReturnUrlUtil
      * @param Config $config
      * @param CancelMultisafepayOrderPaymentLink $cancelMultisafepayOrderPaymentLink
+     * @param CouponUtil $couponUtil
+     * @param Logger $logger
      */
     public function __construct(
         OrderRepositoryInterface $orderRepository,
@@ -73,7 +87,9 @@ class Cancel extends Action
         Context $context,
         CustomReturnUrlUtil $customReturnUrlUtil,
         Config $config,
-        CancelMultisafepayOrderPaymentLink $cancelMultisafepayOrderPaymentLink
+        CancelMultisafepayOrderPaymentLink $cancelMultisafepayOrderPaymentLink,
+        CouponUtil $couponUtil,
+        Logger $logger
     ) {
         $this->orderRepository = $orderRepository;
         $this->checkoutSession = $checkoutSession;
@@ -81,6 +97,8 @@ class Cancel extends Action
         $this->customReturnUrlUtil = $customReturnUrlUtil;
         $this->config = $config;
         $this->cancelMultisafepayOrderPaymentLink = $cancelMultisafepayOrderPaymentLink;
+        $this->couponUtil = $couponUtil;
+        $this->logger = $logger;
         parent::__construct($context);
     }
 
@@ -106,9 +124,12 @@ class Cancel extends Action
 
         $orderId = $parameters['transactionid'];
 
-        $this->checkoutSession->restoreQuote();
-
         $order = $this->checkoutSession->getLastRealOrder()->loadByIncrementId($orderId);
+
+        $this->couponUtil->restoreCoupon($order);
+        if ($this->checkoutSession->restoreQuote()) {
+            $this->logger->logInfoForOrder($orderId, 'Quote successfully restored by Cancel controller');
+        }
 
         if ($this->config->getCancelPaymentLinkOption($order->getStoreId())
             === CancelMultisafepayOrderPaymentLink::CANCEL_BACK_BUTTON_PRETRANSACTION_OPTION
@@ -119,6 +140,7 @@ class Cancel extends Action
         $order->cancel();
         $order->addCommentToStatusHistory(__('The order has been canceled'));
         $this->orderRepository->save($order);
+        $this->logger->logInfoForOrder($orderId, 'Order has been saved by Cancel controller');
 
         if ($customReturnUrl = $this->customReturnUrlUtil->getCustomReturnUrlByType($order, $parameters)) {
             return $this->resultRedirectFactory->create()->setUrl($customReturnUrl);
