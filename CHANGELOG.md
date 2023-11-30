@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.3.0] - 2023-11-30
+### Fixed
+- PLGMAG2V2-688: Fixed an issue where coupons would not be restored if the payment was canceled/declined
+
+### Added
+- DAVAMS-596: Added a setting to choose SVG icons instead PNG
+- DAVAMS-531: Added an advanced setting for adding a template ID to be used for payment components
+
 ## [2.2.0] - 2023-10-11
 ### Added
 - DAVAMS-661: Added the Zinia payment method
