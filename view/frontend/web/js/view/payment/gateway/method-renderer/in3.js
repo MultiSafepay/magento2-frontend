@@ -44,32 +44,14 @@ define(
     ) {
         'use strict';
 
-        /**
-         * Try to retrieve the phone number from the billing address if available to be used as default
-         *
-         * @returns {string}
-         */
-        function getIn3Telephone() {
-            // If the billing address is empty, then there is no phone number to take from it
-            if (!quote.billingAddress()) {
-                return '';
-            }
-
-            return quote.billingAddress().telephone ?? '';
-        }
-
         return Component.extend({
             defaults: {
                 template: 'MultiSafepay_ConnectFrontend/payment/gateway/in3',
-                dateOfBirth: '',
-                genderId: '',
-                phoneNumber: getIn3Telephone()
+                genderId: ''
             },
 
             initObservable: function () {
-                this.observe('dateOfBirth')
-                    .observe('genderId')
-                    .observe('phoneNumber')
+                this.observe('genderId')
                     ._super();
 
                 return this;
@@ -99,7 +81,7 @@ define(
              * @returns {{additional_data: *, method: *}}
              */
             getData: function () {
-                if (!this.dateOfBirth() && !this.genderId() && !this.phoneNumber()) {
+                if (!this.genderId()) {
                     return {
                         "method": this.item.method,
                         "additional_data": null
@@ -109,9 +91,7 @@ define(
                 return {
                     "method": this.item.method,
                     "additional_data": {
-                        'date_of_birth': this.dateOfBirth(),
-                        'gender': this.genderId(),
-                        'phone_number': this.phoneNumber()
+                        'gender': this.genderId()
                     }
                 };
             },
