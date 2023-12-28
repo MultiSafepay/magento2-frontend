@@ -5,6 +5,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+## [2.3.1] - 2023-12-28
+### Changed
+- DAVAMS-700: Refactored in3 Direct to only make gender mandatory
+
+### Removed
+- DAVAMS-708: Removed Santander Betaal Per Maand
 
 ## [2.3.0] - 2023-11-30
 ### Fixed
