@@ -89,7 +89,7 @@ define(
             {type: 'multisafepay_babygiftcard', component: baseRenderer},
             {type: 'multisafepay_beautyandwellness', component: baseRenderer},
             {type: 'multisafepay_boekenbon', component: baseRenderer},
-            {type: 'multisafepay_edenred', component: gatewayPath + 'edenred'},
+            {type: 'multisafepay_edenred', component: baseRenderer},
             {type: 'multisafepay_fashioncheque', component: baseRenderer},
             {type: 'multisafepay_fashiongiftcard', component: baseRenderer},
             {type: 'multisafepay_fietsenbon', component: baseRenderer},
