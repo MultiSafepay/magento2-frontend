@@ -5,6 +5,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [2.3.2] - 2024-01-24
+### Changed
+- PLGMAG2V2-718: Remove gateway codes from Edenred title
+- PLGMAG2V2-716: Refresh API Token and component after expiry
+- PLGMAG2V2-720: Only set order canceled on notification controller
+
 ## [2.3.1] - 2023-12-28
 ### Changed
 - DAVAMS-700: Refactored in3 Direct to only make gender mandatory
