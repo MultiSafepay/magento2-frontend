@@ -103,6 +103,10 @@ define(
                     return true;
                 }
 
+                if (!this.paymentComponent) {
+                    this.initializePaymentComponent();
+                }
+
                 /**
                  * Compare the current time with the API Token lifetime and refresh if needed
                  */
