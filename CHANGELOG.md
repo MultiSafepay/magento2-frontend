@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.4.0] - 2024-02-16
+### Added
+- DAVAMS-716: Add Multibanco payment method
+- DAVAMS-724: Add MB WAY payment method
+
+### Fixed
+- PLGMAG2V2-727: Fix payment component sometimes not loading
+
 ## [2.3.2] - 2024-01-24
 ### Changed
 - PLGMAG2V2-718: Remove gateway codes from Edenred title
