@@ -103,6 +103,7 @@ define(
             {type: 'multisafepay_parfumcadeaukaart', component: baseRenderer},
             {type: 'multisafepay_podiumcadeaukaart', component: baseRenderer},
             {type: 'multisafepay_sportenfit', component: baseRenderer},
+            {type: 'multisafepay_vvvcadeaubon', component: baseRenderer},
             {type: 'multisafepay_vvvcadeaukaart', component: baseRenderer},
             {type: 'multisafepay_webshopgiftcard', component: baseRenderer},
             {type: 'multisafepay_wellnessgiftcard', component: baseRenderer},
