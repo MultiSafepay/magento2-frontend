@@ -14,6 +14,7 @@ declare(strict_types=1);
 
 namespace MultiSafepay\ConnectFrontend\Controller\Connect;
 
+use Exception;
 use Magento\Checkout\Model\Session;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
@@ -79,21 +80,24 @@ class Redirect extends Action
 
     /**
      * @return ResponseInterface|ResultInterface
+     * @throws Exception
      */
     public function execute()
     {
         $orderId = $this->checkoutSession->getLastRealOrder()->getId();
 
         if (!$orderId) {
-            return $this->redirectToCheckout('Something went wrong with the order. Please try again.');
+            return $this->redirectToCheckout(__('Something went wrong with the order. Please try again.')->render());
         }
 
         $order = $this->orderRepository->get($orderId);
         $orderIncrementId = $order->getRealOrderId();
 
         if (!($paymentUrl = $this->paymentLink->getPaymentLinkFromOrder($order))) {
-            return $this->redirectToCheckout('There was a problem processing your payment. Possible reasons could be:
-                 "insufficient funds", or "verification failed".');
+            return $this->redirectToCheckout(__(
+            // phpcs:ignore
+                'There was a problem processing your payment. Possible reasons could be: &quot;insufficient funds&quot;, or &quot;verification failed&quot;.'
+            )->render());
         }
 
         $this->logger->logPaymentRedirectInfo($orderIncrementId, $paymentUrl);
