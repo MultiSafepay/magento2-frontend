@@ -93,15 +93,15 @@ define([
             const plugins = this.getBrowserPlugins();
 
             return {
-                java_enabled: (plugins['java'] ? 1 : 0),
-                javascript_enabled: 1,
+                java_enabled: (plugins['java'] ? true : false),
+                javascript_enabled: true,
                 language: navigator.language,
                 screen_color_depth: window.screen.colorDepth,
                 screen_height: window.screen.height,
                 screen_width: window.screen.width,
                 time_zone: (new Date()).getTimezoneOffset(),
                 user_agent: navigator.userAgent,
-                cookies_enabled: (navigator.cookieEnabled ? 1 : 0),
+                cookies_enabled: (navigator.cookieEnabled ? true : false),
                 platform: navigator.platform,
             };
         },

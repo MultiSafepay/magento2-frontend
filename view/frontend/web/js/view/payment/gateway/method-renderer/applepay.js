@@ -21,7 +21,8 @@ define(
         'Magento_Customer/js/customer-data',
         'multisafepayApplePayButton',
         'Magento_Checkout/js/action/place-order',
-        'Magento_Checkout/js/model/full-screen-loader'
+        'Magento_Checkout/js/model/full-screen-loader',
+        'multisafepayUtils'
     ],
 
     /**
@@ -46,7 +47,8 @@ define(
         customerData,
         multisafepayApplePayButton,
         placeOrderAction,
-        fullScreenLoader
+        fullScreenLoader,
+        multisafepayUtils
     ) {
         'use strict';
 
@@ -102,8 +104,11 @@ define(
                 $.when(deferred).then(function (paymentData, applePaySession, sessionError) {
                     if (paymentData) {
                         paymentRequestData['additional_data'] = {
-                            token: JSON.stringify(paymentData.token)
-                        };
+                            'payload': JSON.stringify({
+                                'token': paymentData.token,
+                                'browser_info': multisafepayUtils.getBrowserInfo()
+                            })
+                        }
 
                         $.when(placeOrderAction(paymentRequestData, self.messageContainer)).done(
                             function () {

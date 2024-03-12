@@ -22,7 +22,8 @@ define(
         'multisafepayGooglePayButton',
         'Magento_Checkout/js/action/place-order',
         'Magento_Checkout/js/model/full-screen-loader',
-        'googlePayButtonLibrary'
+        'googlePayButtonLibrary',
+        'multisafepayUtils'
     ],
 
     /**
@@ -49,7 +50,8 @@ define(
         multisafepayGooglePayButton,
         placeOrderAction,
         fullScreenLoader,
-        googlePayButtonLibrary
+        googlePayButtonLibrary,
+        multisafepayUtils
     ) {
         'use strict';
 
@@ -166,8 +168,11 @@ define(
                 $.when(deferred).then(function (paymentToken, sessionError) {
                     if (paymentToken) {
                         paymentRequestData['additional_data'] = {
-                            token: paymentToken
-                        };
+                            'payload': JSON.stringify({
+                                'token': paymentToken,
+                                'browser_info': multisafepayUtils.getBrowserInfo()
+                            })
+                        }
 
                         $.when(placeOrderAction(paymentRequestData, self.messageContainer)).done(
                             function () {
