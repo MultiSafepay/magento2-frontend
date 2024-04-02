@@ -84,15 +84,17 @@ define([
                 },
                 currency: paymentRequestData.currency,
                 amount: paymentRequestData.cartTotal * 100,
-                template: {
-                    settings: {
-                        embed_mode: true
+                payment_options: {
+                    template: {
+                        settings: {
+                            embed_mode: true
+                        },
+                        merge: true
                     }
-                },
+                }
             };
 
             if (paymentRequestData.payment_component_template_id) {
-                orderData.payment_options = {};
                 orderData.payment_options.template_id = paymentRequestData.payment_component_template_id;
             }
 
