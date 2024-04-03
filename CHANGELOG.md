@@ -6,6 +6,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.5.0] - 2024-04-02
+### Added
+- PLGMAG2V2-731: Added VVV Cadeaubon gateway
+- DAVAMS-733: Added Pay After Delivery (BNPL_MF) gateway
+- PLGMAG2V2-736: Added browser info to the transaction
+- DAVAMS-745: Fixed template id and added merge value for payment component
+
+### Fixed
+- PLGMAG2V2-733: Make strings translatable
+
 ## [2.4.0] - 2024-02-16
 ### Added
 - DAVAMS-716: Add Multibanco payment method
