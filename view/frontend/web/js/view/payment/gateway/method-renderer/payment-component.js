@@ -64,6 +64,7 @@ define(
                 this.paymentRequestConfig = customerData.get('multisafepay-payment-request')();
                 this.paymentComponent = false;
                 this.paymentPayload = false;
+                this.paymentComponentLifeTime = this.paymentRequestConfig.apiTokenLifeTime;
 
                 return this;
             },
@@ -91,8 +92,25 @@ define(
                 selectPaymentMethodAction(this.getData());
                 checkoutData.setSelectedPaymentMethod(this.item.method);
 
-                if (this.isPaymentComponentEnabled() && !this.paymentComponent) {
+                if (!this.isPaymentComponentEnabled()) {
+                    return true;
+                }
+
+                if (!this.paymentComponent) {
                     this.initializePaymentComponent();
+                }
+
+                /**
+                 * Compare the current time with the API Token lifetime and refresh if needed
+                 */
+                if (Math.floor(Date.now()/1000) - this.paymentComponentLifeTime >= 540) {
+                    customerData.invalidate(['multisafepay-payment-request']);
+                    customerData.reload(['multisafepay-payment-request']).done(() => {
+                            this.paymentRequestConfig = customerData.get('multisafepay-payment-request')();
+                            this.initializePaymentComponent();
+                            this.paymentComponentLifeTime = this.paymentRequestConfig.apiTokenLifeTime;
+                        }
+                    );
                 }
 
                 return true;

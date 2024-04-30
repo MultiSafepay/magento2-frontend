@@ -112,11 +112,12 @@ define(
                  */
                 if (Math.floor(Date.now()/1000) - this.paymentComponentLifeTime >= 540) {
                     customerData.invalidate(['multisafepay-payment-request']);
-                    customerData.reload(['multisafepay-payment-request']);
-                    this.paymentRequestConfig = customerData.get('multisafepay-payment-request')();
-
-                    this.initializePaymentComponent();
-                    this.paymentComponentLifeTime = paymentRequestConfig.apiTokenLifeTime;
+                    customerData.reload(['multisafepay-payment-request']).done(() => {
+                            this.paymentRequestConfig = customerData.get('multisafepay-payment-request')();
+                            this.initializePaymentComponent();
+                            this.paymentComponentLifeTime = this.paymentRequestConfig.apiTokenLifeTime;
+                        }
+                    );
                 }
 
                 return true;
