@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.5.1] - 2024-05-01
+### Fixed
+- PLGMAG2V2-752: Fixed Payment Component Temporarily Not Available message after token expiry
+
 ## [2.5.0] - 2024-04-02
 ### Added
 - PLGMAG2V2-731: Added VVV Cadeaubon gateway
