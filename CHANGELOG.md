@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.6.0] - 2024-05-15
+### Added
+- DAVAMS-764: Add in3 B2B
+
 ## [2.5.1] - 2024-05-01
 ### Fixed
 - PLGMAG2V2-752: Fixed Payment Component Temporarily Not Available message after token expiry
