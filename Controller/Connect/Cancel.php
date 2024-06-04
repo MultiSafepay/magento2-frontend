@@ -14,6 +14,7 @@ declare(strict_types=1);
 
 namespace MultiSafepay\ConnectFrontend\Controller\Connect;
 
+use Exception;
 use Magento\Checkout\Model\Session;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
@@ -22,6 +23,7 @@ use MultiSafepay\ConnectCore\Logger\Logger;
 use MultiSafepay\ConnectCore\Service\Order\CancelMultisafepayOrderPaymentLink;
 use MultiSafepay\ConnectCore\Util\CouponUtil;
 use MultiSafepay\ConnectCore\Util\CustomReturnUrlUtil;
+use MultiSafepay\ConnectFrontend\Service\ResetAdditionalInformation;
 use MultiSafepay\ConnectFrontend\Validator\RequestValidator;
 
 class Cancel extends Action
@@ -62,6 +64,11 @@ class Cancel extends Action
     private $logger;
 
     /**
+     * @var ResetAdditionalInformation
+     */
+    private $resetAdditionalInformation;
+
+    /**
      * Cancel constructor.
      *
      * @param RequestValidator $requestValidator
@@ -72,6 +79,7 @@ class Cancel extends Action
      * @param CancelMultisafepayOrderPaymentLink $cancelMultisafepayOrderPaymentLink
      * @param CouponUtil $couponUtil
      * @param Logger $logger
+     * @param ResetAdditionalInformation $resetAdditionalInformation
      */
     public function __construct(
         RequestValidator $requestValidator,
@@ -81,7 +89,8 @@ class Cancel extends Action
         Config $config,
         CancelMultisafepayOrderPaymentLink $cancelMultisafepayOrderPaymentLink,
         CouponUtil $couponUtil,
-        Logger $logger
+        Logger $logger,
+        ResetAdditionalInformation $resetAdditionalInformation
     ) {
         $this->checkoutSession = $checkoutSession;
         $this->requestValidator = $requestValidator;
@@ -90,11 +99,13 @@ class Cancel extends Action
         $this->cancelMultisafepayOrderPaymentLink = $cancelMultisafepayOrderPaymentLink;
         $this->couponUtil = $couponUtil;
         $this->logger = $logger;
+        $this->resetAdditionalInformation = $resetAdditionalInformation;
         parent::__construct($context);
     }
 
     /**
      * @inheritDoc
+     * @throws Exception
      */
     public function execute()
     {
@@ -121,6 +132,8 @@ class Cancel extends Action
         if ($this->checkoutSession->restoreQuote()) {
             $this->logger->logInfoForOrder($orderId, 'Quote successfully restored by Cancel controller');
         }
+
+        $this->resetAdditionalInformation->execute($this->checkoutSession);
 
         if ($this->config->getCancelPaymentLinkOption($order->getStoreId())
             === CancelMultisafepayOrderPaymentLink::CANCEL_BACK_BUTTON_PRETRANSACTION_OPTION
