@@ -68,7 +68,7 @@ define([
                     deferred.resolve(false, err);
                 });
             } else {
-                deferred.resolve(false, $t("Google Pay direct doesn't available. Please, try again."));
+                deferred.resolve(false, $t("Google Pay direct isn't available. Please, try again."));
             }
         },
 

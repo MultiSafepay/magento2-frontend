@@ -190,9 +190,7 @@ define(
                         fullScreenLoader.stopLoader();
 
                         if (sessionError) {
-                            self.messageContainer.addErrorMessage({
-                                message: sessionError
-                            });
+                            console.error(sessionError);
                         }
                     }
                 });
