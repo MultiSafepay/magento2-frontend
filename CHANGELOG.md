@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.6.1] - 2024-07-05
+### Changed
+PLGMAG2V2-757: Remove payment additionalData when the quote has been restored
+PLGMAG2V2-767: Google Pay Direct AbortError is not being displayed on screen anymore when user closes the Payment Request dialog
+
 ## [2.6.0] - 2024-05-15
 ### Added
 - DAVAMS-764: Add in3 B2B
