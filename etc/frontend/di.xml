@@ -31,4 +31,8 @@
             <argument name="checkoutSession" xsi:type="object">Magento\Checkout\Model\Session\Proxy</argument>
         </arguments>
     </type>
+
+    <type name="Magento\CustomerBalance\Observer\RevertStoreCreditObserver">
+        <plugin name="multisafepay_customer_balance_revert_store_credit" type="MultiSafepay\ConnectFrontend\Plugin\CustomerBalance\Observer\RevertStoreCreditObserverPlugin" />
+    </type>
 </config>
