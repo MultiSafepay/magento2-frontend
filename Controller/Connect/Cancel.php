@@ -21,8 +21,8 @@ use Magento\Framework\App\Action\Context;
 use MultiSafepay\ConnectCore\Config\Config;
 use MultiSafepay\ConnectCore\Logger\Logger;
 use MultiSafepay\ConnectCore\Service\Order\CancelMultisafepayOrderPaymentLink;
-use MultiSafepay\ConnectCore\Util\CouponUtil;
 use MultiSafepay\ConnectCore\Util\CustomReturnUrlUtil;
+use MultiSafepay\ConnectFrontend\Service\CancelOrder;
 use MultiSafepay\ConnectFrontend\Service\ResetAdditionalInformation;
 use MultiSafepay\ConnectFrontend\Validator\RequestValidator;
 
@@ -54,11 +54,6 @@ class Cancel extends Action
     private $cancelMultisafepayOrderPaymentLink;
 
     /**
-     * @var CouponUtil
-     */
-    private $couponUtil;
-
-    /**
      * @var Logger
      */
     private $logger;
@@ -69,6 +64,11 @@ class Cancel extends Action
     private $resetAdditionalInformation;
 
     /**
+     * @var CancelOrder
+     */
+    private $cancelOrder;
+
+    /**
      * Cancel constructor.
      *
      * @param RequestValidator $requestValidator
@@ -77,9 +77,9 @@ class Cancel extends Action
      * @param CustomReturnUrlUtil $customReturnUrlUtil
      * @param Config $config
      * @param CancelMultisafepayOrderPaymentLink $cancelMultisafepayOrderPaymentLink
-     * @param CouponUtil $couponUtil
      * @param Logger $logger
      * @param ResetAdditionalInformation $resetAdditionalInformation
+     * @param CancelOrder $cancelOrder
      */
     public function __construct(
         RequestValidator $requestValidator,
@@ -88,18 +88,18 @@ class Cancel extends Action
         CustomReturnUrlUtil $customReturnUrlUtil,
         Config $config,
         CancelMultisafepayOrderPaymentLink $cancelMultisafepayOrderPaymentLink,
-        CouponUtil $couponUtil,
         Logger $logger,
-        ResetAdditionalInformation $resetAdditionalInformation
+        ResetAdditionalInformation $resetAdditionalInformation,
+        CancelOrder $cancelOrder
     ) {
         $this->checkoutSession = $checkoutSession;
         $this->requestValidator = $requestValidator;
         $this->customReturnUrlUtil = $customReturnUrlUtil;
         $this->config = $config;
         $this->cancelMultisafepayOrderPaymentLink = $cancelMultisafepayOrderPaymentLink;
-        $this->couponUtil = $couponUtil;
         $this->logger = $logger;
         $this->resetAdditionalInformation = $resetAdditionalInformation;
+        $this->cancelOrder = $cancelOrder;
         parent::__construct($context);
     }
 
@@ -125,10 +125,10 @@ class Cancel extends Action
         }
 
         $orderId = $parameters['transactionid'];
-
         $order = $this->checkoutSession->getLastRealOrder()->loadByIncrementId($orderId);
 
-        $this->couponUtil->restoreCoupon($order);
+        $this->cancelOrder->execute($order);
+
         if ($this->checkoutSession->restoreQuote()) {
             $this->logger->logInfoForOrder($orderId, 'Quote successfully restored by Cancel controller');
         }
