@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.6.2] - 2024-08-06
+### Fixed
+PLGMAG2V2-780: Fixed an issue where Store Credit would be returned twice
+
+### Changed
+- PLGMAG2V2-778: Coupons will now be canceled through the OrderService on order cancelation and will happen either through the Notification webhook request or when restoring the cart, depending on the type of transaction
+
 ## [2.6.1] - 2024-07-05
 ### Changed
 PLGMAG2V2-757: Remove payment additionalData when the quote has been restored
