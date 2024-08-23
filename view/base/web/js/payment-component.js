@@ -55,10 +55,7 @@ define([
 
                 multisafepayPaymentComponent.init('payment', {
                     container: '#' + paymentRequestData.paymentComponentContainerId + '-' + paymentCode,
-                    gateway: cardConfig.gatewayCode,
-                    onLoad: function(state) {
-                        console.log('onLoad', state);
-                    }
+                    gateway: cardConfig.gatewayCode
                 });
 
                 return multisafepayPaymentComponent;
