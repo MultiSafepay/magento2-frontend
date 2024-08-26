@@ -43,8 +43,7 @@ define(
 
         return Component.extend({
             defaults: {
-                template: 'MultiSafepay_ConnectFrontend/payment/gateway/ideal',
-                issuerId: '',
+                template: 'MultiSafepay_ConnectFrontend/payment/gateway/ideal'
             },
 
             initialize: function () {
@@ -53,22 +52,6 @@ define(
                 this.vaultEnabler.setPaymentCode(this.getVaultCode());
 
                 return this;
-            },
-
-            initObservable: function () {
-                this.observe('issuerId')
-                    ._super();
-
-                return this;
-            },
-
-            /**
-             * Get list of issuers
-             *
-             * @returns {*}
-             */
-            getIssuers: function () {
-                return this.paymentConfig.issuers;
             },
 
             /**
@@ -95,9 +78,7 @@ define(
             getData: function () {
                 let data = {
                     "method": this.item.method,
-                    "additional_data": {
-                        'issuer_id': this.issuerId(),
-                    }
+                    "additional_data": {}
                 };
 
                 this.vaultEnabler.visitAdditionalData(data);

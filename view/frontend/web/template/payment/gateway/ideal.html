@@ -27,19 +27,6 @@
         <!-- ko foreach: getRegion('messages') -->
         <!-- ko template: getTemplate() --><!-- /ko -->
         <!--/ko-->
-        <div class="payment-method-issuers" style="margin: 0 0 20px;">
-            <label>
-                <select name="issuerid" class="select bank" id="ideal-issuers" data-bind="
-                        enable: true,
-                        options: getIssuers(),
-                        optionsValue: 'code',
-                        optionsText: 'description',
-                        optionsCaption: $t('Choose your bank...'),
-                        value: issuerId">
-                </select>
-            </label>
-        </div>
-
         <div class="payment-method-billing-address">
             <!-- ko foreach: $parent.getRegion(getBillingAddressFormName()) -->
             <!-- ko template: getTemplate() --><!-- /ko -->
