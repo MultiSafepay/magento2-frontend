@@ -28,6 +28,10 @@
         <!-- ko template: getTemplate() --><!-- /ko -->
         <!--/ko-->
 
+        <!-- ko if: (isPaymentComponentEnabled())-->
+        <div class="multisafepay-payment-component" data-bind="attr: {'id': getPaymentComponentId()}, afterRender: PreRenderPaymentComponent()"></div>
+        <!--/ko-->
+
         <!-- ko if: isDirect() -->
         <div class="payment-method-in3" style="margin: 0 0 20px;">
             <fieldset class="fieldset">
