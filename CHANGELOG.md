@@ -6,6 +6,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.7.0] - 2024-08-30
+### Added
+- PLGMAG2V2-779: Added payment component for BNPL methods
+
+### Changed
+- PLGMAG2V2-785: Upgraded payment icon for MultiSafepay method
+
+### Removed
+- PLGMAG2V2-784: Removed issuers from iDEAL
+- PLGMAG2V2-706: Removed payment component Onload console.log
+
 ## [2.6.2] - 2024-08-06
 ### Fixed
 PLGMAG2V2-780: Fixed an issue where Store Credit would be returned twice
