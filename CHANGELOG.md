@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.7.1] - 2024-09-20
+### Changed
+- DAVAMS-795: Rebrand the logo's, titles and labels from AfterPay to Riverty
+
 ## [2.7.0] - 2024-08-30
 ### Added
 - PLGMAG2V2-779: Added payment component for BNPL methods
