@@ -15,9 +15,11 @@ declare(strict_types=1);
 
 namespace MultiSafepay\ConnectFrontend\Plugin\Customer\Controller\Cards;
 
+use Exception;
 use Magento\Customer\Model\SessionFactory;
-use Magento\Framework\App\RequestInterface;
+use Magento\Framework\App\Request\Http;
 use Magento\Framework\App\ResponseInterface;
+use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\Vault\Api\Data\PaymentTokenInterface;
@@ -28,6 +30,9 @@ use MultiSafepay\ConnectCore\Model\Api\Builder\TokenRequestBuilder;
 use MultiSafepay\ConnectCore\Model\Vault;
 use Psr\Http\Client\ClientExceptionInterface;
 
+/**
+ * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
+ */
 class DeleteActionPlugin
 {
     /**
@@ -85,11 +90,17 @@ class DeleteActionPlugin
      * @param ResponseInterface $result
      *
      * @return ResponseInterface
+     * @throws LocalizedException
+     * @throws Exception
      */
     public function afterExecute(DeleteAction $subject, ResponseInterface $result): ResponseInterface
     {
         $customerId = $this->customerSession->create()->getCustomerId();
-        $token = $this->getGatewayToken($subject->getRequest(), (int)$customerId);
+
+        /** @var Http $request */
+        $request = $subject->getRequest();
+
+        $token = $this->getGatewayToken($request, (int)$customerId);
 
         if (!$token) {
             return $result;
@@ -118,11 +129,13 @@ class DeleteActionPlugin
     /**
      * Get the token from the database based on the public hash
      *
-     * @param RequestInterface $request
+     * @param Http $request
      * @param int $customerId
      * @return string|null
+     * @throws LocalizedException
+     * @throws Exception
      */
-    private function getGatewayToken(RequestInterface $request, int $customerId): ?string
+    private function getGatewayToken(Http $request, int $customerId): ?string
     {
         $publicHash = $request->getPostValue(PaymentTokenInterface::PUBLIC_HASH);
 
@@ -138,7 +151,7 @@ class DeleteActionPlugin
 
         if (!$token) {
             $this->logger->debug(
-                'Failed to delete the token at MultiSafepay, 
+                'Failed to delete the token at MultiSafepay,
                 unable to find the Vault token based on the public hash and customer id'
             );
 
@@ -148,7 +161,7 @@ class DeleteActionPlugin
         if (!in_array($token->getPaymentMethodCode(), Vault::VAULT_GATEWAYS, true)) {
             // Not a MultiSafepay token, doing an early return to skip the MultiSafepay token request
             $this->logger->debug(
-                'Failed to delete the token at MultiSafepay, 
+                'Failed to delete the token at MultiSafepay,
                 found a token but it was not a MultiSafepay Vault token'
             );
 

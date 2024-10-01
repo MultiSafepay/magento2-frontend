@@ -21,6 +21,7 @@ use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Quote\Api\CartRepositoryInterface;
 use Magento\Sales\Api\Data\OrderInterface;
+use Magento\Sales\Model\Order;
 use MultiSafepay\ConnectCore\Logger\Logger;
 use MultiSafepay\ConnectCore\Util\CustomReturnUrlUtil;
 use MultiSafepay\ConnectCore\Util\OrderUtil;
@@ -120,6 +121,7 @@ class Success extends Action
 
         $orderIncrementId = $parameters['transactionid'];
 
+        /** @var Order $order */
         $order = $this->orderUtil->getOrderByIncrementId($orderIncrementId);
         $customReturnUrl = $this->customReturnUrlUtil->getCustomReturnUrlByType(
             $order,

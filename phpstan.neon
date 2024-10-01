@@ -1,0 +1,11 @@
+parameters:
+    level: 2
+    errorFormat: github
+    paths:
+        - .
+    excludePaths:
+        - etc
+        - i18n
+        - Test
+        - view
+        - Plugin/CustomerBalance

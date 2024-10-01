@@ -21,6 +21,7 @@ use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\ResponseInterface;
 use Magento\Framework\Controller\ResultInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
+use Magento\Sales\Model\Order;
 use MultiSafepay\ConnectCore\Logger\Logger;
 use MultiSafepay\ConnectCore\Service\Payment\RemoveAdditionalInformation;
 use MultiSafepay\ConnectCore\Service\PaymentLink;
@@ -90,6 +91,7 @@ class Redirect extends Action
             return $this->redirectToCheckout(__('Something went wrong with the order. Please try again.')->render());
         }
 
+        /** @var Order $order */
         $order = $this->orderRepository->get($orderId);
         $orderIncrementId = $order->getRealOrderId();
 

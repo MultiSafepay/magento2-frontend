@@ -15,6 +15,7 @@ declare(strict_types=1);
 namespace MultiSafepay\ConnectFrontend\Controller\Apple;
 
 use Exception;
+use Laminas\Http\Request;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\CsrfAwareActionInterface;
@@ -111,7 +112,12 @@ class Session extends Action implements CsrfAwareActionInterface
         ];
 
         try {
-            if ($requestContent = $this->getRequest()->getContent()) {
+            /** @var Request $request */
+            $request = $this->getRequest();
+
+            $requestContent = $request->getContent();
+
+            if ($requestContent) {
                 $requestData = $this->jsonHandler->readJSON($requestContent);
 
                 if (!isset($requestData['originDomain'], $requestData['validationUrl'])) {
