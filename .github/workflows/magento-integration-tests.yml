@@ -1,8 +1,5 @@
 name: Integration Tests
 on:
-  push:
-    branches:
-      - master
   pull_request:
     types: [opened, reopened]
     branches:

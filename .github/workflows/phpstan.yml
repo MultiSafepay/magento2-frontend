@@ -40,6 +40,36 @@ jobs:
         run: composer require --dev bitexpert/phpstan-magento
       - name: Move repository content
         run: cp -r -f ${{ github.workspace }}/* /home/runner/work/magento/vendor/multisafepay/magento2-frontend
+      - name: Checkout Adminhtml Repository
+        uses: actions/checkout@v4
+        continue-on-error: true
+        with:
+          repository: multisafepay/magento2-internal-adminhtml
+          token: ${{ secrets.GLOBAL_GITHUB_TOKEN }}
+          ref: ${{ github.ref_name }}
+      - name: Move Adminhtml Repository content
+        continue-on-error: true
+        run: cp -r -f ${{ github.workspace }}/* /home/runner/work/magento/vendor/multisafepay/magento2-adminhtml
+      - name: Checkout Core Repository
+        uses: actions/checkout@v4
+        continue-on-error: true
+        with:
+          repository: multisafepay/magento2-internal-core
+          token: ${{ secrets.GLOBAL_GITHUB_TOKEN }}
+          ref: ${{ github.ref_name }}
+      - name: Move Core Repository content
+        continue-on-error: true
+        run: cp -r -f ${{ github.workspace }}/* /home/runner/work/magento/vendor/multisafepay/magento2-core
+      - name: Checkout PHP-SDK
+        uses: actions/checkout@v4
+        continue-on-error: true
+        with:
+          repository: multisafepay/php-sdk-internal
+          token: ${{ secrets.GLOBAL_GITHUB_TOKEN }}
+          ref: ${{ github.ref_name }}
+      - name: Move PHP-SDK Repository content
+        continue-on-error: true
+        run: cp -r -f ${{ github.workspace }}/* /home/runner/work/magento/vendor/multisafepay/php-sdk
       - name: Run PHPStan
         working-directory: /home/runner/work/magento
         run: vendor/bin/phpstan analyse -c vendor/multisafepay/magento2-frontend/phpstan.neon --error-format github
