@@ -58,6 +58,7 @@ define(
             {type: 'multisafepay_bancontact', component: baseRenderer},
             {type: 'multisafepay_banktransfer', component: baseRenderer},
             {type: 'multisafepay_belfius', component: baseRenderer},
+            {type: 'multisafepay_bizum', component: baseRenderer},
             {type: 'multisafepay_cbc', component: baseRenderer},
             {type: 'multisafepay_creditcard', component: gatewayPath + 'creditcard'},
             {type: 'multisafepay_directbanktransfer', component: gatewayPath + 'directbanktransfer'},
