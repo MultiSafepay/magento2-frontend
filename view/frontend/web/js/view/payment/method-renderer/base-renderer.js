@@ -88,6 +88,15 @@ define(
             },
 
             /**
+             * Get the gateway instructions
+             *
+             * @returns {*|string}
+             */
+            getInstructions: function () {
+                return this.paymentConfig.instructions ?? '';
+            },
+
+            /**
              * Redirect to controller after place order
              */
             afterPlaceOrder: function () {

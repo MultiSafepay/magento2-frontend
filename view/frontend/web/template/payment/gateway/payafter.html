@@ -28,6 +28,12 @@
         <!-- ko template: getTemplate() --><!-- /ko -->
         <!--/ko-->
 
+        <!-- ko if: (!!getInstructions()) -->
+        <div class="payment-method-instructions">
+            <div class="payment-method-instructions-content" data-bind="html: getInstructions()"></div>
+        </div>
+        <!--/ko-->
+
         <!-- ko if: isDirect() -->
         <div class="payment-method-payafter" style="margin: 0 0 20px;">
             <fieldset class="fieldset">

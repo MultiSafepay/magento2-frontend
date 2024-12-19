@@ -27,6 +27,13 @@
         <!-- ko foreach: getRegion('messages') -->
         <!-- ko template: getTemplate() --><!-- /ko -->
         <!--/ko-->
+
+        <!-- ko if: (!!getInstructions()) -->
+        <div class="payment-method-instructions">
+            <div class="payment-method-instructions-content" data-bind="html: getInstructions()"></div>
+        </div>
+        <!--/ko-->
+
         <div class="payment-method-issuers" style="margin: 0 0 20px;">
             <label>
                 <select name="issuerid" class="select bank select2" id="mybank-issuers" data-bind="
