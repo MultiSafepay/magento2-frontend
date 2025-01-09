@@ -69,6 +69,7 @@ define(
             {type: 'multisafepay_idealqr', component: baseRenderer},
             {type: 'multisafepay_in3', component: gatewayPath + 'in3'},
             {type: 'multisafepay_in3b2b', component: gatewayPath + 'payment-component'},
+            {type: 'multisafepay_billink', component: gatewayPath + 'payment-component'},
             {type: 'multisafepay_kbc', component: baseRenderer},
             {type: 'multisafepay_klarna', component: baseRenderer},
             {type: 'multisafepay_maestro', component: gatewayPath + 'creditcard'},
