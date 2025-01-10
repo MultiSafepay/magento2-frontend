@@ -6,6 +6,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.8.0] - 2024-01-09
+### Added
+- DAVAMS-852: Added the Billink payment method
+- DAVAMS-817: Added the Bizum payment method
+- PLGMAG2V2-814: Added a payment method instructions field
+
+### Removed
+- PLGMAG2V2-810: Removed the following deprecated methods: Santander, Giropay, Sofort, Request to pay and Dotpay
+
 ## [2.7.1] - 2024-09-20
 ### Changed
 - DAVAMS-795: Rebrand the logo's, titles and labels from AfterPay to Riverty
