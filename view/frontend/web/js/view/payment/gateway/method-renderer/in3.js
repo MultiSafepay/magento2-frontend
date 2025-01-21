@@ -63,7 +63,6 @@ define(
             defaults: {
                 template: 'MultiSafepay_ConnectFrontend/payment/gateway/in3',
                 paymentType: 'payment_component',
-                genderId: ''
             },
 
             initialize: function () {
@@ -74,31 +73,6 @@ define(
                 this.paymentComponentLifeTime = this.paymentRequestConfig.apiTokenLifeTime;
 
                 return this;
-            },
-
-            initObservable: function () {
-                this.observe('genderId')
-                    ._super();
-
-                return this;
-            },
-
-            /**
-             * Get list of genders
-             *
-             * @returns {*}
-             */
-            getGenders: function () {
-                return [
-                    {
-                        "code": "mr",
-                        "label": $t('Mr.')
-                    },
-                    {
-                        "code": "mrs",
-                        "label": $t('Mrs.')
-                    }
-                ];
             },
 
             /**
@@ -118,18 +92,9 @@ define(
                     return data;
                 }
 
-                if (!this.genderId()) {
-                    return {
-                        "method": this.item.method,
-                        "additional_data": null
-                    };
-                }
-
                 return {
                     "method": this.item.method,
-                    "additional_data": {
-                        'gender': this.genderId()
-                    }
+                    "additional_data": null
                 };
             },
 

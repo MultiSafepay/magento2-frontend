@@ -38,31 +38,6 @@
         <div class="multisafepay-payment-component" data-bind="attr: {'id': getPaymentComponentId()}, afterRender: PreRenderPaymentComponent()"></div>
         <!--/ko-->
 
-        <!-- ko if: isDirect() -->
-        <div class="payment-method-in3" style="margin: 0 0 20px;">
-            <fieldset class="fieldset">
-                <div class="field required">
-                    <label class="label" for="in3-gender">
-                            <span>
-                                <!-- ko i18n: 'Gender'-->
-                                <!-- /ko -->
-                            </span>
-                    </label>
-                    <div class="payment-method-gender" style="margin: 0 0 20px;">
-                        <select name="in3-gender" id="in3-gender" data-bind="
-                        enable: true,
-                        options: getGenders(),
-                        optionsValue: 'code',
-                        optionsText: 'label',
-                        optionsCaption: $t('Choose your gender...'),
-                        attr:{title: $t('Gender')},
-                        value: genderId">
-                        </select>
-                    </div>
-                </div>
-            </fieldset>
-        </div>
-        <!--/ko-->
 
         <div class="checkout-agreements-block">
             <!-- ko foreach: $parent.getRegion('before-place-order') -->
