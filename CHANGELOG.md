@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.8.1] - 2025-02-24
+### Changed
+- PLGMAG2V2-829: Enable Sofort and Dotpay payment methods
+- PLGMAG2V2-815: Add delay for cancel controller to wait for order to cancel
+
+### Removed
+- DAVAMS-840: Remove gender requirement for in3
+
 ## [2.8.0] - 2024-01-09
 ### Added
 - DAVAMS-852: Added the Billink payment method
