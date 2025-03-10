@@ -18,6 +18,9 @@ use Magento\Checkout\Model\Session;
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
 use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\Quote\Api\CartRepositoryInterface;
+use Magento\Quote\Model\Quote;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Payment;
 use MultiSafepay\ConnectCore\Model\Ui\Gateway\BankTransferConfigProvider;
@@ -37,38 +40,55 @@ class RestoreQuoteObserver implements ObserverInterface
     private $paymentMethodUtil;
 
     /**
+     * @var CartRepositoryInterface
+     */
+    private $quoteRepository;
+
+    /**
      * RestoreQuoteObserver constructor.
      *
      * @param Session $checkoutSession
      * @param PaymentMethodUtil $paymentMethodUtil
+     * @param CartRepositoryInterface $quoteRepository
      */
     public function __construct(
         Session $checkoutSession,
-        PaymentMethodUtil $paymentMethodUtil
+        PaymentMethodUtil $paymentMethodUtil,
+        CartRepositoryInterface $quoteRepository
     ) {
         $this->checkoutSession = $checkoutSession;
         $this->paymentMethodUtil = $paymentMethodUtil;
+        $this->quoteRepository = $quoteRepository;
     }
 
     /**
      * @param Observer $observer
      *
+     * @throws LocalizedException
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     public function execute(Observer $observer): void
     {
         $lastRealOrder = $this->checkoutSession->getLastRealOrder();
 
-        if ($this->checkoutSession->getQuoteId() || !$lastRealOrder->getPayment()) {
+        if (!$this->paymentMethodUtil->isMultisafepayOrder($lastRealOrder)) {
+            return;
+        }
+
+        try {
+            /** @var Quote $quote */
+            $quote = $this->quoteRepository->get($lastRealOrder->getQuoteId());
+            $quotePayment = $quote->getPayment();
+
+            if ($quotePayment && $quotePayment->getAdditionalInformation('multisafepay_success')) {
+                return;
+            }
+        } catch (NoSuchEntityException $exception) {
             return;
         }
 
         /** @var Payment $payment */
         $payment = $lastRealOrder->getPayment();
-
-        if (!$this->paymentMethodUtil->isMultisafepayOrder($lastRealOrder)) {
-            return;
-        }
 
         if ($payment->getMethod() === BankTransferConfigProvider::CODE) {
             return;

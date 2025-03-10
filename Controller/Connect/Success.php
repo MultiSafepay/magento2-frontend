@@ -20,6 +20,7 @@ use Magento\Framework\App\Action\Context;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Quote\Api\CartRepositoryInterface;
+use Magento\Quote\Model\Quote;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Model\Order;
 use MultiSafepay\ConnectCore\Logger\Logger;
@@ -149,7 +150,6 @@ class Success extends Action
     /**
      * @param OrderInterface $order
      * @throws LocalizedException
-     * @throws NoSuchEntityException
      */
     public function setCheckoutSessionData(OrderInterface $order)
     {
@@ -157,8 +157,17 @@ class Success extends Action
 
         $quote = $this->checkoutSession->getQuote();
         $quote->setIsActive(false);
-
         $this->cartRepository->save($quote);
+
+        try {
+            /** @var Quote $orderQuote */
+            $orderQuote = $this->cartRepository->get($order->getQuoteId());
+
+            $orderQuote->getPayment()->setAdditionalInformation('multisafepay_success', true);
+            $this->cartRepository->save($orderQuote);
+        } catch (NoSuchEntityException $exception) {
+            $this->logger->logExceptionForOrder($order->getIncrementId(), $exception);
+        }
 
         $this->checkoutSession->setLastSuccessQuoteId($order->getQuoteId());
         $this->checkoutSession->setLastQuoteId($order->getQuoteId());
