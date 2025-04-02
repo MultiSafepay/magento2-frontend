@@ -103,6 +103,7 @@ class RestoreQuoteObserverTest extends AbstractTestCase
         $restoreQuoteObserverMock = $this->getMockBuilder(RestoreQuoteObserver::class)->setConstructorArgs([
             $this->getCheckoutSessionMockWithOrder($order),
             $this->getObjectManager()->get(PaymentMethodUtil::class),
+            $this->getObjectManager()->get(CartRepositoryInterface::class),
         ])->setMethodsExcept(['execute'])->getMock();
 
         self::assertNull($restoreQuoteObserverMock->execute($observerObject));
@@ -112,6 +113,7 @@ class RestoreQuoteObserverTest extends AbstractTestCase
         $restoreQuoteObserverMock = $this->getMockBuilder(RestoreQuoteObserver::class)->setConstructorArgs([
             $this->getCheckoutSessionMockWithOrder($order),
             $this->getObjectManager()->get(PaymentMethodUtil::class),
+            $this->getObjectManager()->get(CartRepositoryInterface::class),
         ])->setMethodsExcept(['execute'])->getMock();
 
         self::assertNull($restoreQuoteObserverMock->execute($observerObject));

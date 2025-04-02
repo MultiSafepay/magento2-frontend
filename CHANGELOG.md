@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.8.2] - 2025-04-02
+### Fixed
+- HYVA-31: Fixed Cart Alive Issue in Hyvä Checkout
+
 ## [2.8.1] - 2025-02-24
 ### Changed
 - PLGMAG2V2-829: Enable Sofort and Dotpay payment methods
