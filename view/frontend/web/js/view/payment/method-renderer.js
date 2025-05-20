@@ -50,7 +50,6 @@ define(
 
         rendererList.push(
             {type: 'multisafepay_afterpay', component: gatewayPath + 'afterpay'},
-            {type: 'multisafepay_alipay', component: baseRenderer},
             {type: 'multisafepay_alipayplus', component: baseRenderer},
             {type: 'multisafepay_amazonpay', component: baseRenderer},
             {type: 'multisafepay_amex', component: gatewayPath + 'creditcard'},
