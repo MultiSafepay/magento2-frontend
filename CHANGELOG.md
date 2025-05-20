@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.9.0] - 2025-05-20
+### Removed
+- DAVAMS-901: Removed the deprecated payment method 'Alipay'
+
 ## [2.8.2] - 2025-04-02
 ### Fixed
 - HYVA-31: Fixed Cart Alive Issue in Hyvä Checkout
