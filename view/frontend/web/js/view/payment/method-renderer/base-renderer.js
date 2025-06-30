@@ -100,8 +100,8 @@ define(
              * Redirect to controller after place order
              */
             afterPlaceOrder: function () {
-                redirectOnSuccessAction.redirectUrl = url.build('multisafepay/connect/redirect/');
-                this.redirectAfterPlaceOrder = true;
+                this.redirectAfterPlaceOrder = false;
+                window.location = url.build('multisafepay/connect/redirect');
             }
         });
     }

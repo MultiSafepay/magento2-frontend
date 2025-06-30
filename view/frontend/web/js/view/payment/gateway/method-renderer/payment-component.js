@@ -235,14 +235,6 @@ define(
                         self.isPlaceOrderActionAllowed(true);
                     }
                 );
-            },
-
-            /**
-             * Redirect to controller after place order
-             */
-            afterPlaceOrder: function () {
-                redirectOnSuccessAction.redirectUrl = url.build('multisafepay/connect/redirect/');
-                this.redirectAfterPlaceOrder = true;
             }
         });
     }
