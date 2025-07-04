@@ -13,13 +13,15 @@ define([
     'mage/translate',
     'Magento_Customer/js/customer-data',
     'Magento_Checkout/js/model/quote',
-    'multisafepayPaymentComponentLib'
+    'multisafepayPaymentComponentLib',
+    'mage/url'
 ], function (
     $,
     $t,
     customerData,
     quote,
-    multisafepayPaymentComponentLib
+    multisafepayPaymentComponentLib,
+    url
 ) {
     'use strict';
 
@@ -55,12 +57,48 @@ define([
 
                 multisafepayPaymentComponent.init('payment', {
                     container: '#' + paymentRequestData.paymentComponentContainerId + '-' + paymentCode,
-                    gateway: cardConfig.gatewayCode
+                    gateway: cardConfig.gatewayCode,
+                    onError: state => {
+                        if (paymentRequestData.debug_mode) {
+                            console.log('Payment Component error: ' + JSON.stringify( state, null, 2));
+                        }
+
+                        return new Promise(
+                            (resolve, reject) => {
+                                $.ajax({
+                                    url: url.build('multisafepay/connect/error'),
+                                    type: 'POST',
+                                    data: {
+                                        'error': JSON.stringify(state,null,2),
+                                        'payment_method': paymentCode,
+                                        'gateway_code': cardConfig.gatewayCode,
+                                        'payment_component_data': JSON.stringify(paymentComponentData, null, 2),
+                                        'form_key': $.mage.cookies.get('form_key')
+                                    },
+                                    success: function (response) {
+                                        resolve(response);
+                                    },
+                                    error: function (error) {
+                                        if (paymentRequestData.debug_mode) {
+                                            console.log('Error occurred when trying to log the payment component error: ' + JSON.stringify(error, null, 2));
+                                        }
+                                        reject(error);
+                                    }
+                                });
+                            }
+                        ).then(
+                            response => {
+                                if (paymentRequestData.debug_mode) {
+                                    console.log(response);
+                                }
+                            }
+                        );
+                    }
                 });
 
                 return multisafepayPaymentComponent;
             } else {
-                console.log($t("Credit Card component data not available for selected payment method."));
+                console.log($t("MultiSafepay Component data not available for selected payment method."));
             }
 
             return {};
