@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.10.0] - 2025-07-09
+### Added
+- PLGMAG2V2-856: Added logging for payment component requests
+
+### Fixed
+- PLGMAG2V2-855: Fixed an issue with restoring the cart when using the browser back button on the payment page for third party checkouts like Amasty Checkout (Pro)
+
 ## [2.9.0] - 2025-05-20
 ### Removed
 - DAVAMS-901: Removed the deprecated payment method 'Alipay'
