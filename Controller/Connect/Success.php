@@ -26,9 +26,13 @@ use Magento\Sales\Model\Order;
 use MultiSafepay\ConnectCore\Logger\Logger;
 use MultiSafepay\ConnectCore\Util\CustomReturnUrlUtil;
 use MultiSafepay\ConnectCore\Util\OrderUtil;
+use MultiSafepay\ConnectCore\Util\ThirdPartyPluginsUtil;
 use MultiSafepay\ConnectFrontend\Validator\RequestValidator;
 use MultiSafepay\ConnectCore\Config\Config;
 
+/**
+ * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
+ */
 class Success extends Action
 {
     /**
@@ -67,6 +71,11 @@ class Success extends Action
     private $config;
 
     /**
+     * @var ThirdPartyPluginsUtil
+     */
+    private $thirdPartyPluginsUtil;
+
+    /**
      * Success constructor.
      *
      * @param Context $context
@@ -77,6 +86,7 @@ class Success extends Action
      * @param CartRepositoryInterface $cartRepository
      * @param CustomReturnUrlUtil $customReturnUrlUtil
      * @param Config $config
+     * @param ThirdPartyPluginsUtil $thirdPartyPluginsUtil
      */
     public function __construct(
         Context $context,
@@ -86,7 +96,8 @@ class Success extends Action
         Logger $logger,
         CartRepositoryInterface $cartRepository,
         CustomReturnUrlUtil $customReturnUrlUtil,
-        Config $config
+        Config $config,
+        ThirdPartyPluginsUtil $thirdPartyPluginsUtil
     ) {
         parent::__construct($context);
         $this->requestValidator = $requestValidator;
@@ -96,11 +107,12 @@ class Success extends Action
         $this->customReturnUrlUtil = $customReturnUrlUtil;
         $this->orderUtil = $orderUtil;
         $this->config = $config;
+        $this->thirdPartyPluginsUtil = $thirdPartyPluginsUtil;
     }
 
     /**
      * @inheritDoc
-     * @throws LocalizedException
+     * @throws \Exception
      */
     public function execute()
     {
@@ -123,7 +135,7 @@ class Success extends Action
         $orderIncrementId = $parameters['transactionid'];
 
         /** @var Order $order */
-        $order = $this->orderUtil->getOrderByIncrementId($orderIncrementId);
+        $order = $this->getOrder($orderIncrementId);
         $customReturnUrl = $this->customReturnUrlUtil->getCustomReturnUrlByType(
             $order,
             $parameters,
@@ -173,5 +185,46 @@ class Success extends Action
         $this->checkoutSession->setLastQuoteId($order->getQuoteId());
         $this->checkoutSession->setLastOrderId($order->getEntityId());
         $this->checkoutSession->setLastRealOrderId($order->getIncrementId());
+    }
+
+    /**
+     * Get order by increment ID with retries if Create Account After Placing Order is enabled
+     *
+     * @param string $orderIncrementId
+     * @return OrderInterface
+     * @throws NoSuchEntityException
+     */
+    private function getOrder(string $orderIncrementId): OrderInterface
+    {
+        if (!$this->thirdPartyPluginsUtil->canCreateAccountAfterPlacingOrder()) {
+            return $this->orderUtil->getOrderByIncrementId($orderIncrementId);
+        }
+
+        for ($count = 0; $count < 5; $count++) {
+            $order = $this->orderUtil->getOrderByIncrementId($orderIncrementId);
+
+            // Check if the order is in processing state
+            if ($order->getState() !== Order::STATE_PENDING_PAYMENT) {
+                return $order;
+            };
+
+            $this->logger->logInfoForOrder(
+                $orderIncrementId,
+                'Order was not in processing state. Trying again in 3 seconds.'
+            );
+
+            // Try again in 3 seconds
+            //phpcs:ignore
+            sleep(3);
+
+            if ($count === 4) {
+                $this->logger->logInfoForOrder(
+                    $orderIncrementId,
+                    'Tried to find the order in processing state, but was not found after 5 attempts.'
+                );
+            }
+        }
+
+        return $this->orderUtil->getOrderByIncrementId($orderIncrementId);
     }
 }
