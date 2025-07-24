@@ -54,7 +54,7 @@ define(
             {type: 'multisafepay_amazonpay', component: baseRenderer},
             {type: 'multisafepay_amex', component: gatewayPath + 'creditcard'},
             {type: 'multisafepay_applepay', component: gatewayPath + 'applepay'},
-            {type: 'multisafepay_bancontact', component: baseRenderer},
+            {type: 'multisafepay_bancontact', component: gatewayPath + 'bancontact'},
             {type: 'multisafepay_banktransfer', component: baseRenderer},
             {type: 'multisafepay_belfius', component: baseRenderer},
             {type: 'multisafepay_bizum', component: baseRenderer},

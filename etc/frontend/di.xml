@@ -22,6 +22,7 @@
                 <item name="multisafepay_ideal_recurring" xsi:type="object">MultiSafepay\ConnectCore\Model\Ui\IdealTokenUiComponentProvider</item>
                 <item name="multisafepay_directdebit_recurring" xsi:type="object">MultiSafepay\ConnectCore\Model\Ui\DirectDebitTokenUiComponentProvider</item>
                 <item name="multisafepay_maestro_recurring" xsi:type="object">MultiSafepay\ConnectCore\Model\Ui\MaestroTokenUiComponentProvider</item>
+                <item name="multisafepay_bancontact_recurring" xsi:type="object">MultiSafepay\ConnectCore\Model\Ui\BancontactTokenUiComponentProvider</item>
             </argument>
         </arguments>
     </type>
