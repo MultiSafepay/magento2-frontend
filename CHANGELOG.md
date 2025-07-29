@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.11.0] - 2025-07-29
+### Added
+- PLGMAG2V2-852: Added support for Bancontact WIP in Magento Vault
+- PLGMAG2V2-859: Added CODE_OF_CONDUCT.md
+
+### Fixed
+- PLGMAG2V2-860: Fixed an issue where some orders do not have correct values after invoice creation with a specific Amasty Checkout Pro configuration
+
 ## [2.10.0] - 2025-07-09
 ### Added
 - PLGMAG2V2-856: Added logging for payment component requests
