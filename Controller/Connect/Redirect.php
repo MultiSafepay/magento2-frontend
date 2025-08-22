@@ -18,8 +18,8 @@ use Exception;
 use Magento\Checkout\Model\Session;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
+use Magento\Framework\App\Response\Http;
 use Magento\Framework\App\ResponseInterface;
-use Magento\Framework\Controller\ResultInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Model\Order;
 use MultiSafepay\ConnectCore\Logger\Logger;
@@ -80,10 +80,10 @@ class Redirect extends Action
     }
 
     /**
-     * @return ResponseInterface|ResultInterface
+     * @return ResponseInterface
      * @throws Exception
      */
-    public function execute()
+    public function execute(): ResponseInterface
     {
         $orderId = $this->checkoutSession->getLastRealOrder()->getId();
 
@@ -105,7 +105,10 @@ class Redirect extends Action
         $this->logger->logPaymentRedirectInfo($orderIncrementId, $paymentUrl);
         $this->removeAdditionalInformation->execute($order);
 
-        return $this->_redirect($paymentUrl);
+        /** @var Http $response */
+        $response = $this->getResponse();
+
+        return $response->setRedirect($paymentUrl);
     }
 
     /**
