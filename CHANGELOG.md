@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.11.1] - 2025-08-22
+### Fixed
+- PLGMAG2V2-855: Fixed an issue with restoring the cart when using the browser back button on the payment page for Amasty Checkout (Pro) (Now also fixed in Magento version 2.3.7)
+
 ## [2.11.0] - 2025-07-29
 ### Added
 - PLGMAG2V2-852: Added support for Bancontact WIP in Magento Vault
