@@ -62,10 +62,23 @@ class ResetAdditionalInformation
             return;
         }
 
-        if ($payment->getAdditionalInformation()) {
-            $payment->unsAdditionalInformation();
+        $additionalInformation = $payment->getAdditionalInformation();
+
+        if (!$additionalInformation) {
+            return;
         }
 
-        $this->quoteRepository->save($quote);
+        $transactionType = $additionalInformation['transaction_type'] ?? null;
+
+        if ($transactionType === 'direct') {
+            $payment->unsAdditionalInformation();
+
+            try {
+                $quote->setPayment($payment);
+                $this->quoteRepository->save($quote);
+            } catch (LocalizedException $exception) {
+                $this->logger->logException($exception);
+            }
+        }
     }
 }
