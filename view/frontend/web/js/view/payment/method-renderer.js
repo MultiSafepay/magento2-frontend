@@ -88,7 +88,6 @@ define(
             {type: 'multisafepay_trustpay', component: baseRenderer},
             {type: 'multisafepay_wechatpay', component: baseRenderer},
             {type: 'multisafepay_visa', component: gatewayPath + 'creditcard'},
-            {type: 'multisafepay_zinia', component: gatewayPath + 'payment-component'},
             {type: 'multisafepay_babygiftcard', component: baseRenderer},
             {type: 'multisafepay_beautyandwellness', component: baseRenderer},
             {type: 'multisafepay_boekenbon', component: baseRenderer},
