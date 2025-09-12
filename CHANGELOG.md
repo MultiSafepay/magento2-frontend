@@ -4,7 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [2.12.0] - 2025-09-12
+### Changed
+- PLGMAG2V2-867: Improved when to save the quote on the Cancel controller, it will now save if the payment actually has any additional information that needs to be removed
+
+### Removed
+- DAVAMS-918: Deprecated Zinia payment method
 
 ## [2.11.1] - 2025-08-22
 ### Fixed
