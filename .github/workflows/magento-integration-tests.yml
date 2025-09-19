@@ -1,66 +1,131 @@
 name: Integration Tests
+
 on:
+  push:
+    branches:
+      - master
   pull_request:
     types: [opened, reopened]
     branches:
-      - 'master'
-      - 'release/**'
+      - master
+      - release/**
 
 jobs:
-  integration-tests:
+  build:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    env:
+      TOKEN: ${{ secrets.GLOBAL_GITHUB_TOKEN }}
+
     strategy:
       matrix:
-        magento_version: [2.3.7-p3, 2.4.2-p2]
-    name: Magento 2 Integration Tests
-    runs-on: ubuntu-latest
-    services:
-      mysql:
-        image: mysql:5.7
-        env:
-          MYSQL_ROOT_PASSWORD: root
-          MYSQL_SQL_TO_RUN: 'GRANT ALL ON *.* TO "root"@"%";'
-        ports:
-          - 3306:3306
-        options: --tmpfs /tmp:rw --tmpfs /var/lib/mysql:rw --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
-      es:
-        image: docker.io/wardenenv/elasticsearch:7.8
-        ports:
-          - 9200:9200
-        env:
-          'discovery.type': single-node
-          'xpack.security.enabled': false
-          ES_JAVA_OPTS: "-Xms64m -Xmx512m"
-        options: --health-cmd="curl localhost:9200/_cluster/health?wait_for_status=yellow&timeout=60s" --health-interval=10s --health-timeout=5s --health-retries=3
+        include:
+          - PHP_VERSION: php74-fpm
+            MAGENTO_VERSION: 2.3.7-p4
+          - PHP_VERSION: php82-fpm
+            MAGENTO_VERSION: 2.4.6-p12
+
     steps:
-      - uses: actions/checkout@v2
-
-      - if: matrix.magento_version == '2.3.7-p3'
-        name: M2 Integration Tests on Magento ${{ matrix.magento_version }}
-        uses: MultiSafepay/github-actions-m2/magento-integration-tests/7.3@with-coverage-support
-        env:
-            MAGENTO_MARKETPLACE_USERNAME: ${{ secrets.MAGENTO_MARKETPLACE_USERNAME }}
-            MAGENTO_MARKETPLACE_PASSWORD: ${{ secrets.MAGENTO_MARKETPLACE_PASSWORD }}
-            GLOBAL_GITHUB_TOKEN: ${{ secrets.GLOBAL_GITHUB_TOKEN }}
-            CURRENT_HEAD_REF: ${{ github.event.pull_request.head.ref }}
+      - uses: actions/checkout@v5
         with:
-            module_name: MultiSafepay_ConnectFrontend
-            composer_name: multisafepay/magento2-frontend
-            ce_version: '${{ matrix.magento_version }}'
-            magento_pre_install_script: .github/workflows/magento-integration-tests-pre-phpunit.sh
+          fetch-depth: 0
 
-      - if: matrix.magento_version == '2.4.2-p2'
-        name: M2 Integration Tests on Magento ${{ matrix.magento_version }}
-        uses: MultiSafepay/github-actions-m2/magento-integration-tests/7.4@with-coverage-support
-        env:
-            MAGENTO_MARKETPLACE_USERNAME: ${{ secrets.MAGENTO_MARKETPLACE_USERNAME }}
-            MAGENTO_MARKETPLACE_PASSWORD: ${{ secrets.MAGENTO_MARKETPLACE_PASSWORD }}
-            GLOBAL_GITHUB_TOKEN: ${{ secrets.GLOBAL_GITHUB_TOKEN }}
-            CURRENT_HEAD_REF: ${{ github.event.pull_request.head.ref }}
+      - name: Start Docker
+        run: docker run --detach --name magento-project-community-edition michielgerritsen/magento-project-community-edition:${{ matrix.PHP_VERSION }}-magento${{ matrix.MAGENTO_VERSION }}
+
+      - name: Upload our code into the docker container
+        run: docker cp "$(pwd)" magento-project-community-edition:/data/extensions/
+
+      - name: Extract branch name
+        id: extract_branch
+        shell: bash
+        run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
+
+      - name: Pick repositories and branches
+        id: pick
+        shell: bash
+        run: |
+          check_branch() {
+            local OWNER="$1"
+            local REPO="$2"
+            local BRANCH="$3"
+            local DEFAULT="$4"
+
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+              -H "Authorization: Bearer $TOKEN" \
+              "https://api.github.com/repos/$OWNER/$REPO/branches/$BRANCH")
+
+            if [ "$STATUS" -eq 200 ]; then
+              echo "$BRANCH"
+            else
+              echo "$DEFAULT"
+            fi
+          }
+
+          OWNER="$(echo "${GITHUB_REPOSITORY}" | cut -d'/' -f1)"
+          CURRENT_REPO="$(echo "${GITHUB_REPOSITORY}" | cut -d'/' -f2)"
+          BRANCH="${{ steps.extract_branch.outputs.branch }}"
+          DEFAULT="master"
+
+          if [[ "$CURRENT_REPO" == *internal* ]]; then
+            ADMIN_REPO="magento2-internal-adminhtml"
+            CORE_REPO="magento2-internal-core"
+            SDK_REPO="php-sdk-internal"
+          else
+            ADMIN_REPO="magento2-adminhtml"
+            CORE_REPO="magento2-core"
+            SDK_REPO="php-sdk"
+          fi
+
+          ADMIN_BRANCH=$(check_branch "$OWNER" "$ADMIN_REPO" "$BRANCH" "$DEFAULT")
+          CORE_BRANCH=$(check_branch "$OWNER" "$CORE_REPO" "$BRANCH" "$DEFAULT")
+          SDK_BRANCH=$(check_branch "$OWNER" "$SDK_REPO" "$BRANCH" "$DEFAULT")
+
+          echo "admin-repo=$OWNER/$ADMIN_REPO" >> $GITHUB_OUTPUT
+          echo "admin-branch=$ADMIN_BRANCH" >> $GITHUB_OUTPUT
+          echo "core-repo=$OWNER/$CORE_REPO" >> $GITHUB_OUTPUT
+          echo "core-branch=$CORE_BRANCH" >> $GITHUB_OUTPUT
+          echo "sdk-repo=$OWNER/$SDK_REPO" >> $GITHUB_OUTPUT
+          echo "sdk-branch=$SDK_BRANCH" >> $GITHUB_OUTPUT
+
+      - uses: actions/checkout@v5
         with:
-            module_name: MultiSafepay_ConnectFrontend
-            composer_name: multisafepay/magento2-frontend
-            ce_version: '${{ matrix.magento_version }}'
-            phpunit_file: './phpunit.xml'
-            magento_pre_install_script: .github/workflows/magento-integration-tests-pre-phpunit.sh
-      - name: Send clover to codecov
-        run: bash <(curl -s https://codecov.io/bash) -t ${{ secrets.CODECOV_TOKEN }} -R .
+          repository: ${{ steps.pick.outputs.admin-repo }}
+          ref: ${{ steps.pick.outputs.admin-branch }}
+          token: ${{ env.TOKEN }}
+          path: magento2-adminhtml
+
+      - uses: actions/checkout@v5
+        with:
+          repository: ${{ steps.pick.outputs.core-repo }}
+          ref: ${{ steps.pick.outputs.core-branch }}
+          token: ${{ env.TOKEN }}
+          path: magento2-core
+
+      - uses: actions/checkout@v5
+        with:
+          repository: ${{ steps.pick.outputs.sdk-repo }}
+          ref: ${{ steps.pick.outputs.sdk-branch }}
+          token: ${{ env.TOKEN }}
+          path: php-sdk
+
+      - name: Create directories in the container
+        run: |
+          docker exec magento-project-community-edition mkdir -p /data/extensions/magento2-adminhtml
+          docker exec magento-project-community-edition mkdir -p /data/extensions/magento2-core
+          docker exec magento-project-community-edition mkdir -p /data/extensions/php-sdk
+
+      - name: Copy repositories into the container
+        run: |
+          docker cp "${{ github.workspace }}/magento2-adminhtml/." magento-project-community-edition:/data/extensions/magento2-adminhtml
+          docker cp "${{ github.workspace }}/magento2-core/." magento-project-community-edition:/data/extensions/magento2-core
+          docker cp "${{ github.workspace }}/php-sdk/." magento-project-community-edition:/data/extensions/php-sdk
+
+      - name: Install the extension in Magento
+        run: docker exec magento-project-community-edition composer require multisafepay/magento2-frontend
+
+      - name: Run tests
+        run: docker exec magento-project-community-edition bash -c "php bin/magento deploy:mode:set developer && cd /data/dev/tests/integration/ && ../../../vendor/bin/phpunit ../../../vendor/multisafepay/magento2-frontend/Test/Integration"
