@@ -83,7 +83,6 @@ define(
             {type: 'multisafepay_bnplmf', component: gatewayPath + 'payment-component'},
             {type: 'multisafepay_paypal', component: baseRenderer},
             {type: 'multisafepay_paysafecard', component: baseRenderer},
-            {type: 'multisafepay_sofort', component: baseRenderer},
             {type: 'multisafepay_trustly', component: baseRenderer},
             {type: 'multisafepay_trustpay', component: baseRenderer},
             {type: 'multisafepay_wechatpay', component: baseRenderer},
