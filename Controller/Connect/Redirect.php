@@ -20,8 +20,11 @@ use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\Response\Http;
 use Magento\Framework\App\ResponseInterface;
+use Magento\Sales\Api\OrderPaymentRepositoryInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Model\Order;
+use Magento\Sales\Model\Order\Payment;
+use MultiSafepay\ConnectCore\Config\Config;
 use MultiSafepay\ConnectCore\Logger\Logger;
 use MultiSafepay\ConnectCore\Service\Payment\RemoveAdditionalInformation;
 use MultiSafepay\ConnectCore\Service\PaymentLink;
@@ -29,9 +32,9 @@ use MultiSafepay\ConnectCore\Service\PaymentLink;
 class Redirect extends Action
 {
     /**
-     * @var OrderRepositoryInterface
+     * @var OrderPaymentRepositoryInterface
      */
-    protected $orderRepository;
+    private $orderPaymentRepository;
 
     /**
      * @var Session
@@ -54,29 +57,45 @@ class Redirect extends Action
     private $removeAdditionalInformation;
 
     /**
+     * @var Config
+     */
+    private $config;
+
+    /**
+     * @var OrderRepositoryInterface
+     */
+    private $orderRepository;
+
+    /**
      * Redirect constructor.
      *
      * @param Context $context
      * @param PaymentLink $paymentLink
      * @param Session $checkoutSession
      * @param OrderRepositoryInterface $orderRepository
+     * @param OrderPaymentRepositoryInterface $orderPaymentRepository
      * @param Logger $logger
      * @param RemoveAdditionalInformation $removeAdditionalInformation
+     * @param Config $config
      */
     public function __construct(
         Context $context,
         PaymentLink $paymentLink,
         Session $checkoutSession,
         OrderRepositoryInterface $orderRepository,
+        OrderPaymentRepositoryInterface $orderPaymentRepository,
         Logger $logger,
-        RemoveAdditionalInformation $removeAdditionalInformation
+        RemoveAdditionalInformation $removeAdditionalInformation,
+        Config $config
     ) {
         parent::__construct($context);
         $this->logger = $logger;
         $this->paymentLink = $paymentLink;
         $this->checkoutSession = $checkoutSession;
         $this->orderRepository = $orderRepository;
+        $this->orderPaymentRepository = $orderPaymentRepository;
         $this->removeAdditionalInformation = $removeAdditionalInformation;
+        $this->config = $config;
     }
 
     /**
@@ -100,6 +119,25 @@ class Redirect extends Action
             // phpcs:ignore
                 'There was a problem processing your payment. Possible reasons could be: &quot;insufficient funds&quot;, or &quot;verification failed&quot;.'
             )->render());
+        }
+
+        if ($this->config->getAdvancedValue('add_google_analytics_client_id_to_urls')) {
+            $googleAnalyticsCookie = $this->getRequest()->getCookie('_ga', null) ?? '';
+
+            // The Google Analytics _ga cookie has the format: GA<version>.<instance>.<clientId>
+            // Example: GA1.2.123456789.987654321
+            // This regex extracts the clientId component (the last two dot-separated numbers).
+            if (preg_match('/^GA\d+\.\d+\.(\d+\.\d+)$/', $googleAnalyticsCookie, $matches)) {
+                $clientId = $matches[1];
+
+                if ($clientId) {
+                    /** @var Payment $payment */
+                    $payment = $order->getPayment();
+
+                    $payment->setAdditionalInformation('google_analytics_client_id', $clientId);
+                    $this->orderPaymentRepository->save($payment);
+                }
+            }
         }
 
         $this->logger->logPaymentRedirectInfo($orderIncrementId, $paymentUrl);
