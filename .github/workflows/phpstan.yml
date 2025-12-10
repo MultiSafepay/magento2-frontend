@@ -78,6 +78,9 @@ jobs:
       - name: Add module to composer
         working-directory: /home/runner/work/magento
         run: composer require multisafepay/magento2-frontend --no-update --no-interaction
+      - name: Disable Composer audit blocking
+        working-directory: /home/runner/work/magento
+        run: composer config audit.block-insecure false
       - name: Install composer dependencies
         working-directory: /home/runner/work/magento
         run: composer install --no-interaction

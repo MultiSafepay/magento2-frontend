@@ -105,6 +105,11 @@ class Success extends Action
 
         $orderIncrementId = $parameters['transactionid'];
 
+        $this->logger->logInfoForOrder(
+            $orderIncrementId,
+            'Redirect URL - Customer returned to the store after a successful payment.'
+        );
+
         /** @var Order $order */
         $order = $this->orderUtil->getOrder($orderIncrementId);
         $googleAnalyticsClientId = $order->getPayment()->getAdditionalInformation()['google_analytics_client_id'] ?? '';

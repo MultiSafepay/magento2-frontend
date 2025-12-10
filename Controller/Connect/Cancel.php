@@ -125,6 +125,12 @@ class Cancel extends Action
         }
 
         $orderId = $parameters['transactionid'];
+
+        $this->logger->logInfoForOrder(
+            $orderId,
+            'Cancel URL - Customer returned to the cart after an unsuccessful payment.'
+        );
+
         $order = $this->checkoutSession->getLastRealOrder()->loadByIncrementId($orderId);
 
         $this->cancelOrder->execute($order);
