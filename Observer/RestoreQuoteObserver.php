@@ -83,6 +83,10 @@ class RestoreQuoteObserver implements ObserverInterface
             if ($quotePayment && $quotePayment->getAdditionalInformation('multisafepay_success')) {
                 return;
             }
+
+            if ((bool)$this->checkoutSession->getData('multisafepay_restore_quote') === false) {
+                return;
+            }
         } catch (NoSuchEntityException $exception) {
             return;
         }

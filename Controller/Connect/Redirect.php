@@ -143,6 +143,8 @@ class Redirect extends Action
         $this->logger->logPaymentRedirectInfo($orderIncrementId, $paymentUrl);
         $this->removeAdditionalInformation->execute($order);
 
+        $this->checkoutSession->setData('multisafepay_restore_quote', true);
+
         /** @var Http $response */
         $response = $this->getResponse();
 

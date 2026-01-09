@@ -43,6 +43,7 @@ use MultiSafepay\ConnectCore\Model\Ui\Gateway\VisaConfigProvider;
 use MultiSafepay\ConnectCore\Test\Integration\AbstractTestCase;
 use MultiSafepay\ConnectCore\Util\PaymentMethodUtil;
 use MultiSafepay\ConnectFrontend\Observer\RestoreQuoteObserver;
+use PHPUnit\Framework\MockObject\Exception;
 use PHPUnit\Framework\MockObject\MockObject;
 use Psr\Log\LoggerInterface;
 
@@ -68,77 +69,104 @@ class RestoreQuoteObserverTest extends AbstractTestCase
     {
         parent::setUp();
         $this->restoreQuoteObserver = $this->getObjectManager()->create(RestoreQuoteObserver::class);
-        $this->cartRepositoryInterface = $this->getObjectManager()->create(CartRepositoryInterface::class);
-    }
-
-    public function testRestoreQuoteWithEmptyOrder(): void
-    {
-        self::assertNull($this->restoreQuoteObserver->execute($this->getObserverObject()));
+        $this->cartRepositoryInterface = $this->getObjectManager()->get(CartRepositoryInterface::class);
     }
 
     /**
+     * Test restoring quote with empty order
+     *
+     * @return void
+     * @throws LocalizedException
+     */
+    public function testRestoreQuoteWithEmptyOrder(): void
+    {
+        $this->restoreQuoteObserver->execute($this->getObserverObject());
+    }
+
+    /**
+     * Test restoring quote with not empty order
+     *
      * @magentoDataFixture   Magento/Sales/_files/order.php
      * @magentoDataFixture   Magento/Sales/_files/quote.php
      * @magentoConfigFixture default_store multisafepay/general/test_api_key testkey
      * @magentoConfigFixture default_store multisafepay/general/mode 0
      *
      * @throws LocalizedException
-     * @throws NoSuchEntityException
+     * @throws Exception
+     * @throws \Exception
+     *
+     * @noinspection PhpParamsInspection
      */
     public function testRestoreQuoteWithNotEmptyOrder(): void
     {
         $observerObject = $this->getObserverObject();
-        $restoreQuoteObserverMock = $this->getMockBuilder(RestoreQuoteObserver::class)->setConstructorArgs([
-            $this->getCheckoutSessionMockWithOrder($this->getOrder()),
-            $this->getObjectManager()->get(PaymentMethodUtil::class),
-            $this->getObjectManager()->get(CartRepositoryInterface::class),
-        ])->setMethodsExcept(['execute'])->getMock();
 
-        self::assertNull($restoreQuoteObserverMock->execute($observerObject));
-
-        $order = $this->getOrderWithVisaPaymentMethod();
-        $payment = $order->getPayment();
-        $payment->setMethod(BankTransferConfigProvider::CODE);
-
-        $restoreQuoteObserverMock = $this->getMockBuilder(RestoreQuoteObserver::class)->setConstructorArgs([
-            $this->getCheckoutSessionMockWithOrder($order),
-            $this->getObjectManager()->get(PaymentMethodUtil::class),
-            $this->getObjectManager()->get(CartRepositoryInterface::class),
-        ])->setMethodsExcept(['execute'])->getMock();
-
-        self::assertNull($restoreQuoteObserverMock->execute($observerObject));
-
-        $payment->setMethod(VisaConfigProvider::CODE);
-
-        $restoreQuoteObserverMock = $this->getMockBuilder(RestoreQuoteObserver::class)->setConstructorArgs([
-            $this->getCheckoutSessionMockWithOrder($order),
-            $this->getObjectManager()->get(PaymentMethodUtil::class),
-            $this->getObjectManager()->get(CartRepositoryInterface::class),
-        ])->setMethodsExcept(['execute'])->getMock();
-
-        self::assertNull($restoreQuoteObserverMock->execute($observerObject));
-
-        $order->setState(Order::STATE_PENDING_PAYMENT);
         $quote = $this->getQuote('test01');
         $quote->setIsActive(false);
+        $quote->setReservedOrderId('reserved_id_123');
         $this->cartRepositoryInterface->save($quote);
         $quoteId = $quote->getEntityId();
+
+        $order = $this->getOrderWithVisaPaymentMethod();
         $order->setQuoteId($quoteId);
+        $payment = $order->getPayment();
 
-        $restoreQuoteObserverMock = $this->getMockBuilder(RestoreQuoteObserver::class)->setConstructorArgs([
+        $paymentMethodUtilMock = $this->getPaymentMethodUtilMock();
+
+        $payment->setMethod('checkmo');
+
+        $restoreQuoteObserver = new RestoreQuoteObserver(
             $this->getCheckoutSessionMockWithOrder($order),
-            $this->getObjectManager()->get(PaymentMethodUtil::class),
-            $this->getObjectManager()->get(CartRepositoryInterface::class),
-        ])->setMethodsExcept(['execute'])->getMock();
+            $paymentMethodUtilMock,
+            $this->cartRepositoryInterface
+        );
+        $restoreQuoteObserver->execute($observerObject);
 
-        $restoreQuoteObserverMock->execute($observerObject);
-        $updatedQuote = $this->cartRepositoryInterface->get($quoteId);
+        $quote = $this->cartRepositoryInterface->get($quoteId);
+        self::assertFalse((bool)$quote->getIsActive(), 'Quote should remain inactive for non-MSP order');
 
-        self::assertTrue((bool)$updatedQuote->getIsActive());
-        self::assertFalse((bool)$updatedQuote->getReservedOrderId());
+        $payment->setMethod(BankTransferConfigProvider::CODE);
+
+        $restoreQuoteObserver = new RestoreQuoteObserver(
+            $this->getCheckoutSessionMockWithOrder($order),
+            $paymentMethodUtilMock,
+            $this->cartRepositoryInterface
+        );
+        $restoreQuoteObserver->execute($observerObject);
+
+        $quote = $this->cartRepositoryInterface->get($quoteId);
+        self::assertFalse((bool)$quote->getIsActive(), 'Quote should remain inactive for BankTransfer');
+
+        $payment->setMethod(VisaConfigProvider::CODE);
+        $order->setState(Order::STATE_PROCESSING);
+
+        $restoreQuoteObserver = new RestoreQuoteObserver(
+            $this->getCheckoutSessionMockWithOrder($order),
+            $paymentMethodUtilMock,
+            $this->cartRepositoryInterface
+        );
+        $restoreQuoteObserver->execute($observerObject);
+
+        $quote = $this->cartRepositoryInterface->get($quoteId);
+        self::assertFalse((bool)$quote->getIsActive(), 'Quote should remain inactive for wrong order state');
+
+        $order->setState(Order::STATE_PENDING_PAYMENT);
+
+        $restoreQuoteObserver = new RestoreQuoteObserver(
+            $this->getCheckoutSessionMockWithOrder($order),
+            $paymentMethodUtilMock,
+            $this->cartRepositoryInterface
+        );
+        $restoreQuoteObserver->execute($observerObject);
+
+        $quote = $this->cartRepositoryInterface->get($quoteId);
+        self::assertTrue((bool)$quote->getIsActive(), 'Quote should be restored (active)');
+        self::assertFalse((bool)$quote->getReservedOrderId(), 'Reserved Order ID should be cleared');
     }
 
     /**
+     * Get the observer object
+     *
      * @return Observer
      */
     private function getObserverObject(): Observer
@@ -147,11 +175,39 @@ class RestoreQuoteObserverTest extends AbstractTestCase
     }
 
     /**
+     * Mock PaymentMethodUtil
+     *
+     * @return MockObject
+     * @throws Exception
+     */
+    private function getPaymentMethodUtilMock(): MockObject
+    {
+        $mock = $this->createMock(PaymentMethodUtil::class);
+
+        $mock->method('isMultisafepayOrder')
+            ->willReturnCallback(function (OrderInterface $order) {
+                $method = $order->getPayment()->getMethod();
+
+                return in_array($method, [VisaConfigProvider::CODE, BankTransferConfigProvider::CODE]);
+            });
+
+        return $mock;
+    }
+
+    /**
+     * Get checkout session mock with order
+     *
      * @param OrderInterface $order
      * @return MockObject
+     * @noinspection PhpParamsInspection
      */
     private function getCheckoutSessionMockWithOrder(OrderInterface $order): MockObject
     {
+        $methodsToMock = array_diff(
+            get_class_methods(Session::class),
+            ['restoreQuote', 'replaceQuote', '__construct']
+        );
+
         $checkoutSessionMock = $this->getMockBuilder(Session::class)
             ->setConstructorArgs([
                 $this->getObjectManager()->get(Http::class),
@@ -165,7 +221,7 @@ class RestoreQuoteObserverTest extends AbstractTestCase
                 $this->getObjectManager()->get(State::class),
                 $this->getObjectManager()->get(OrderFactory::class),
                 $this->getObjectManager()->get(CustomerSession::class),
-                $this->getObjectManager()->get(CartRepositoryInterface::class),
+                $this->cartRepositoryInterface,
                 $this->getObjectManager()->get(RemoteAddress::class),
                 $this->getObjectManager()->get(ManagerInterface::class),
                 $this->getObjectManager()->get(StoreManagerInterface::class),
@@ -173,10 +229,30 @@ class RestoreQuoteObserverTest extends AbstractTestCase
                 $this->getObjectManager()->get(QuoteIdMaskFactory::class),
                 $this->getObjectManager()->get(QuoteFactory::class),
                 $this->getObjectManager()->get(LoggerInterface::class),
-            ])->setMethodsExcept(['restoreQuote', 'replaceQuote'])->getMock();
+            ])
+            ->onlyMethods($methodsToMock)
+            ->getMock();
 
         $checkoutSessionMock->method('getLastRealOrder')
             ->willReturn($order);
+
+        $checkoutSessionMock->method('getData')
+            ->willReturnCallback(function ($key = '') {
+                if ($key === 'multisafepay_restore_quote') {
+                    return true;
+                }
+
+                return null;
+            });
+
+        if ($order->getQuoteId()) {
+            try {
+                $quote = $this->cartRepositoryInterface->get($order->getQuoteId());
+                $checkoutSessionMock->method('getQuote')->willReturn($quote);
+            } catch (NoSuchEntityException $e) {
+                // Quote might not exist in some test scenarios
+            }
+        }
 
         return $checkoutSessionMock;
     }
