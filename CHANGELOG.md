@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.13.0] - 2026-01-21
+### Added
+- PLGMAG2V2-871: Added changes that enable Google Analytics cross browser/device tracking
+
+### Fixed
+- PLGMAG2V2-882: Fixed an issue where an old cart overwrites new cart items when an order was previously placed but not finished
+
+### Changed
+- PLGMAG2V2-880: Improved the logs for the 'cancel' & 'success' controllers
+
+### Removed
+- PLGMAG2V2-810: Deprecated the Sofort payment method
+
 ## [2.12.0] - 2025-09-12
 ### Changed
 - PLGMAG2V2-867: Improved when to save the quote on the Cancel controller, it will now save if the payment actually has any additional information that needs to be removed
