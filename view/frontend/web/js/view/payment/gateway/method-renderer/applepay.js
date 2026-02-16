@@ -22,11 +22,11 @@ define(
         'multisafepayApplePayButton',
         'Magento_Checkout/js/action/place-order',
         'Magento_Checkout/js/model/full-screen-loader',
-        'multisafepayUtils'
+        'multisafepayUtils',
+        'ko'
     ],
 
     /**
-     *
      * @param $
      * @param Component
      * @param checkoutData
@@ -36,6 +36,8 @@ define(
      * @param multisafepayApplePayButton
      * @param placeOrderAction
      * @param fullScreenLoader
+     * @param multisafepayUtils
+     * @param ko
      * @returns {*}
      */
     function (
@@ -48,13 +50,20 @@ define(
         multisafepayApplePayButton,
         placeOrderAction,
         fullScreenLoader,
-        multisafepayUtils
+        multisafepayUtils,
+        ko
     ) {
         'use strict';
 
         return Component.extend({
             defaults: {
                 template: 'MultiSafepay_ConnectFrontend/payment/gateway/applepay',
+                isProcessing: false
+            },
+
+            initObservable: function () {
+                this.observe('isProcessing')._super();
+                return this;
             },
 
             initialize: function () {
@@ -66,8 +75,7 @@ define(
             },
 
             /**
-             *
-             * @returns {string|*}
+             * @returns {string}
              */
             getApplePayButtonId: function () {
                 if (typeof this.paymentRequestConfig.applePayButton === 'undefined') {
@@ -78,8 +86,7 @@ define(
             },
 
             /**
-             *
-             * @returns {*}
+             * @returns {boolean}
              */
             isApplePayButtonAvailable: function () {
                 if (typeof this.paymentRequestConfig.applePayButton === 'undefined') {
@@ -90,15 +97,16 @@ define(
             },
 
             /**
-             * Check if Apple Pay is allowed to be used
-             *
-             * @returns {boolean|*}
+             * @returns {boolean}
              */
             initApplePayButton: function () {
                 var self = this;
                 let paymentRequestData = this.getData();
                 let deferred = $.Deferred();
+
+                this.isProcessing(true);
                 this.isPlaceOrderActionAllowed(false);
+
                 multisafepayApplePayButton.init(this.getCode(), deferred);
 
                 $.when(deferred).then(function (paymentData, applePaySession, sessionError) {
@@ -108,7 +116,7 @@ define(
                                 'token': paymentData.token,
                                 'browser_info': multisafepayUtils.getBrowserInfo()
                             })
-                        }
+                        };
 
                         $.when(placeOrderAction(paymentRequestData, self.messageContainer)).done(
                             function () {
@@ -120,9 +128,12 @@ define(
                             }
                         ).always(function () {
                                 self.isPlaceOrderActionAllowed(true);
+                                self.isProcessing(false);
                             }
                         ).fail(function () {
                             self.isPlaceOrderActionAllowed(true);
+                            self.isProcessing(false);
+
                             applePaySession.completePayment(
                                 {
                                     status: ApplePaySession.STATUS_FAILURE,
@@ -136,6 +147,8 @@ define(
                         applePaySession.completePayment(ApplePaySession.STATUS_SUCCESS);
                     } else {
                         self.isPlaceOrderActionAllowed(true);
+                        self.isProcessing(false);
+
                         fullScreenLoader.stopLoader();
 
                         if (sessionError) {
@@ -149,14 +162,15 @@ define(
                 return true;
             },
 
+            /**
+             * @returns {boolean}
+             */
             isAppleButtonVisible: function () {
                 return this.isApplePayButtonAvailable();
             },
 
             /**
-             * Check if Apple Pay is allowed to be used
-             *
-             * @returns {boolean|*}
+             * @returns {boolean}
              */
             isAllowed: function () {
                 try {

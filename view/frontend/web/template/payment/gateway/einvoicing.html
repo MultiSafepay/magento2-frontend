@@ -16,14 +16,23 @@
         <input type="radio"
                name="payment[method]"
                class="radio"
-               data-bind="attr: {'id': getCode()}, value: getCode(), checked: isChecked, click: selectPaymentMethod, visible: isRadioButtonVisible()"/>
+               data-bind="
+                    attr: {
+                        'id': getCode(),
+                        'aria-checked': (getCode() == isChecked()) ? 'true' : 'false'
+                    },
+                    value: getCode(),
+                    checked: isChecked,
+                    click: selectPaymentMethod,
+                    visible: isRadioButtonVisible()
+               "/>
         <label class="label" data-bind="attr: {'for': getCode()}">
-            <img data-bind="attr: {src: getImage()}" class="payment-icon multisafepay-payment-icon" />
+            <img data-bind="attr: {src: getImage(), alt: getTitle()}" class="payment-icon multisafepay-payment-icon" />
             <span data-bind="text: getTitle()"></span>
         </label>
     </div>
 
-    <div class="payment-method-content">
+    <div class="payment-method-content" data-bind="attr: {'aria-live': 'polite'}">
         <!-- ko foreach: getRegion('messages') -->
         <!-- ko template: getTemplate() --><!-- /ko -->
         <!--/ko-->
@@ -35,28 +44,31 @@
         <!--/ko-->
 
         <!-- ko if: (isPaymentComponentEnabled())-->
-        <div class="multisafepay-payment-component" data-bind="attr: {'id': getPaymentComponentId()}, afterRender: PreRenderPaymentComponent()"></div>
+        <div class="multisafepay-payment-component"
+             data-bind="attr: {'id': getPaymentComponentId()}, afterRender: PreRenderPaymentComponent()"></div>
         <!--/ko-->
 
-        <!-- ko if: isDirect() -->
+        <!-- ko if: (isDirect()) -->
         <div class="payment-method-einvoicing" style="margin: 0 0 20px;">
-            <fieldset class="fieldset">
+            <fieldset class="fieldset" data-bind="attr: {'aria-label': $t('E-invoicing details')}">
 
                 <!-- ko if: isCheckoutFieldAvailable('date_of_birth') -->
                 <div class="field required">
                     <label class="label" for="einvoicing-date-of-birth">
-                        <span>
-                            <!-- ko i18n: 'Date of Birth'-->
-                            <!-- /ko -->
-                        </span>
+                        <span><!-- ko i18n: 'Date of Birth'--><!-- /ko --></span>
                     </label>
                     <div class="control">
                         <input name="einvoicing-date-of-birth"
                                id="einvoicing-date-of-birth"
-                               data-bind="value: dateOfBirth, attr:{title: $t('Date of Birth')}"
                                class="input-date"
                                type="date"
-                               required="true"/>
+                               required
+                               aria-required="true"
+                               aria-describedby="einvoicing-date-of-birth-hint"
+                               data-bind="value: dateOfBirth, attr:{title: $t('Date of Birth')}"/>
+                        <div id="einvoicing-date-of-birth-hint" class="field-note multisafepay-sr-only">
+                            <!-- ko i18n: 'Enter your date of birth.'--><!-- /ko -->
+                        </div>
                     </div>
                 </div>
                 <!-- /ko -->
@@ -64,21 +76,23 @@
                 <!-- ko if: isCheckoutFieldAvailable('account_number') -->
                 <div class="field required">
                     <label class="label" for="einvoicing-account-number">
-                        <span>
-                            <!-- ko i18n: 'Bank account number'-->
-                            <!-- /ko -->
-                        </span>
+                        <span><!-- ko i18n: 'Bank account number'--><!-- /ko --></span>
                     </label>
                     <div class="control">
                         <input name="einvoicing-account-number"
                                id="einvoicing-account-number"
-                               data-bind="value: accountNumber, attr:{
-                                title: $t('Bank account number'),
-                                placeholder: $t('Bank account number e.g NL02ABNA0123456789')
-                               }"
                                class="input-text"
                                type="text"
-                               required="true"/>
+                               required
+                               aria-required="true"
+                               aria-describedby="einvoicing-account-number-hint"
+                               data-bind="value: accountNumber, attr:{
+                                   title: $t('Bank account number'),
+                                   placeholder: $t('Bank account number e.g NL02ABNA0123456789')
+                               }"/>
+                        <div id="einvoicing-account-number-hint" class="field-note multisafepay-sr-only">
+                            <!-- ko i18n: 'Enter the IBAN or bank account number.'--><!-- /ko -->
+                        </div>
                     </div>
                 </div>
                 <!-- /ko -->
@@ -86,23 +100,25 @@
                 <!-- ko if: isCheckoutFieldAvailable('email_address') -->
                 <div class="field required">
                     <label class="label" for="einvoicing-email-address">
-                        <span>
-                            <!-- ko i18n: 'E-mail Address'-->
-                            <!-- /ko -->
-                        </span>
+                        <span><!-- ko i18n: 'E-mail Address'--><!-- /ko --></span>
                     </label>
                     <div class="control">
-                        <input name="invoicing-email-address"
-                               placeholder="E-mail address"
+                        <input name="einvoicing-email-address"
                                id="einvoicing-email-address"
-                               title="E-mail Address"
-                               data-bind="value: emailAddress"
                                class="input-text"
-                               type="text"
-                               required="true"/>
+                               type="email"
+                               required
+                               aria-required="true"
+                               aria-describedby="einvoicing-email-address-hint"
+                               autocomplete="email"
+                               data-bind="value: emailAddress, attr:{title: $t('E-mail Address'), placeholder: $t('E-mail address')}"/>
+                        <div id="einvoicing-email-address-hint" class="field-note multisafepay-sr-only">
+                            <!-- ko i18n: 'Enter the email address for receiving the invoice.'--><!-- /ko -->
+                        </div>
                     </div>
                 </div>
                 <!-- /ko -->
+
             </fieldset>
         </div>
         <!--/ko-->
@@ -123,10 +139,7 @@
             <div class="primary">
                 <button class="action primary checkout"
                         type="submit"
-                        data-bind="
-                        click: placeOrder,
-                        attr: {title: $t('Place Order')}
-                        ">
+                        data-bind="click: placeOrder, attr: {title: $t('Place Order'), 'aria-label': $t('Place Order')}">
                     <span data-bind="i18n: 'Place Order'"></span>
                 </button>
             </div>

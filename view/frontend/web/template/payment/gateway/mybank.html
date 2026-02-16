@@ -16,14 +16,23 @@
         <input type="radio"
                name="payment[method]"
                class="radio"
-               data-bind="attr: {'id': getCode()}, value: getCode(), checked: isChecked, click: selectPaymentMethod, visible: isRadioButtonVisible()"/>
+               data-bind="
+                    attr: {
+                        'id': getCode(),
+                        'aria-checked': (getCode() == isChecked()) ? 'true' : 'false'
+                    },
+                    value: getCode(),
+                    checked: isChecked,
+                    click: selectPaymentMethod,
+                    visible: isRadioButtonVisible()
+               "/>
         <label class="label" data-bind="attr: {'for': getCode()}">
-            <img data-bind="attr: {src: getImage()}" class="payment-icon multisafepay-payment-icon" />
+            <img data-bind="attr: {src: getImage(), alt: getTitle()}" class="payment-icon multisafepay-payment-icon" />
             <span data-bind="text: getTitle()"></span>
         </label>
     </div>
 
-    <div class="payment-method-content">
+    <div class="payment-method-content" data-bind="attr: {'aria-live': 'polite'}">
         <!-- ko foreach: getRegion('messages') -->
         <!-- ko template: getTemplate() --><!-- /ko -->
         <!--/ko-->
@@ -35,8 +44,14 @@
         <!--/ko-->
 
         <div class="payment-method-issuers" style="margin: 0 0 20px;">
-            <label>
-                <select name="issuerid" class="select bank select2" id="mybank-issuers" data-bind="
+            <label for="mybank-issuers">
+                <span class="multisafepay-sr-only"><!-- ko i18n: 'Choose your bank'--><!-- /ko --></span>
+            </label>
+            <select name="issuerid"
+                    class="select bank select2"
+                    id="mybank-issuers"
+                    aria-describedby="mybank-issuers-hint"
+                    data-bind="
                         enable: true,
                         options: getIssuers(),
                         optionsValue: 'code',
@@ -44,8 +59,10 @@
                         optionsCaption: $t('Choose your bank...'),
                         afterRender: initializeSelect2(),
                         value: issuerId">
-                </select>
-            </label>
+            </select>
+            <div id="mybank-issuers-hint" class="field-note multisafepay-sr-only">
+                <!-- ko i18n: 'Select your bank from the list.'--><!-- /ko -->
+            </div>
         </div>
 
         <div class="payment-method-billing-address">
@@ -65,8 +82,8 @@
                 <button class="action primary checkout"
                         type="submit"
                         data-bind="
-                        click: placeOrder,
-                        attr: {title: $t('Place Order')}
+                            click: placeOrder,
+                            attr: {title: $t('Place Order'), 'aria-label': $t('Place Order')}
                         ">
                     <span data-bind="i18n: 'Place Order'"></span>
                 </button>
