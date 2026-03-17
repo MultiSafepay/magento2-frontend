@@ -15,43 +15,31 @@ define(
     [
         'jquery',
         'MultiSafepay_ConnectFrontend/js/view/payment/method-renderer/base-renderer',
-        'Magento_Checkout/js/checkout-data',
-        'Magento_Checkout/js/action/redirect-on-success',
-        'mage/url',
         'Magento_Customer/js/customer-data',
         'multisafepayApplePayButton',
         'Magento_Checkout/js/action/place-order',
         'Magento_Checkout/js/model/full-screen-loader',
-        'multisafepayUtils',
-        'ko'
+        'multisafepayUtils'
     ],
 
     /**
      * @param $
      * @param Component
-     * @param checkoutData
-     * @param redirectOnSuccessAction
-     * @param url
      * @param customerData
      * @param multisafepayApplePayButton
      * @param placeOrderAction
      * @param fullScreenLoader
      * @param multisafepayUtils
-     * @param ko
      * @returns {*}
      */
     function (
         $,
         Component,
-        checkoutData,
-        redirectOnSuccessAction,
-        url,
         customerData,
         multisafepayApplePayButton,
         placeOrderAction,
         fullScreenLoader,
-        multisafepayUtils,
-        ko
+        multisafepayUtils
     ) {
         'use strict';
 
@@ -69,9 +57,76 @@ define(
             initialize: function () {
                 this._super();
                 this.paymentRequestConfig = customerData.get('multisafepay-payment-request')();
-                this.paymentPayload = false;
-
                 return this;
+            },
+
+            /**
+             * Initializes Apple Pay button and its session.
+             *
+             * @returns {boolean}
+             */
+            initApplePayButton: function () {
+                var self = this;
+                let deferred = $.Deferred();
+
+                this.isProcessing(true);
+                this.isPlaceOrderActionAllowed(false);
+
+                multisafepayApplePayButton.init(this.getCode(), deferred);
+
+                $.when(deferred).then(function (paymentData, applePaySession, sessionError) {
+                    if (!paymentData) {
+                        self.isPlaceOrderActionAllowed(true);
+                        self.isProcessing(false);
+                        fullScreenLoader.stopLoader();
+
+                        if (sessionError) {
+                            self.messageContainer.addErrorMessage({message: sessionError});
+                        }
+
+                        return;
+                    }
+
+                    // Generate redirect token on client (your updated base renderer method)
+                    self.redirectToken = self.fetchRedirectToken();
+
+                    let paymentRequestData = self.getData();
+                    paymentRequestData.additional_data = paymentRequestData.additional_data || {};
+
+                    paymentRequestData.additional_data.redirect_token = self.redirectToken;
+                    paymentRequestData.additional_data.payload = JSON.stringify({
+                        token: paymentData.token,
+                        browser_info: multisafepayUtils.getBrowserInfo()
+                    });
+
+                    $.when(placeOrderAction(paymentRequestData, self.messageContainer))
+                        .done(function () {
+                            // Redirect uses token; controller resolves order by token
+                            self.afterPlaceOrder();
+
+                            try {
+                                applePaySession.completePayment(ApplePaySession.STATUS_SUCCESS);
+                            } catch (e) {
+                                console.warn('MultiSafepay error when trying to complete Apple Pay session:', e);
+                            }
+                        })
+                        .fail(function () {
+                            try {
+                                applePaySession.completePayment({
+                                    status: ApplePaySession.STATUS_FAILURE,
+                                    errors: ['Something went wrong. Please, try again.']
+                                });
+                            } catch (e) {
+                                console.warn('MultiSafepay error when trying to complete Apple Pay session with failure status:', e);
+                            }
+                        })
+                        .always(function () {
+                            self.isPlaceOrderActionAllowed(true);
+                            self.isProcessing(false);
+                        });
+                });
+
+                return true;
             },
 
             /**
@@ -94,72 +149,6 @@ define(
                 }
 
                 return this.paymentRequestConfig && this.paymentRequestConfig.applePayButton.isActive;
-            },
-
-            /**
-             * @returns {boolean}
-             */
-            initApplePayButton: function () {
-                var self = this;
-                let paymentRequestData = this.getData();
-                let deferred = $.Deferred();
-
-                this.isProcessing(true);
-                this.isPlaceOrderActionAllowed(false);
-
-                multisafepayApplePayButton.init(this.getCode(), deferred);
-
-                $.when(deferred).then(function (paymentData, applePaySession, sessionError) {
-                    if (paymentData) {
-                        paymentRequestData['additional_data'] = {
-                            'payload': JSON.stringify({
-                                'token': paymentData.token,
-                                'browser_info': multisafepayUtils.getBrowserInfo()
-                            })
-                        };
-
-                        $.when(placeOrderAction(paymentRequestData, self.messageContainer)).done(
-                            function () {
-                                self.afterPlaceOrder();
-
-                                if (self.redirectAfterPlaceOrder) {
-                                    redirectOnSuccessAction.execute();
-                                }
-                            }
-                        ).always(function () {
-                                self.isPlaceOrderActionAllowed(true);
-                                self.isProcessing(false);
-                            }
-                        ).fail(function () {
-                            self.isPlaceOrderActionAllowed(true);
-                            self.isProcessing(false);
-
-                            applePaySession.completePayment(
-                                {
-                                    status: ApplePaySession.STATUS_FAILURE,
-                                    errors: [
-                                        'Something went wrong. Please, try again.'
-                                    ]
-                                }
-                            );
-                        });
-
-                        applePaySession.completePayment(ApplePaySession.STATUS_SUCCESS);
-                    } else {
-                        self.isPlaceOrderActionAllowed(true);
-                        self.isProcessing(false);
-
-                        fullScreenLoader.stopLoader();
-
-                        if (sessionError) {
-                            self.messageContainer.addErrorMessage({
-                                message: sessionError
-                            });
-                        }
-                    }
-                });
-
-                return true;
             },
 
             /**

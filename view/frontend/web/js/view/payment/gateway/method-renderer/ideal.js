@@ -13,30 +13,17 @@
 /*global define*/
 define(
     [
-        'jquery',
         'MultiSafepay_ConnectFrontend/js/view/payment/method-renderer/base-renderer',
-        'Magento_Checkout/js/checkout-data',
-        'Magento_Checkout/js/action/redirect-on-success',
-        'mage/url',
         'MultiSafepay_ConnectFrontend/js/view/payment/vault-enabler'
     ],
 
     /**
-     *
-     * @param $
      * @param Component
-     * @param checkoutData
-     * @param redirectOnSuccessAction
-     * @param url
      * @param VaultEnabler
      * @returns {*}
      */
     function (
-        $,
         Component,
-        checkoutData,
-        redirectOnSuccessAction,
-        url,
         VaultEnabler
     ) {
         'use strict';

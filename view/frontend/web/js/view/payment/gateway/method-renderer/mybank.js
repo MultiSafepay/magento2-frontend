@@ -16,8 +16,6 @@ define(
         'jquery',
         'MultiSafepay_ConnectFrontend/js/view/payment/method-renderer/base-renderer',
         'Magento_Checkout/js/checkout-data',
-        'Magento_Checkout/js/action/redirect-on-success',
-        'mage/url',
         'Magento_Checkout/js/action/select-payment-method',
         'select2'
     ],
@@ -27,20 +25,15 @@ define(
      * @param $
      * @param Component
      * @param checkoutData
-     * @param redirectOnSuccessAction
      * @param url
      * @param selectPaymentMethodAction
-     * @param select2
      * @returns {*}
      */
     function (
         $,
         Component,
         checkoutData,
-        redirectOnSuccessAction,
-        url,
         selectPaymentMethodAction,
-        select2
     ) {
         'use strict';
 

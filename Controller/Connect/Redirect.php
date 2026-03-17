@@ -20,14 +20,16 @@ use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\Response\Http;
 use Magento\Framework\App\ResponseInterface;
+use Magento\Framework\Exception\CouldNotSaveException;
 use Magento\Sales\Api\OrderPaymentRepositoryInterface;
-use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Payment;
+use MultiSafepay\ConnectCore\Api\RedirectTokenRepositoryInterface;
 use MultiSafepay\ConnectCore\Config\Config;
 use MultiSafepay\ConnectCore\Logger\Logger;
 use MultiSafepay\ConnectCore\Service\Payment\RemoveAdditionalInformation;
 use MultiSafepay\ConnectCore\Service\PaymentLink;
+use MultiSafepay\ConnectCore\Util\OrderUtil;
 
 class Redirect extends Action
 {
@@ -62,9 +64,14 @@ class Redirect extends Action
     private $config;
 
     /**
-     * @var OrderRepositoryInterface
+     * @var RedirectTokenRepositoryInterface
      */
-    private $orderRepository;
+    private $redirectTokenRepository;
+
+    /**
+     * @var OrderUtil
+     */
+    private $orderUtil;
 
     /**
      * Redirect constructor.
@@ -72,30 +79,33 @@ class Redirect extends Action
      * @param Context $context
      * @param PaymentLink $paymentLink
      * @param Session $checkoutSession
-     * @param OrderRepositoryInterface $orderRepository
      * @param OrderPaymentRepositoryInterface $orderPaymentRepository
      * @param Logger $logger
      * @param RemoveAdditionalInformation $removeAdditionalInformation
      * @param Config $config
+     * @param RedirectTokenRepositoryInterface $redirectTokenRepository
+     * @param OrderUtil $orderUtil
      */
     public function __construct(
         Context $context,
         PaymentLink $paymentLink,
         Session $checkoutSession,
-        OrderRepositoryInterface $orderRepository,
         OrderPaymentRepositoryInterface $orderPaymentRepository,
         Logger $logger,
         RemoveAdditionalInformation $removeAdditionalInformation,
-        Config $config
+        Config $config,
+        RedirectTokenRepositoryInterface $redirectTokenRepository,
+        OrderUtil $orderUtil
     ) {
         parent::__construct($context);
         $this->logger = $logger;
         $this->paymentLink = $paymentLink;
         $this->checkoutSession = $checkoutSession;
-        $this->orderRepository = $orderRepository;
         $this->orderPaymentRepository = $orderPaymentRepository;
         $this->removeAdditionalInformation = $removeAdditionalInformation;
         $this->config = $config;
+        $this->redirectTokenRepository = $redirectTokenRepository;
+        $this->orderUtil = $orderUtil;
     }
 
     /**
@@ -104,15 +114,26 @@ class Redirect extends Action
      */
     public function execute(): ResponseInterface
     {
-        $orderId = $this->checkoutSession->getLastRealOrder()->getId();
+        $tokenValue = (string) $this->getRequest()->getParam('token', '');
+        $tokenValue = trim($tokenValue);
+        $tokenValue = rtrim($tokenValue, '/');
 
-        if (!$orderId) {
+        if (!$tokenValue) {
+            return $this->redirectToCheckout(
+                __('Something went wrong when redirecting during payment. Please try again.')->render()
+            );
+        }
+
+        $token = $this->redirectTokenRepository->getByToken($tokenValue);
+        $orderIncrementId = $token->getOrderIncrementId();
+
+        if (!$orderIncrementId) {
+            $this->logger->logInfoForOrder($orderIncrementId, 'No order found for token: ' . $tokenValue);
             return $this->redirectToCheckout(__('Something went wrong with the order. Please try again.')->render());
         }
 
         /** @var Order $order */
-        $order = $this->orderRepository->get($orderId);
-        $orderIncrementId = $order->getRealOrderId();
+        $order = $this->orderUtil->getOrderByIncrementId($orderIncrementId);
 
         if (!($paymentUrl = $this->paymentLink->getPaymentLinkFromOrder($order))) {
             return $this->redirectToCheckout(__(
@@ -142,8 +163,15 @@ class Redirect extends Action
 
         $this->logger->logPaymentRedirectInfo($orderIncrementId, $paymentUrl);
         $this->removeAdditionalInformation->execute($order);
-
         $this->checkoutSession->setData('multisafepay_restore_quote', true);
+
+        $token->setExpired(true);
+
+        try {
+            $this->redirectTokenRepository->save($token);
+        } catch (CouldNotSaveException $exception) {
+            $this->logger->logExceptionForOrder($orderIncrementId, $exception);
+        }
 
         /** @var Http $response */
         $response = $this->getResponse();

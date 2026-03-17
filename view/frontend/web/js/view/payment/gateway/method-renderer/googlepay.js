@@ -15,41 +15,26 @@ define(
     [
         'jquery',
         'MultiSafepay_ConnectFrontend/js/view/payment/method-renderer/base-renderer',
-        'Magento_Checkout/js/checkout-data',
-        'Magento_Checkout/js/action/redirect-on-success',
-        'mage/url',
         'Magento_Customer/js/customer-data',
         'multisafepayGooglePayButton',
-        'Magento_Checkout/js/action/place-order',
-        'Magento_Checkout/js/model/full-screen-loader',
         'googlePayButtonLibrary',
         'multisafepayUtils'
     ],
 
     /**
-     *
      * @param $
      * @param Component
-     * @param checkoutData
-     * @param redirectOnSuccessAction
-     * @param url
      * @param customerData
      * @param multisafepayGooglePayButton
-     * @param placeOrderAction
-     * @param fullScreenLoader
      * @param googlePayButtonLibrary
+     * @param multisafepayUtils
      * @returns {*}
      */
     function (
         $,
         Component,
-        checkoutData,
-        redirectOnSuccessAction,
-        url,
         customerData,
         multisafepayGooglePayButton,
-        placeOrderAction,
-        fullScreenLoader,
         googlePayButtonLibrary,
         multisafepayUtils
     ) {
@@ -69,6 +54,7 @@ define(
             },
 
             /**
+             * Check if Google Pay button needs to be rendered and render it if needed.
              *
              * @returns {*}
              */
@@ -81,8 +67,9 @@ define(
             },
 
             /**
+             * Get the Google Pay button container ID from the configuration.
              *
-             * @returns {string|*}
+             * @returns {*|string}
              */
             getGooglePayButtonId: function () {
                 if (typeof this.paymentRequestConfig.googlePayButton === 'undefined') {
@@ -93,8 +80,9 @@ define(
             },
 
             /**
+             * Check if Google Pay button is available based on the configuration.
              *
-             * @returns {*}
+             * @returns {*|(() => boolean)|boolean|boolean}
              */
             isGooglePayButtonAvailable: function () {
                 if (typeof this.paymentRequestConfig.googlePayButton === 'undefined') {
@@ -105,8 +93,7 @@ define(
             },
 
             /**
-             *
-             * @returns {*}
+             * Initialize the Google Pay button by creating a PaymentsClient and checking if the user can pay with Google Pay.
              */
             initializeGooglePayButton: function () {
                 let self = this;
@@ -136,22 +123,36 @@ define(
             },
 
             /**
+             * Add the Google Pay button to the container and set up the click handler to initiate the payment process.
              *
-             * @returns {*}
+             * @param paymentsClient
              */
             addGooglePayButton: function (paymentsClient) {
                 document.getElementById(this.getGooglePayButtonId()).appendChild(
                     paymentsClient.createButton({
                         buttonColor: 'default',
                         buttonType: 'pay',
-                        onClick: this.payWithGooglePay
+                        onClick: this.payWithGooglePay.bind(this)
                     })
                 );
             },
 
             /**
+             * Set the data that will be sent to the server on place order.
              *
-             * @returns {boolean|*}
+             * @returns {{method: (string|string|*), additional_data: {}}}
+             */
+            getData: function () {
+                return {
+                    method: this.item.method,
+                    additional_data: {}
+                };
+            },
+
+            /**
+             * Handle Google Pay button click, get the payment token and place the order.
+             *
+             * @returns {boolean}
              */
             payWithGooglePay: function () {
                 var self = this;
@@ -160,53 +161,47 @@ define(
                     return true;
                 }
 
-                let paymentRequestData = this.getData();
                 let deferred = $.Deferred();
-                this.isPlaceOrderActionAllowed(false);
                 multisafepayGooglePayButton.init(deferred, this.paymentsClient);
 
                 $.when(deferred).then(function (paymentToken, sessionError) {
-                    if (paymentToken) {
-                        paymentRequestData['additional_data'] = {
-                            'payload': JSON.stringify({
-                                'token': paymentToken,
-                                'browser_info': multisafepayUtils.getBrowserInfo()
-                            })
-                        }
-
-                        $.when(placeOrderAction(paymentRequestData, self.messageContainer)).done(
-                            function () {
-                                self.afterPlaceOrder();
-
-                                if (self.redirectAfterPlaceOrder) {
-                                    redirectOnSuccessAction.execute();
-                                }
-                            }
-                        ).always(function () {
-                            self.isPlaceOrderActionAllowed(true);
-                        });
-                    } else {
-                        self.isPlaceOrderActionAllowed(true);
-                        fullScreenLoader.stopLoader();
-
+                    if (!paymentToken) {
                         if (sessionError) {
                             console.error(sessionError);
                         }
+                        return;
                     }
+
+                    self.googlePayPayload = JSON.stringify({
+                        token: paymentToken,
+                        browser_info: multisafepayUtils.getBrowserInfo()
+                    });
+
+                    const originalGetData = self.getData.bind(self);
+                    self.getData = function () {
+                        const data = originalGetData();
+                        data.additional_data = data.additional_data || {};
+                        data.additional_data.payload = self.googlePayPayload;
+                        return data;
+                    };
+
+                    self.placeOrder();
                 });
 
                 return true;
             },
 
             /**
+             * Check if the Google Pay button should be visible based on the configuration and availability.
              *
-             * @returns {*}
+             * @returns {*|(function(): boolean)|boolean}
              */
             isGoogleButtonVisible: function () {
                 return this.isGooglePayButtonAvailable();
             },
 
             /**
+             * Check if the place order action is allowed. This can be used to prevent multiple clicks on the Google Pay button while the payment is being processed.
              *
              * @returns {boolean}
              */

@@ -13,47 +13,34 @@
 /*global define*/
 define(
     [
-        'jquery',
         'MultiSafepay_ConnectFrontend/js/view/payment/method-renderer/base-renderer',
         'Magento_Checkout/js/checkout-data',
-        'Magento_Checkout/js/action/redirect-on-success',
         'Magento_Checkout/js/model/quote',
-        'mage/url',
         'mage/translate',
         'Magento_Checkout/js/action/select-payment-method',
         'Magento_Checkout/js/model/payment/additional-validators',
-        'Magento_Checkout/js/action/place-order',
         'Magento_Customer/js/customer-data',
         'multisafepayPaymentComponent'
     ],
 
     /**
-     *
-     * @param $
      * @param Component
      * @param checkoutData
-     * @param redirectOnSuccessAction
      * @param quote
-     * @param url
      * @param $t
      * @param selectPaymentMethodAction
      * @param additionalValidators
-     * @param placeOrderAction
      * @param customerData
      * @param multisafepayPaymentComponent
      * @returns {*}
      */
     function (
-        $,
         Component,
         checkoutData,
-        redirectOnSuccessAction,
         quote,
-        url,
         $t,
         selectPaymentMethodAction,
         additionalValidators,
-        placeOrderAction,
         customerData,
         multisafepayPaymentComponent
     ) {
@@ -65,7 +52,6 @@ define(
          * @returns {string}
          */
         function getAfterPayTelephone() {
-            // If the billing address is empty, then there is no phone number to take from it
             if (!quote.billingAddress()) {
                 return '';
             }
@@ -87,7 +73,8 @@ define(
                 this._super();
                 this.paymentRequestConfig = customerData.get('multisafepay-payment-request')();
                 this.paymentComponent = false;
-                this.paymentPayload = false;
+                this.paymentPayload = null;
+
                 this.paymentComponentLifeTime = this.paymentRequestConfig.apiTokenLifeTime;
 
                 return this;
@@ -104,74 +91,65 @@ define(
             },
 
             /**
-             * Get list of genders
+             * Get the available genders for AfterPay as an array of objects with code and label to be used in the template.
              *
-             * @returns {*}
+             * @returns {[{code: string, label},{code: string, label},{code: string, label}]}
              */
             getGenders: function () {
                 return [
-                    {
-                        "code": "mr",
-                        "label": $t('Mr.')
-                    },
-                    {
-                        "code": "mrs",
-                        "label": $t('Mrs.')
-                    },
-                    {
-                        "code": "miss",
-                        "label": $t('Miss')
-                    }
+                    {"code": "mr", "label": $t('Mr.')},
+                    {"code": "mrs", "label": $t('Mrs.')},
+                    {"code": "miss", "label": $t('Miss')}
                 ];
             },
 
             /**
-             * Return the link of Afterpay terms and conditions
-             * according country id defined in billing address
+             * Get the URL for the AfterPay terms and conditions from the config to be used in the template.
              *
-             * @returns {string}
+             * @returns {*}
              */
             getAfterpayTermsUrl: function () {
                 return this.paymentConfig.afterpay_terms_url;
             },
 
             /**
-             * Add payment method specific data to additional data
+             * Set the data that will be sent to the server on place order.
              *
-             * @returns {{additional_data: *, method: *}}
+             * @returns {{method: (string|string|*), additional_data: {}}}
              */
             getData: function () {
-                if (this.paymentPayload) {
-                    let data = {
-                        'method': this.getCode(),
-                        'additional_data': {}
-                    };
-
-                    data['additional_data']['payload'] = this.paymentPayload;
-
-                    return data;
-                }
-
-                if (!this.dateOfBirth() && !this.genderId() && !this.phoneNumber() && !this.afterpayTerms()) {
-                    return {
-                        "method": this.item.method,
-                        "additional_data": null
-                    };
-                }
-
-                return {
-                    "method": this.item.method,
-                    "additional_data": {
-                        'date_of_birth': this.dateOfBirth(),
-                        'gender': this.genderId(),
-                        'phone_number': this.phoneNumber(),
-                        'afterpay_terms': this.afterpayTerms()
-                    }
+                let data = {
+                    method: this.item.method,
+                    additional_data: {}
                 };
+
+                if (this.paymentPayload) {
+                    data.additional_data.payload = this.paymentPayload;
+                }
+
+                if (this.dateOfBirth()) {
+                    data.additional_data.date_of_birth = this.dateOfBirth();
+                }
+
+                if (this.genderId()) {
+                    data.additional_data.gender = this.genderId();
+                }
+
+                if (this.phoneNumber()) {
+                    data.additional_data.phone_number = this.phoneNumber();
+                }
+
+                if (this.afterpayTerms()) {
+                    data.additional_data.afterpay_terms = this.afterpayTerms();
+                }
+
+                return data;
             },
 
             /**
-             * @return {Boolean}
+             * Select this payment method and initialize the payment component if enabled.
+             *
+             * @returns {boolean}
              */
             selectPaymentMethod: function () {
                 selectPaymentMethodAction(this.getData());
@@ -185,23 +163,20 @@ define(
                     this.initializePaymentComponent();
                 }
 
-                /**
-                 * Compare the current time with the API Token lifetime and refresh if needed
-                 */
-                if (Math.floor(Date.now()/1000) - this.paymentComponentLifeTime >= 540) {
+                if (Math.floor(Date.now() / 1000) - this.paymentComponentLifeTime >= 540) {
                     customerData.invalidate(['multisafepay-payment-request']);
                     customerData.reload(['multisafepay-payment-request']).done(() => {
-                            this.paymentRequestConfig = customerData.get('multisafepay-payment-request')();
-                            this.initializePaymentComponent();
-                            this.paymentComponentLifeTime = this.paymentRequestConfig.apiTokenLifeTime;
-                        }
-                    );
+                        this.paymentRequestConfig = customerData.get('multisafepay-payment-request')();
+                        this.initializePaymentComponent();
+                        this.paymentComponentLifeTime = this.paymentRequestConfig.apiTokenLifeTime;
+                    });
                 }
 
                 return true;
             },
 
             /**
+             * Initialize the payment component for this payment method with the config from the server and the payment data for this method.
              *
              * @returns {boolean|*}
              */
@@ -216,8 +191,10 @@ define(
             },
 
             /**
+             * Pre-render the payment component if this payment method is selected and the component is enabled for this method.
              *
              * @returns {*}
+             * @constructor
              */
             PreRenderPaymentComponent: function () {
                 if (checkoutData.getSelectedPaymentMethod() === this.getCode() && this.isPaymentComponentEnabled()) {
@@ -228,6 +205,7 @@ define(
             },
 
             /**
+             * Check if the payment component should be rendered for this payment method.
              *
              * @returns {*|{}|boolean}
              */
@@ -237,6 +215,7 @@ define(
             },
 
             /**
+             * Get the payment data for this payment method from the payment request config.
              *
              * @returns {{}|*}
              */
@@ -252,74 +231,43 @@ define(
             },
 
             /**
+             * Get the ID of the container where the payment component will be rendered.
              *
-             * @returns {string|*}
+             * @returns {string}
              */
             getPaymentComponentId: function () {
                 return this.paymentRequestConfig.paymentComponentContainerId + "-" + this.getCode();
             },
 
             /**
+             * Override placeOrder to include validation of the payment component (if enabled) and include its payload in the request.
              *
              * @param data
              * @param event
-             * @returns {boolean}
+             * @returns {*|boolean}
              */
             placeOrder: function (data, event) {
                 if (event) {
                     event.preventDefault();
                 }
 
-                if (this.validate() && additionalValidators.validate() && this.isPlaceOrderActionAllowed() === true) {
-                    let paymentRequestData = this.getData();
+                if (!(this.validate() && additionalValidators.validate() && this.isPlaceOrderActionAllowed() === true)) {
+                    return false;
+                }
 
-                    if (this.isPaymentComponentEnabled() && this.paymentComponent) {
-                        if (!this.paymentComponent.hasErrors()) {
-                            this.isPlaceOrderActionAllowed(false);
-                            let payload = this.paymentComponent.getOrderData().payment_data.payload;
-                            let cardBrand = '';
+                if (this.isPaymentComponentEnabled() && this.paymentComponent) {
+                    if (this.paymentComponent.hasErrors()) {
+                        return false;
+                    }
 
-                            if (payload) {
-                                this.paymentPayload = payload;
-                                paymentRequestData['additional_data']['payload'] = payload;
-                                paymentRequestData['additional_data']['card_brand'] = cardBrand;
-                            }
+                    const payload = this.paymentComponent.getOrderData().payment_data.payload;
 
-                            this.placeOderDefault(paymentRequestData);
-
-                            return true;
-                        }
-                    } else {
-                        this.isPlaceOrderActionAllowed(false);
-                        this.placeOderDefault(paymentRequestData);
-
-                        return true;
+                    if (payload) {
+                        this.paymentPayload = payload;
                     }
                 }
 
-                return false;
-            },
-
-            /**
-             *
-             * @param paymentRequestData
-             */
-            placeOderDefault: function (paymentRequestData) {
-                let self = this;
-
-                $.when(placeOrderAction(paymentRequestData, self.messageContainer)).done(
-                    function () {
-                        customerData.set("multisafepay-payment-component", {});
-                        self.afterPlaceOrder();
-
-                        if (self.redirectAfterPlaceOrder) {
-                            redirectOnSuccessAction.execute();
-                        }
-                    }
-                ).always(function () {
-                        self.isPlaceOrderActionAllowed(true);
-                    }
-                );
+                return this._super(data, event);
             }
         });
     }
