@@ -5,6 +5,10 @@ jobs:
   phpstan:
     name: PHPStan
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
     steps:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -20,76 +24,133 @@ jobs:
                 }
               }
             }
+
       - uses: actions/checkout@v4
+        with:
+          path: magento2-frontend-src
+
+      - name: Pick internal branches
+        id: pick
+        shell: bash
+        env:
+          TOKEN: ${{ secrets.GLOBAL_GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          check_branch() {
+            local OWNER="$1" REPO="$2" BRANCH="$3" DEFAULT="$4"
+            local ENCODED_BRANCH STATUS
+            ENCODED_BRANCH=$(jq -rn --arg b "$BRANCH" '$b|@uri')
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+              -H "Authorization: Bearer $TOKEN" \
+              -H "Accept: application/vnd.github+json" \
+              "https://api.github.com/repos/$OWNER/$REPO/branches/$ENCODED_BRANCH")
+
+            case "$STATUS" in
+              200) echo "$BRANCH" ;;
+              404) echo "$DEFAULT" ;;
+              *)
+                echo "Unexpected HTTP $STATUS when checking $OWNER/$REPO@$BRANCH" >&2
+                exit 1
+                ;;
+            esac
+          }
+
+          OWNER="$(echo "${GITHUB_REPOSITORY}" | cut -d'/' -f1)"
+          BRANCH="${GITHUB_REF_NAME}"
+          DEFAULT="master"
+
+          ADMINHTML_BRANCH=$(check_branch "$OWNER" "magento2-internal-adminhtml" "$BRANCH" "$DEFAULT")
+          CORE_BRANCH=$(check_branch "$OWNER" "magento2-internal-core" "$BRANCH" "$DEFAULT")
+          SDK_BRANCH=$(check_branch "$OWNER" "php-sdk-internal" "$BRANCH" "$DEFAULT")
+
+          echo "Selected adminhtml: $OWNER/magento2-internal-adminhtml@$ADMINHTML_BRANCH"
+          echo "Selected core:      $OWNER/magento2-internal-core@$CORE_BRANCH"
+          echo "Selected sdk:       $OWNER/php-sdk-internal@$SDK_BRANCH"
+
+          {
+            echo "adminhtml-repo=$OWNER/magento2-internal-adminhtml"
+            echo "adminhtml-branch=$ADMINHTML_BRANCH"
+            echo "core-repo=$OWNER/magento2-internal-core"
+            echo "core-branch=$CORE_BRANCH"
+            echo "sdk-repo=$OWNER/php-sdk-internal"
+            echo "sdk-branch=$SDK_BRANCH"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Checkout Magento 2 Adminhtml Repository (internal)
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ steps.pick.outputs.adminhtml-repo }}
+          token: ${{ secrets.GLOBAL_GITHUB_TOKEN }}
+          ref: ${{ steps.pick.outputs.adminhtml-branch }}
+          path: magento2-adminhtml-src
+
+      - name: Checkout Magento 2 Core Repository (internal)
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ steps.pick.outputs.core-repo }}
+          token: ${{ secrets.GLOBAL_GITHUB_TOKEN }}
+          ref: ${{ steps.pick.outputs.core-branch }}
+          path: magento2-core-src
+
+      - name: Checkout PHP-SDK (internal)
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ steps.pick.outputs.sdk-repo }}
+          token: ${{ secrets.GLOBAL_GITHUB_TOKEN }}
+          ref: ${{ steps.pick.outputs.sdk-branch }}
+          path: php-sdk-src
+
       - name: Create composer project
         run: composer create-project --no-install --no-interaction --no-plugins --repository-url=https://repo-magento-mirror.fooman.co.nz/ magento/project-community-edition:2.4.5-p8 /home/runner/work/magento
-      - name: Create magento2-frontend directory in package-source
-        run: mkdir -p /home/runner/work/magento/package-source/multisafepay/magento2-frontend
+
+      - name: Create package-source directories
+        run: |
+          mkdir -p /home/runner/work/magento/package-source/multisafepay/magento2-frontend
+          mkdir -p /home/runner/work/magento/package-source/multisafepay/magento2-adminhtml
+          mkdir -p /home/runner/work/magento/package-source/multisafepay/magento2-core
+          mkdir -p /home/runner/work/magento/package-source/multisafepay/php-sdk
+
       - name: Move repository content
-        run: cp -r -f ${{ github.workspace }}/* /home/runner/work/magento/package-source/multisafepay/magento2-frontend
-      - name: Checkout Magento 2 Adminhtml Repository
-        continue-on-error: true
-        uses: actions/checkout@v4
-        with:
-          repository: multisafepay/magento2-internal-adminhtml
-          token: ${{ secrets.GLOBAL_GITHUB_TOKEN }}
-          ref: ${{ github.ref_name }}
-      - name: Create magento2-adminhtml directory in package-source
-        if: success()
-        run: mkdir -p /home/runner/work/magento/package-source/multisafepay/magento2-adminhtml
+        run: rsync -a --exclude='.git' "${{ github.workspace }}/magento2-frontend-src/" "/home/runner/work/magento/package-source/multisafepay/magento2-frontend/"
+
       - name: Move Magento 2 Adminhtml Repository content
-        if: success()
-        continue-on-error: true
-        run: cp -r -f ${{ github.workspace }}/* /home/runner/work/magento/package-source/multisafepay/magento2-adminhtml
-      - name: Checkout Magento 2 Core Repository
-        continue-on-error: true
-        uses: actions/checkout@v4
-        with:
-          repository: multisafepay/magento2-internal-core
-          token: ${{ secrets.GLOBAL_GITHUB_TOKEN }}
-          ref: ${{ github.ref_name }}
-      - name: Create magento2-core directory in package-source
-        if: success()
-        run: mkdir -p /home/runner/work/magento/package-source/multisafepay/magento2-core
+        run: rsync -a --exclude='.git' "${{ github.workspace }}/magento2-adminhtml-src/" "/home/runner/work/magento/package-source/multisafepay/magento2-adminhtml/"
+
       - name: Move Magento 2 Core Repository content
-        if: success()
-        continue-on-error: true
-        run: cp -r -f ${{ github.workspace }}/* /home/runner/work/magento/package-source/multisafepay/magento2-core
-      - name: Checkout PHP-SDK
-        continue-on-error: true
-        uses: actions/checkout@v4
-        with:
-          repository: multisafepay/php-sdk-internal
-          token: ${{ secrets.GLOBAL_GITHUB_TOKEN }}
-          ref: ${{ github.ref_name }}
-      - name: Create php-sdk directory in package-source
-        if: success()
-        run: mkdir -p /home/runner/work/magento/package-source/multisafepay/php-sdk
+        run: rsync -a --exclude='.git' "${{ github.workspace }}/magento2-core-src/" "/home/runner/work/magento/package-source/multisafepay/magento2-core/"
+
       - name: Move PHP-SDK Repository content
-        if: success()
-        continue-on-error: true
-        run: cp -r -f ${{ github.workspace }}/* /home/runner/work/magento/package-source/multisafepay/php-sdk
+        run: rsync -a --exclude='.git' "${{ github.workspace }}/php-sdk-src/" "/home/runner/work/magento/package-source/multisafepay/php-sdk/"
+
       - name: Add composer plugins
         working-directory: /home/runner/work/magento
         run: composer config --no-plugins allow-plugins true
+
       - name: Add MultiSafepay packages to Composer
         working-directory: /home/runner/work/magento
         run: composer config repositories.multisafepay "path" "package-source/multisafepay/*"
+
       - name: Add module to composer
         working-directory: /home/runner/work/magento
         run: composer require multisafepay/magento2-frontend --no-update --no-interaction
+
       - name: Disable Composer audit blocking
         working-directory: /home/runner/work/magento
         run: composer config audit.block-insecure false
+
       - name: Install composer dependencies
         working-directory: /home/runner/work/magento
         run: composer install --no-interaction
+
       - name: Install PHPStan extension installer
         working-directory: /home/runner/work/magento
         run: composer require --dev phpstan/extension-installer
+
       - name: Install PHPStan Magento extension
         working-directory: /home/runner/work/magento
         run: composer require --dev bitexpert/phpstan-magento
+
       - name: Run PHPStan
         working-directory: /home/runner/work/magento
         run: vendor/bin/phpstan analyse -c vendor/multisafepay/magento2-frontend/phpstan.neon --error-format github
