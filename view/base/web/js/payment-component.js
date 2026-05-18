@@ -27,40 +27,63 @@ define([
 
     return {
         /**
+         * Initialise the MultiSafepay Payment Component for a given payment method.
+         *
+         * The API token is fetched on demand from the dedicated endpoint
+         * (multisafepay/connect/apitoken).
+         *
+         * Returns a Promise that resolves to a MultiSafepay instance on success,
+         * or to `null` when the component cannot be initialised. Callers must
+         * therefore validate the resolved value before invoking SDK methods on
+         * it (e.g. `hasErrors`, `getOrderData`).
          *
          * @param paymentCode
          * @param paymentRequestData
          * @param cardConfig
-         * @returns {void|{}|MultiSafepay}
+         * @returns {Promise<MultiSafepay|null>}
          */
         init: function (paymentCode, paymentRequestData, cardConfig) {
-            if (paymentCode && paymentRequestData) {
-                if (!cardConfig) {
-                    console.log($t("Payment data for selected payment method wasn\'t found."));
+            let self = this;
 
-                    return;
+            if (!paymentCode || !paymentRequestData) {
+                console.log($t("MultiSafepay Component data not available for selected payment method."));
+
+                return Promise.resolve(null);
+            }
+
+            if (!cardConfig) {
+                console.log($t("Payment data for selected payment method wasn\'t found."));
+
+                return Promise.resolve(null);
+            }
+
+            return this.fetchApiToken().then(function (apiToken) {
+                if (!apiToken) {
+                    console.log($t("Could not retrieve a valid MultiSafepay API token."));
+
+                    return null;
                 }
 
                 let paymentComponentData = {
                     env: paymentRequestData.environment,
-                    apiToken: paymentRequestData.apiToken,
-                    order: this.getOrderData(paymentRequestData, cardConfig.gatewayCode)
-                }
+                    apiToken: apiToken,
+                    order: self.getOrderData(paymentRequestData, cardConfig.gatewayCode)
+                };
 
-                let recurringData = this.getRecurringData(cardConfig);
+                let recurringData = self.getRecurringData(cardConfig);
 
                 if (recurringData) {
                     paymentComponentData.recurring = recurringData;
                 }
 
-                let multisafepayPaymentComponent =  new MultiSafepay(paymentComponentData);
+                let multisafepayPaymentComponent = new MultiSafepay(paymentComponentData);
 
                 multisafepayPaymentComponent.init('payment', {
                     container: '#' + paymentRequestData.paymentComponentContainerId + '-' + paymentCode,
                     gateway: cardConfig.gatewayCode,
                     onError: state => {
                         if (paymentRequestData.debug_mode) {
-                            console.log('Payment Component error: ' + JSON.stringify( state, null, 2));
+                            console.log('Payment Component error: ' + JSON.stringify(state, null, 2));
                         }
 
                         return new Promise(
@@ -69,7 +92,7 @@ define([
                                     url: url.build('multisafepay/connect/error'),
                                     type: 'POST',
                                     data: {
-                                        'error': JSON.stringify(state,null,2),
+                                        'error': JSON.stringify(state, null, 2),
                                         'payment_method': paymentCode,
                                         'gateway_code': cardConfig.gatewayCode,
                                         'payment_component_data': JSON.stringify(paymentComponentData, null, 2),
@@ -97,11 +120,39 @@ define([
                 });
 
                 return multisafepayPaymentComponent;
-            } else {
-                console.log($t("MultiSafepay Component data not available for selected payment method."));
-            }
+            });
+        },
 
-            return {};
+        /**
+         * Fetch a fresh MultiSafepay API token from the backend endpoint.
+         *
+         * The endpoint sets `Cache-Control: no-store` so no intermediate cache
+         * (browser, CDN, FPC) can return a stale token. `cache: false` on the
+         * jQuery side also adds a cache-buster query string for safety.
+         *
+         * Resolves to the token string on success, or to `null` on failure.
+         *
+         * @returns {Promise<string|null>}
+         */
+        fetchApiToken: function () {
+            return new Promise(function (resolve) {
+                $.ajax({
+                    url: url.build('multisafepay/connect/apitoken'),
+                    type: 'GET',
+                    dataType: 'json',
+                    cache: false
+                }).done(function (response) {
+                    if (response && response.success && response.apiToken) {
+                        resolve(response.apiToken);
+
+                        return;
+                    }
+
+                    resolve(null);
+                }).fail(function () {
+                    resolve(null);
+                });
+            });
         },
 
         /**

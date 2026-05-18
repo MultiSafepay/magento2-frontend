@@ -73,9 +73,9 @@ define(
                 this._super();
                 this.paymentRequestConfig = customerData.get('multisafepay-payment-request')();
                 this.paymentComponent = false;
+                this.paymentComponentPromise = null;
                 this.paymentPayload = null;
 
-                this.paymentComponentLifeTime = this.paymentRequestConfig.apiTokenLifeTime;
 
                 return this;
             },
@@ -163,31 +163,47 @@ define(
                     this.initializePaymentComponent();
                 }
 
-                if (Math.floor(Date.now() / 1000) - this.paymentComponentLifeTime >= 540) {
-                    customerData.invalidate(['multisafepay-payment-request']);
-                    customerData.reload(['multisafepay-payment-request']).done(() => {
-                        this.paymentRequestConfig = customerData.get('multisafepay-payment-request')();
-                        this.initializePaymentComponent();
-                        this.paymentComponentLifeTime = this.paymentRequestConfig.apiTokenLifeTime;
-                    });
-                }
-
                 return true;
             },
 
             /**
-             * Initialize the payment component for this payment method with the config from the server and the payment data for this method.
+             * Initialize the payment component for this payment method.
              *
-             * @returns {boolean|*}
+             * Deduplicates concurrent calls by caching the in-flight Promise so
+             * `selectPaymentMethod` and `PreRenderPaymentComponent` cannot start
+             * multiple parallel SDK initialisations. Only assigns
+             * `this.paymentComponent` when the resolved value exposes the
+             * expected SDK contract.
+             *
+             * @returns {Promise<MultiSafepay|null>}
              */
             initializePaymentComponent: function () {
-                this.paymentComponent = multisafepayPaymentComponent.init(
+                if (this.paymentComponent) {
+                    return Promise.resolve(this.paymentComponent);
+                }
+
+                if (this.paymentComponentPromise) {
+                    return this.paymentComponentPromise;
+                }
+
+                let self = this;
+
+                this.paymentComponentPromise = multisafepayPaymentComponent.init(
                     this.getCode(),
                     this.paymentRequestConfig,
                     this.getPaymentData()
-                );
+                ).then(function (component) {
+                    if (component && typeof component.getOrderData === 'function') {
+                        self.paymentComponent = component;
+                    }
 
-                return this.paymentComponent;
+                    return self.paymentComponent || null;
+                }).catch(function (error) {
+                    self.paymentComponentPromise = null;
+                    throw error;
+                });
+
+                return this.paymentComponentPromise;
             },
 
             /**
@@ -252,6 +268,17 @@ define(
                 }
 
                 if (!(this.validate() && additionalValidators.validate() && this.isPlaceOrderActionAllowed() === true)) {
+                    return false;
+                }
+
+                // If the component is still initialising, wait for it before
+                // continuing so a fast click cannot bypass component validation.
+                if (this.isPaymentComponentEnabled() && !this.paymentComponent && this.paymentComponentPromise) {
+                    let self = this;
+                    this.paymentComponentPromise.then(function () {
+                        self.placeOrder(data, event);
+                    });
+
                     return false;
                 }
 
