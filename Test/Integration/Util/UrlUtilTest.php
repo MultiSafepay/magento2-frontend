@@ -15,7 +15,6 @@ declare(strict_types=1);
 namespace MultiSafepay\ConnectFrontend\Test\Integration\Util;
 
 use Exception;
-use Magento\Checkout\Model\Session;
 use Magento\Sales\Model\Order;
 use MultiSafepay\ConnectCore\Test\Integration\AbstractTestCase;
 use MultiSafepay\ConnectCore\Util\CustomReturnUrlUtil;
@@ -29,23 +28,14 @@ class UrlUtilTest extends AbstractTestCase
     private $urlUtil;
 
     /**
-     * @var Session
-     */
-    private $checkoutSession;
-
-    /**
      * @return void
      */
     protected function setUp(): void
     {
         $objectManager = $this->getObjectManager();
-
         $customReturnUrlUtil = $objectManager->get(CustomReturnUrlUtil::class);
-        $this->checkoutSession = $objectManager->get(Session::class);
-
         $this->urlUtil = $objectManager->create(UrlUtil::class, [
             'customReturnUrlUtil' => $customReturnUrlUtil,
-            'session' => $this->checkoutSession
         ]);
     }
 
@@ -61,10 +51,8 @@ class UrlUtilTest extends AbstractTestCase
         $objectManager = $this->getObjectManager();
         $order = $objectManager->get(Order::class)->loadByIncrementId('100000001');
 
-        $this->checkoutSession->setLastRealOrder($order);
-
         $parameters = ['param1' => 'value1', 'param2' => 'value2'];
-        $result = $this->urlUtil->getCustomReturnUrl($parameters);
+        $result = $this->urlUtil->getCustomReturnUrl($order, $parameters);
 
         $this->assertIsString($result);
     }
@@ -80,25 +68,23 @@ class UrlUtilTest extends AbstractTestCase
     {
         $objectManager = $this->getObjectManager();
         $order = $objectManager->get(Order::class)->loadByIncrementId('100000001');
-
-        $this->checkoutSession->setLastRealOrder($order);
-
-        $result = $this->urlUtil->getCustomReturnUrl([]);
+        $result = $this->urlUtil->getCustomReturnUrl($order, []);
 
         $this->assertIsString($result);
     }
 
     /**
-     * Test getCustomReturnUrl without an order in the session
+     * Test getCustomReturnUrl without a persisted order (no entity id)
      *
      * @throws Exception
      */
     public function testGetCustomReturnUrlWithoutOrder(): void
     {
-        $this->checkoutSession->setLastRealOrder(null);
+        $objectManager = $this->getObjectManager();
+        $order = $objectManager->create(Order::class);
 
         $parameters = ['param1' => 'value1'];
-        $result = $this->urlUtil->getCustomReturnUrl($parameters);
+        $result = $this->urlUtil->getCustomReturnUrl($order, $parameters);
 
         $this->assertSame('', $result);
     }
@@ -109,6 +95,7 @@ class UrlUtilTest extends AbstractTestCase
      * @magentoDataFixture Magento/Sales/_files/order.php
      *
      * @throws Exception
+     * @throws \PHPUnit\Framework\MockObject\Exception
      */
     public function testGetCustomReturnUrlReturnsEmptyStringWhenCustomUrlNotFound(): void
     {
@@ -121,22 +108,10 @@ class UrlUtilTest extends AbstractTestCase
 
         $urlUtil = $objectManager->create(UrlUtil::class, [
             'customReturnUrlUtil' => $mockCustomReturnUrlUtil,
-            'session' => $this->checkoutSession
         ]);
 
-        $this->checkoutSession->setLastRealOrder($order);
-
-        $result = $urlUtil->getCustomReturnUrl(['param1' => 'value1']);
+        $result = $urlUtil->getCustomReturnUrl($order, ['param1' => 'value1']);
 
         $this->assertSame('', $result);
-    }
-
-    /**
-     * @return void
-     */
-    protected function tearDown(): void
-    {
-        $this->checkoutSession->clearStorage();
-        parent::tearDown();
     }
 }

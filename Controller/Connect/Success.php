@@ -17,13 +17,15 @@ namespace MultiSafepay\ConnectFrontend\Controller\Connect;
 use Exception;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
+use Magento\Framework\Controller\Result\Redirect;
+use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Model\Order;
+use MultiSafepay\ConnectCore\Config\Config;
 use MultiSafepay\ConnectCore\Logger\Logger;
 use MultiSafepay\ConnectFrontend\Util\CheckoutSessionUtil;
 use MultiSafepay\ConnectFrontend\Util\OrderUtil;
 use MultiSafepay\ConnectFrontend\Util\UrlUtil;
 use MultiSafepay\ConnectFrontend\Validator\RequestValidator;
-use MultiSafepay\ConnectCore\Config\Config;
 
 class Success extends Action
 {
@@ -93,14 +95,9 @@ class Success extends Action
     public function execute()
     {
         $parameters = $this->getRequest()->getParams();
-        $customReturnUrl = $this->urlUtil->getCustomReturnUrl($parameters);
-
-        if ($customReturnUrl) {
-            $redirectUrl = $this->resultRedirectFactory->create()->setUrl($customReturnUrl);
-        }
 
         if (!$this->requestValidator->validateSecureToken($parameters)) {
-            return $redirectUrl ?? $this->_redirect('checkout/cart');
+            return $this->resultRedirectFactory->create()->setPath('checkout/cart');
         }
 
         $orderIncrementId = $parameters['transactionid'];
@@ -112,21 +109,52 @@ class Success extends Action
 
         /** @var Order $order */
         $order = $this->orderUtil->getOrder($orderIncrementId);
-        $googleAnalyticsClientId = $order->getPayment()->getAdditionalInformation()['google_analytics_client_id'] ?? '';
-        $redirectUrl = $redirectUrl ?? $this->_redirect(
-            'checkout/onepage/success',
-            [
-                '_query' => array_merge(
-                    ($this->config->isUtmNoOverrideDisabled($order->getStoreId()) ? [] : ['utm_nooverride' => 1]),
-                    ($googleAnalyticsClientId ? ['_ga' => $googleAnalyticsClientId] : [])
-                )
-            ]
-        );
+
+        $redirect = $this->buildSuccessRedirect($order, $parameters);
 
         $order->addCommentToStatusHistory('User redirected to the success page.');
         $this->checkoutSessionUtil->setCheckoutSessionData($order);
         $this->logger->logPaymentSuccessInfo($orderIncrementId);
 
-        return $redirectUrl;
+        return $redirect;
+    }
+
+    /**
+     * Build the success redirect, preferring the configured custom success URL
+     * and falling back to checkout/onepage/success.
+     *
+     * @param OrderInterface $order
+     * @param array $parameters
+     * @return Redirect
+     * @throws Exception
+     */
+    private function buildSuccessRedirect(OrderInterface $order, array $parameters): Redirect
+    {
+        $customReturnUrl = $this->urlUtil->getCustomReturnUrl($order, $parameters);
+
+        if ($customReturnUrl) {
+            return $this->resultRedirectFactory->create()->setUrl($customReturnUrl);
+        }
+
+        return $this->resultRedirectFactory->create()->setPath(
+            'checkout/onepage/success',
+            ['_query' => $this->getSuccessQueryParams($order)]
+        );
+    }
+
+    /**
+     * Build the query string for the default checkout success page.
+     *
+     * @param OrderInterface $order
+     * @return array
+     */
+    private function getSuccessQueryParams(OrderInterface $order): array
+    {
+        $googleAnalyticsClientId = $order->getPayment()->getAdditionalInformation()['google_analytics_client_id'] ?? '';
+
+        return array_merge(
+            $this->config->isUtmNoOverrideDisabled((int)$order->getStoreId()) ? [] : ['utm_nooverride' => 1],
+            $googleAnalyticsClientId ? ['_ga' => $googleAnalyticsClientId] : []
+        );
     }
 }

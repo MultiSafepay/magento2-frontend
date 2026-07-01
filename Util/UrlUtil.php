@@ -15,7 +15,7 @@ declare(strict_types=1);
 namespace MultiSafepay\ConnectFrontend\Util;
 
 use Exception;
-use Magento\Checkout\Model\Session;
+use Magento\Sales\Api\Data\OrderInterface;
 use MultiSafepay\ConnectCore\Util\CustomReturnUrlUtil;
 
 class UrlUtil
@@ -26,41 +26,33 @@ class UrlUtil
     private $customReturnUrlUtil;
 
     /**
-     * @var Session
-     */
-    private $session;
-
-    /**
      * @param CustomReturnUrlUtil $customReturnUrlUtil
-     * @param Session $session
      */
-    public function __construct(
-        CustomReturnUrlUtil $customReturnUrlUtil,
-        Session $session
-    ) {
+    public function __construct(CustomReturnUrlUtil $customReturnUrlUtil)
+    {
         $this->customReturnUrlUtil = $customReturnUrlUtil;
-        $this->session = $session;
     }
 
     /**
-     * Get custom return URL for the last real order in the checkout session
+     * Get custom return URL for the given order.
      *
+     * @param OrderInterface $order
      * @param array $parameters
      * @return string
      * @throws Exception
      */
-    public function getCustomReturnUrl(array $parameters): string
+    public function getCustomReturnUrl(OrderInterface $order, array $parameters): string
     {
+        if (!$order->getEntityId()) {
+            return '';
+        }
+
         $customReturnUrl = $this->customReturnUrlUtil->getCustomReturnUrlByType(
-            $this->session->getLastRealOrder(),
+            $order,
             $parameters,
             CustomReturnUrlUtil::SUCCESS_URL_TYPE_NAME
         );
 
-        if ($customReturnUrl) {
-            return $customReturnUrl;
-        }
-
-        return '';
+        return $customReturnUrl ?: '';
     }
 }
