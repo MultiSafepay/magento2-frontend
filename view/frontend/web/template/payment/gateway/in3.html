@@ -27,7 +27,9 @@
                     visible: isRadioButtonVisible()
                "/>
         <label class="label" data-bind="attr: {'for': getCode()}">
-            <img data-bind="attr: {src: getImage(), alt: getTitle()}" class="payment-icon multisafepay-payment-icon" />
+            <!-- ko if: getImage() -->
+            <img alt="" aria-hidden="true" data-bind="attr: {src: getImage()}" class="payment-icon multisafepay-payment-icon" />
+            <!-- /ko -->
             <span data-bind="text: getTitle()"></span>
         </label>
     </div>

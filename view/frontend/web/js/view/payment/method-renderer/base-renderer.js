@@ -98,7 +98,7 @@ define(
              * @returns {string}
              */
             getImage: function () {
-                return this.paymentConfig.image;
+                return this.paymentConfig.image ?? '';
             },
 
             /**
