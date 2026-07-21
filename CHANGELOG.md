@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.1.0] - 2026-07-21
+### Added
+- PLGMAG2V2-912: Added changes to show no icon based on configured setting
+
+### Fixed
+- PLGMAG2V2-911: Fixed custom success url not being used in new browser session
+
 ## [3.0.1] - 2026-05-18
 ### Fixed
 - PLGMAG2V2-906: Fixed an issue where a 'Temporarily Unavailable' message would be shown after being idle in the checkout for a while, due to the API token expiring and not being refreshed
