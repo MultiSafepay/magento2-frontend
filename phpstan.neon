@@ -1,6 +1,10 @@
 parameters:
     level: 2
     errorFormat: github
+    ignoreErrors:
+        -
+            message: '#^PHPDoc tag @SuppressWarnings has invalid value#'
+            reportUnmatched: false
     paths:
         - .
     excludePaths:

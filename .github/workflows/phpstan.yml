@@ -150,16 +150,23 @@ jobs:
         run: docker exec --workdir /data magento-project-community-edition composer config repositories.multisafepay path "package-source/multisafepay/*"
 
       - name: Require module
-        run: docker exec --workdir /data magento-project-community-edition composer require multisafepay/magento2-frontend:@dev --no-update --no-interaction
+        run: docker exec --workdir /data magento-project-community-edition composer require multisafepay/magento2-frontend:* --no-update --no-interaction
 
       - name: Require PHPStan extension installer
         run: docker exec --workdir /data magento-project-community-edition composer require --dev phpstan/extension-installer --no-update --no-interaction
 
       - name: Require PHPStan Magento extension
-        run: docker exec --workdir /data magento-project-community-edition composer require --dev bitexpert/phpstan-magento:0.32.0 --no-update --no-interaction
+        run: |
+          if [ "${{ matrix.PHP_VERSION }}" = "php74-fpm" ]; then
+            docker exec --workdir /data magento-project-community-edition composer require --dev phpstan/phpstan:^1.12 --no-update --no-interaction
+            docker exec --workdir /data magento-project-community-edition composer require --dev bitexpert/phpstan-magento:0.32.0 --no-update --no-interaction
+          else
+            docker exec --workdir /data magento-project-community-edition composer require --dev phpstan/phpstan:^2.2 --no-update --no-interaction
+            docker exec --workdir /data magento-project-community-edition composer require --dev bitexpert/phpstan-magento:^0.43.0 --no-update --no-interaction
+          fi
 
       - name: Install composer dependencies
-        run: docker exec --workdir /data magento-project-community-edition composer update multisafepay/magento2-frontend phpstan/extension-installer bitexpert/phpstan-magento --with-all-dependencies --no-interaction
+        run: docker exec --workdir /data magento-project-community-edition composer update multisafepay/magento2-frontend phpstan/extension-installer phpstan/phpstan bitexpert/phpstan-magento --with-all-dependencies --no-interaction
 
       - name: Run PHPStan
         run: docker exec --workdir /data magento-project-community-edition vendor/bin/phpstan analyse -c vendor/multisafepay/magento2-frontend/phpstan.neon --error-format table --no-progress
