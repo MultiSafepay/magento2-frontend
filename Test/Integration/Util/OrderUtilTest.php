@@ -20,10 +20,7 @@ use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\OrderFactory;
 use Magento\TestFramework\Helper\Bootstrap;
-use MultiSafepay\ConnectCore\Logger\Logger;
 use MultiSafepay\ConnectCore\Test\Integration\AbstractTestCase;
-use MultiSafepay\ConnectCore\Util\OrderUtil;
-use MultiSafepay\ConnectCore\Util\ThirdPartyPluginsUtil;
 use MultiSafepay\ConnectFrontend\Util\OrderUtil as CoreOrderUtil;
 
 /**
@@ -113,19 +110,7 @@ class OrderUtilTest extends AbstractTestCase
         $order->setStatus('pending_payment');
         $orderRepository->save($order);
 
-        // Mock the OrderUtil to avoid actual sleep delays in tests
-        $orderUtil = $this->getMockBuilder(CoreOrderUtil::class)
-            ->setConstructorArgs([
-                $objectManager->get(ThirdPartyPluginsUtil::class),
-                $objectManager->get(OrderUtil::class),
-                $objectManager->get(Logger::class)
-            ])
-            ->addMethods(['sleep'])
-            ->getMock();
-
-        $orderUtil->method('sleep')->willReturn(null);
-
-        $result = $orderUtil->getOrder('100000001');
+        $result = $this->orderUtil->getOrder('100000001');
 
         $this->assertInstanceOf(OrderInterface::class, $result);
         $this->assertEquals('100000001', $result->getIncrementId());
@@ -162,43 +147,12 @@ class OrderUtilTest extends AbstractTestCase
         $order->setStatus('pending_payment');
         $orderRepository->save($order);
 
-        // Create a counter to track polling attempts
-        $pollCount = 0;
-
-        // Create a mock that only mocks the sleep method and a custom polling method
-        $orderUtil = $this->getMockBuilder(CoreOrderUtil::class)
-            ->setConstructorArgs([
-                $objectManager->get(ThirdPartyPluginsUtil::class),
-                $objectManager->get(OrderUtil::class),
-                $objectManager->get(Logger::class)
-            ])
-            ->addMethods(['sleep', 'shouldIterate'])
-            ->getMock();
-
-        $orderUtil->method('sleep')->willReturn(null);
-
-        // Mock should iterate to return true only once (allowing one poll iteration)
-        $orderUtil->method('shouldIterate')
-            ->willReturnCallback(function () use (&$pollCount, $objectManager, $orderRepository) {
-                $pollCount++;
-                if ($pollCount === 1) {
-                    // On first poll, change the order state
-                    $order = $objectManager->get(OrderFactory::class)->create();
-                    $order->loadByIncrementId('100000001');
-                    $order->setState(Order::STATE_PROCESSING);
-                    $order->setStatus('processing');
-                    $orderRepository->save($order);
-                    return false; // Stop polling
-                }
-                return false;
-            });
-
         // Manually change order state before calling getOrder to simulate the transition
         $order->setState(Order::STATE_PROCESSING);
         $order->setStatus('processing');
         $orderRepository->save($order);
 
-        $result = $orderUtil->getOrder('100000001');
+        $result = $this->orderUtil->getOrder('100000001');
 
         $this->assertInstanceOf(OrderInterface::class, $result);
         $this->assertEquals('100000001', $result->getIncrementId());

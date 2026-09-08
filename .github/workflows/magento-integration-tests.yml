@@ -24,9 +24,14 @@ jobs:
       matrix:
         include:
           - PHP_VERSION: php74-fpm
-            MAGENTO_VERSION: 2.3.7-p4
+            IMAGE: magento-project-community-edition
+            IMAGE_VERSION: magento2.3.7-p4
           - PHP_VERSION: php82-fpm
-            MAGENTO_VERSION: 2.4.6-p12
+            IMAGE: magento-project-community-edition
+            IMAGE_VERSION: magento2.4.6-p12
+          - PHP_VERSION: php84-fpm
+            IMAGE: mage-os-community-edition
+            IMAGE_VERSION: mage-os3.3.0
 
     steps:
       - uses: actions/checkout@v5
@@ -34,10 +39,10 @@ jobs:
           fetch-depth: 0
 
       - name: Start Docker
-        run: docker run --detach --name magento-project-community-edition ghcr.io/controlaltdelete-nl/magento2-in-a-box/magento-project-community-edition:${{ matrix.PHP_VERSION }}-magento${{ matrix.MAGENTO_VERSION }}
+        run: docker run --detach --name ${{ matrix.IMAGE }} ghcr.io/controlaltdelete-nl/magento2-in-a-box/${{ matrix.IMAGE }}:${{ matrix.PHP_VERSION }}-${{ matrix.IMAGE_VERSION }}
 
       - name: Upload our code into the docker container
-        run: docker cp "$(pwd)" magento-project-community-edition:/data/extensions/
+        run: docker cp "$(pwd)" ${{ matrix.IMAGE }}:/data/extensions/
 
       - name: Extract branch name
         id: extract_branch
@@ -114,18 +119,18 @@ jobs:
 
       - name: Create directories in the container
         run: |
-          docker exec magento-project-community-edition mkdir -p /data/extensions/magento2-adminhtml
-          docker exec magento-project-community-edition mkdir -p /data/extensions/magento2-core
-          docker exec magento-project-community-edition mkdir -p /data/extensions/php-sdk
+          docker exec ${{ matrix.IMAGE }} mkdir -p /data/extensions/magento2-adminhtml
+          docker exec ${{ matrix.IMAGE }} mkdir -p /data/extensions/magento2-core
+          docker exec ${{ matrix.IMAGE }} mkdir -p /data/extensions/php-sdk
 
       - name: Copy repositories into the container
         run: |
-          docker cp "${{ github.workspace }}/magento2-adminhtml/." magento-project-community-edition:/data/extensions/magento2-adminhtml
-          docker cp "${{ github.workspace }}/magento2-core/." magento-project-community-edition:/data/extensions/magento2-core
-          docker cp "${{ github.workspace }}/php-sdk/." magento-project-community-edition:/data/extensions/php-sdk
+          docker cp "${{ github.workspace }}/magento2-adminhtml/." ${{ matrix.IMAGE }}:/data/extensions/magento2-adminhtml
+          docker cp "${{ github.workspace }}/magento2-core/." ${{ matrix.IMAGE }}:/data/extensions/magento2-core
+          docker cp "${{ github.workspace }}/php-sdk/." ${{ matrix.IMAGE }}:/data/extensions/php-sdk
 
       - name: Install the extension in Magento
-        run: docker exec magento-project-community-edition composer require multisafepay/magento2-frontend
+        run: docker exec ${{ matrix.IMAGE }} composer require multisafepay/magento2-frontend
 
       - name: Run tests
-        run: docker exec magento-project-community-edition bash -c "php bin/magento deploy:mode:set developer && cd /data/dev/tests/integration/ && ../../../vendor/bin/phpunit ../../../vendor/multisafepay/magento2-frontend/Test/Integration"
+        run: docker exec ${{ matrix.IMAGE }} bash -c "php bin/magento deploy:mode:set developer && cd /data/dev/tests/integration/ && ../../../vendor/bin/phpunit ../../../vendor/multisafepay/magento2-frontend/Test/Integration"

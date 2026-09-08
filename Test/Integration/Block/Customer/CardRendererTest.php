@@ -21,7 +21,6 @@ use MultiSafepay\ConnectCore\Model\Ui\Gateway\CreditCardRecurringConfigProvider;
 use MultiSafepay\ConnectCore\Test\Integration\AbstractTestCase;
 use MultiSafepay\ConnectCore\Util\VaultUtil;
 use MultiSafepay\ConnectFrontend\Block\Customer\CardRenderer;
-use MultiSafepay\ConnectFrontend\CustomerData\PaymentRequest;
 use PHPUnit\Framework\MockObject\MockObject;
 
 /**
@@ -66,17 +65,7 @@ class CardRendererTest extends AbstractTestCase
                 $this->getObjectManager()->create(VaultUtil::class),
                 [],
             ])
-            ->setMethodsExcept([
-                'getNumberLast4Digits',
-                'getTokenDetails',
-                'render',
-                'canRender',
-                'getExpDate',
-                'getIconUrl',
-                'getIconHeight',
-                'getIconWidth',
-                'getIcon',
-            ])
+            ->onlyMethods(['getToken'])
             ->getMock();
 
         $cardRenderer->method('getToken')
