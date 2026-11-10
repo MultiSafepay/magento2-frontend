@@ -86,6 +86,12 @@ class RequestValidator
      */
     public function validatePostNotification(string $authHeader, string $requestBody, int $storeId): bool
     {
-        return Notification::verifyNotification($requestBody, $authHeader, $this->config->getApiKey($storeId));
+        $apiKey = trim($this->config->getApiKey($storeId));
+
+        if ($apiKey === '') {
+            return false;
+        }
+
+        return Notification::verifyNotification($requestBody, $authHeader, $apiKey);
     }
 }
