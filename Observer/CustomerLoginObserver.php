@@ -20,6 +20,7 @@ use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
 use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use MultiSafepay\ConnectCore\Logger\Logger;
 use MultiSafepay\ConnectCore\Model\Api\Builder\TokenRequestBuilder;
@@ -108,7 +109,7 @@ class CustomerLoginObserver implements ObserverInterface
         }
 
         // Early return when vault methods are not enabled
-        if (!$this->isVaultEnabled()) {
+        if (!$this->isVaultEnabled((int)$storeId)) {
             return;
         }
 
@@ -132,12 +133,17 @@ class CustomerLoginObserver implements ObserverInterface
     /**
      * Check if any vault methods are enabled
      *
+     * @param int $storeId
      * @return bool
      */
-    private function isVaultEnabled(): bool
+    private function isVaultEnabled(int $storeId): bool
     {
         foreach (array_keys(Vault::VAULT_GATEWAYS) as $method) {
-            if ($this->scopeConfig->getValue('payment/' . $method . '_vault/active')) {
+            if ($this->scopeConfig->getValue(
+                'payment/' . $method . '_vault/active',
+                ScopeInterface::SCOPE_STORE,
+                $storeId
+            )) {
                 return true;
             }
         }
